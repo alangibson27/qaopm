@@ -108,7 +108,34 @@ class TestProcessor:
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xaa, self.processor.main_registers[destination])
 
-    def test_ld_a_i(self):
+    def test_single_cycle_memory_loads_from_register(self):
+        operations = [
+            (0x77, 'hl', 'a'),
+            (0x70, 'hl', 'b'),
+            (0x71, 'hl', 'c'),
+            (0x72, 'hl', 'd'),
+            (0x73, 'hl', 'e'),
+            (0x74, 'hl', 'f'),
+            (0x75, 'hl', 'l')
+        ]
+
+        for (op_code, destination_pointer, source_register) in operations:
+            yield self.check_single_cycle_memory_load_from_register, op_code, destination_pointer, source_register
+
+    def check_single_cycle_memory_load_from_register(self, op_code, destination_pointer, source_register):
+        self.processor.main_registers[source_register] = 0xbb
+
+        self.processor.main_registers[destination_pointer[0]] = 0xb0
+        self.processor.main_registers[destination_pointer[1]] = 0xc0
+
+        self.memory.poke(0x0, op_code)
+
+        self.processor.single_cycle()
+
+        assert_equals(0x0001, self.processor.special_registers['pc'])
+        assert_equals(0xbb, self.memory.peek(0xb0c0))
+
+def test_ld_a_i(self):
         self.processor.special_registers['i'] = 0xff
 
         self.memory.poke(0x0, 0xed)

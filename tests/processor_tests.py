@@ -4,6 +4,7 @@ from z80.processor import Processor
 
 class TestProcessor:
     def setup(self):
+        self.instruction_pointer = 0x0
         self.memory = Memory()
         self.processor = Processor(self.memory)
 
@@ -70,11 +71,14 @@ class TestProcessor:
             yield self.check_single_cycle_register_load, op_code, destination, source
 
     def check_single_cycle_register_load(self, op_code, destination, source):
-        self.processor.main_registers[source] = 0xff
-        self.memory.poke(0x0, op_code)
+        # given
+        self.given_register_contains_value(source, 0xff)
+        self.given_next_instruction_is(op_code)
 
+        # when
         self.processor.single_cycle()
 
+        # then
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xff, self.processor.main_registers[destination])
         assert_equals(0xff, self.processor.main_registers[source])
@@ -93,18 +97,19 @@ class TestProcessor:
             (0x6e, 'l', 'hl')
         ]
 
-        for (op_code, destination, source_register) in operations:
-            yield self.check_single_cycle_register_load_from_memory, op_code, destination, source_register
+        for (op_code, destination, source_register_pair) in operations:
+            yield self.check_single_cycle_register_load_from_memory, op_code, destination, source_register_pair
 
-    def check_single_cycle_register_load_from_memory(self, op_code, destination, source_register):
-        self.processor.main_registers[source_register[0]] = 0xa0
-        self.processor.main_registers[source_register[1]] = 0xa0
-
-        self.memory.poke(0x0, op_code)
+    def check_single_cycle_register_load_from_memory(self, op_code, destination, source_register_pair):
+        # given
+        self.given_register_pair_contains_value(source_register_pair, 0xa0a0)
+        self.given_next_instruction_is(op_code)
         self.memory.poke(0xa0a0, 0xaa)
 
+        # when
         self.processor.single_cycle()
 
+        # then
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xaa, self.processor.main_registers[destination])
 
@@ -116,32 +121,62 @@ class TestProcessor:
             (0x72, 'hl', 'd'),
             (0x73, 'hl', 'e'),
             (0x74, 'hl', 'f'),
-            (0x75, 'hl', 'l')
         ]
 
         for (op_code, destination_pointer, source_register) in operations:
             yield self.check_single_cycle_memory_load_from_register, op_code, destination_pointer, source_register
 
     def check_single_cycle_memory_load_from_register(self, op_code, destination_pointer, source_register):
-        self.processor.main_registers[source_register] = 0xbb
+        # given
+        self.given_register_contains_value(source_register, 0xbb)
+        self.given_register_pair_contains_value(destination_pointer, 0xb0c0)
 
-        self.processor.main_registers[destination_pointer[0]] = 0xb0
-        self.processor.main_registers[destination_pointer[1]] = 0xc0
+        self.given_next_instruction_is(op_code)
 
-        self.memory.poke(0x0, op_code)
-
+        # when
         self.processor.single_cycle()
 
+        # then
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xbb, self.memory.peek(0xb0c0))
 
-def test_ld_a_i(self):
-        self.processor.special_registers['i'] = 0xff
+    def test_single_cycle_memory_load_from_register_where_l_register_is_used(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0xb0c0)
 
-        self.memory.poke(0x0, 0xed)
-        self.memory.poke(0x1, 0x57)
+        self.given_next_instruction_is(0x75)
 
+        # when
         self.processor.single_cycle()
 
+        # then
+        assert_equals(0x0001, self.processor.special_registers['pc'])
+        assert_equals(0xc0, self.memory.peek(0xb0c0))
+
+    def test_ld_a_i(self):
+        # given
+        self.processor.special_registers['i'] = 0xff
+        self.given_next_instruction_is(0xed, 0x57)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
         assert_equals(0x0002, self.processor.special_registers['pc'])
         assert_equals(0xff, self.processor.main_registers['a'])
+
+    def given_next_instruction_is(self, *args):
+        for arg in args:
+            self.memory.poke(self.instruction_pointer, arg)
+            self.instruction_pointer += 1
+
+    def given_register_contains_value(self, register, value):
+        self.processor.main_registers[register] = value
+
+    def given_register_pair_contains_value(self, register_pair, value):
+        self.processor.main_registers[register_pair[0]] = value >> 8
+        self.processor.main_registers[register_pair[1]] = value & 0xff
+
+
+if __name__ == '__main__':
+    print 'hello'

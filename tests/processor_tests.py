@@ -1,6 +1,11 @@
 from nose.tools import *
+from random import randint
+from z80.funcs import twos_complement
 from z80.memory import Memory
 from z80.processor import Processor
+
+def random_byte():
+    return randint(0x00, 0xff)
 
 class TestProcessor:
     def setup(self):
@@ -8,7 +13,7 @@ class TestProcessor:
         self.memory = Memory()
         self.processor = Processor(self.memory)
 
-    def test_single_cycle_register_loads(self):
+    def test_single_cycle_ld_reg_from_reg(self):
         operations = [
             (0x7f, 'a', 'a'),
             (0x78, 'a', 'b'),
@@ -68,9 +73,9 @@ class TestProcessor:
         ]
 
         for (op_code, destination, source) in operations:
-            yield self.check_single_cycle_register_load, op_code, destination, source
+            yield self.check_single_cycle_ld_reg_from_reg, op_code, destination, source
 
-    def check_single_cycle_register_load(self, op_code, destination, source):
+    def check_single_cycle_ld_reg_from_reg(self, op_code, destination, source):
         # given
         self.given_register_contains_value(source, 0xff)
         self.given_next_instruction_is(op_code)
@@ -83,7 +88,7 @@ class TestProcessor:
         assert_equals(0xff, self.processor.main_registers[destination])
         assert_equals(0xff, self.processor.main_registers[source])
 
-    def test_single_cycle_register_loads_from_memory(self):
+    def test_single_cycle_ld_reg_from_reg_indirect(self):
         operations = [
             (0x7e, 'a', 'hl'),
             (0x0a, 'a', 'bc'),
@@ -97,12 +102,12 @@ class TestProcessor:
             (0x6e, 'l', 'hl')
         ]
 
-        for (op_code, destination, source_register_pair) in operations:
-            yield self.check_single_cycle_register_load_from_memory, op_code, destination, source_register_pair
+        for (op_code, destination, source_pointer) in operations:
+            yield self.check_single_cycle_ld_reg_from_reg_indirect, op_code, destination, source_pointer
 
-    def check_single_cycle_register_load_from_memory(self, op_code, destination, source_register_pair):
+    def check_single_cycle_ld_reg_from_reg_indirect(self, op_code, destination, source_pointer):
         # given
-        self.given_register_pair_contains_value(source_register_pair, 0xa0a0)
+        self.given_register_pair_contains_value(source_pointer, 0xa0a0)
         self.given_next_instruction_is(op_code)
         self.memory.poke(0xa0a0, 0xaa)
 
@@ -113,7 +118,7 @@ class TestProcessor:
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xaa, self.processor.main_registers[destination])
 
-    def test_single_cycle_memory_loads_from_register(self):
+    def test_single_cycle_ld_reg_indirect_from_reg(self):
         operations = [
             (0x77, 'hl', 'a'),
             (0x70, 'hl', 'b'),
@@ -121,12 +126,14 @@ class TestProcessor:
             (0x72, 'hl', 'd'),
             (0x73, 'hl', 'e'),
             (0x74, 'hl', 'f'),
+            (0x02, 'bc', 'a'),
+            (0x12, 'de', 'a')
         ]
 
         for (op_code, destination_pointer, source_register) in operations:
-            yield self.check_single_cycle_memory_load_from_register, op_code, destination_pointer, source_register
+            yield self.check_single_cycle_ld_reg_indirect_from_reg, op_code, destination_pointer, source_register
 
-    def check_single_cycle_memory_load_from_register(self, op_code, destination_pointer, source_register):
+    def check_single_cycle_ld_reg_indirect_from_reg(self, op_code, destination_pointer, source_register):
         # given
         self.given_register_contains_value(source_register, 0xbb)
         self.given_register_pair_contains_value(destination_pointer, 0xb0c0)
@@ -140,7 +147,7 @@ class TestProcessor:
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xbb, self.memory.peek(0xb0c0))
 
-    def test_single_cycle_memory_load_from_register_where_l_register_is_used(self):
+    def test_single_cycle_ld_reg_indirect_from_reg_where_l_reg_is_used(self):
         # given
         self.given_register_pair_contains_value('hl', 0xb0c0)
 
@@ -165,13 +172,118 @@ class TestProcessor:
         assert_equals(0x0002, self.processor.special_registers['pc'])
         assert_equals(0xff, self.processor.main_registers['a'])
 
+    def test_single_cycle_ld_register_immediate(self):
+        operations = [
+            (0x3e, 'a', 0x10),
+            (0x06, 'b', 0x11),
+            (0x0e, 'c', 0x22),
+            (0x16, 'd', 0x33),
+            (0x1e, 'e', 0xaa),
+            (0x26, 'h', 0xab),
+            (0x2e, 'l', 0xef)
+        ]
+
+        for (op_code, destination_register, operand) in operations:
+            yield self.check_single_cycle_ld_register_immediate, op_code, destination_register, operand
+
+    def check_single_cycle_ld_register_immediate(self, op_code, destination_register, operand):
+        # given
+        self.given_next_instruction_is(op_code, operand)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(0x0002, self.processor.special_registers['pc'])
+        assert_equals(operand, self.processor.main_registers[destination_register])
+
+    def test_single_cycle_ld_reg_indirect_immediate(self):
+        # given
+        self.given_next_instruction_is(0x36, 0xff)
+        self.given_register_pair_contains_value('hl', 0xa123)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(0x0002, self.processor.special_registers['pc'])
+        assert_equals(0xff, self.memory.peek(0xa123))
+
+    def test_single_cycle_ld_reg_indexed(self):
+        operations = [
+            ([0xdd, 0x7e], 'a', 'ix'),
+            ([0xfd, 0x7e], 'a', 'iy'),
+            ([0xdd, 0x46], 'b', 'ix'),
+            ([0xfd, 0x46], 'b', 'iy'),
+            ([0xdd, 0x4e], 'c', 'ix'),
+            ([0xfd, 0x4e], 'c', 'iy'),
+            ([0xdd, 0x56], 'd', 'ix'),
+            ([0xfd, 0x56], 'd', 'iy'),
+            ([0xdd, 0x5e], 'e', 'ix'),
+            ([0xfd, 0x5e], 'e', 'iy'),
+            ([0xdd, 0x66], 'h', 'ix'),
+            ([0xfd, 0x66], 'h', 'iy'),
+            ([0xdd, 0x6e], 'l', 'ix'),
+            ([0xfd, 0x6e], 'l', 'iy')
+        ]
+
+        for op_codes, destination_register, index_register in operations:
+            yield self.check_single_cycle_ld_reg_indexed, op_codes, destination_register, index_register, random_byte()
+
+    def check_single_cycle_ld_reg_indexed(self, op_codes, destination_register, index_register, operand):
+        # given
+        self.given_next_instruction_is(op_codes[0], op_codes[1], operand)
+        self.given_register_contains_value(index_register, 0x1000)
+
+        referenced_address = 0x1000 + twos_complement(operand)
+        address_value = random_byte()
+        self.memory.poke(referenced_address, address_value)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['pc'], 0x0003)
+        assert_equals(self.processor.main_registers[destination_register], address_value)
+
+    def test_single_cycle_ld_reg_indexed_offset_wraparound_low(self):
+        # given
+        self.given_next_instruction_is(0xdd, 0x7e, 0x80)
+        self.given_register_contains_value('ix', 0x0a)
+
+        self.memory.poke(0xff8a, 0x12)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['pc'], 0x0003)
+        assert_equals(self.processor.main_registers['a'], 0x12)
+
+    def test_single_cycle_ld_reg_indexed_offset_wraparound_high(self):
+        # given
+        self.given_next_instruction_is(0xdd, 0x7e, 0x7f)
+        self.given_register_contains_value('ix', 0xffff)
+
+        self.memory.poke(0x007e, 0x12)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['pc'], 0x0003)
+        assert_equals(self.processor.main_registers['a'], 0x12)
+
     def given_next_instruction_is(self, *args):
         for arg in args:
             self.memory.poke(self.instruction_pointer, arg)
             self.instruction_pointer += 1
 
     def given_register_contains_value(self, register, value):
-        self.processor.main_registers[register] = value
+        if register == 'ix' or register == 'iy':
+            self.processor.index_registers[register] = value
+        else:
+            self.processor.main_registers[register] = value
 
     def given_register_pair_contains_value(self, register_pair, value):
         self.processor.main_registers[register_pair[0]] = value >> 8

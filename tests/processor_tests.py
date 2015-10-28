@@ -20,7 +20,7 @@ class TestProcessor:
             (0x79, 'a', 'c'),
             (0x7a, 'a', 'd'),
             (0x7b, 'a', 'e'),
-            (0x7c, 'a', 'f'),
+            (0x7c, 'a', 'h'),
             (0x7d, 'a', 'l'),
 
             (0x47, 'b', 'a'),
@@ -28,7 +28,7 @@ class TestProcessor:
             (0x41, 'b', 'c'),
             (0x42, 'b', 'd'),
             (0x43, 'b', 'e'),
-            (0x44, 'b', 'f'),
+            (0x44, 'b', 'h'),
             (0x45, 'b', 'l'),
 
             (0x4f, 'c', 'a'),
@@ -36,7 +36,7 @@ class TestProcessor:
             (0x49, 'c', 'c'),
             (0x4a, 'c', 'd'),
             (0x4b, 'c', 'e'),
-            (0x4c, 'c', 'f'),
+            (0x4c, 'c', 'h'),
             (0x4d, 'c', 'l'),
 
             (0x57, 'd', 'a'),
@@ -44,7 +44,7 @@ class TestProcessor:
             (0x51, 'd', 'c'),
             (0x52, 'd', 'd'),
             (0x53, 'd', 'e'),
-            (0x54, 'd', 'f'),
+            (0x54, 'd', 'h'),
             (0x55, 'd', 'l'),
 
             (0x5f, 'e', 'a'),
@@ -52,7 +52,7 @@ class TestProcessor:
             (0x59, 'e', 'c'),
             (0x5a, 'e', 'd'),
             (0x5b, 'e', 'e'),
-            (0x5c, 'e', 'f'),
+            (0x5c, 'e', 'h'),
             (0x5d, 'e', 'l'),
 
             (0x67, 'h', 'a'),
@@ -60,7 +60,7 @@ class TestProcessor:
             (0x61, 'h', 'c'),
             (0x62, 'h', 'd'),
             (0x63, 'h', 'e'),
-            (0x64, 'h', 'f'),
+            (0x64, 'h', 'h'),
             (0x65, 'h', 'l'),
 
             (0x6f, 'l', 'a'),
@@ -68,7 +68,7 @@ class TestProcessor:
             (0x69, 'l', 'c'),
             (0x6a, 'l', 'd'),
             (0x6b, 'l', 'e'),
-            (0x6c, 'l', 'f'),
+            (0x6c, 'l', 'h'),
             (0x6d, 'l', 'l')
         ]
 
@@ -125,7 +125,6 @@ class TestProcessor:
             (0x71, 'hl', 'c'),
             (0x72, 'hl', 'd'),
             (0x73, 'hl', 'e'),
-            (0x74, 'hl', 'f'),
             (0x02, 'bc', 'a'),
             (0x12, 'de', 'a')
         ]
@@ -159,6 +158,19 @@ class TestProcessor:
         # then
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xc0, self.memory.peek(0xb0c0))
+
+    def test_single_cycle_ld_reg_indirect_from_reg_where_h_reg_is_used(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0xb0c0)
+
+        self.given_next_instruction_is(0x74)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(0x0001, self.processor.special_registers['pc'])
+        assert_equals(0xb0, self.memory.peek(0xb0c0))
 
     def test_ld_a_i(self):
         # given
@@ -288,6 +300,45 @@ class TestProcessor:
         # then
         assert_equals(self.processor.special_registers['pc'], 0x0003)
         assert_equals(self.processor.main_registers['a'], memory_value)
+
+    def test_single_cycle_ld_indexed_reg(self):
+        operations = [
+            ([0xdd, 0x77], 'ix', 'a'),
+            ([0xfd, 0x77], 'iy', 'a'),
+            ([0xdd, 0x70], 'ix', 'b'),
+            ([0xfd, 0x70], 'iy', 'b'),
+            ([0xdd, 0x71], 'ix', 'c'),
+            ([0xfd, 0x71], 'iy', 'c'),
+            ([0xdd, 0x72], 'ix', 'd'),
+            ([0xfd, 0x72], 'iy', 'd'),
+            ([0xdd, 0x73], 'ix', 'e'),
+            ([0xfd, 0x73], 'iy', 'e'),
+            ([0xdd, 0x74], 'ix', 'h'),
+            ([0xfd, 0x74], 'iy', 'h'),
+            ([0xdd, 0x75], 'ix', 'l'),
+            ([0xfd, 0x75], 'iy', 'l')
+        ]
+
+        for op_codes, destination_index_register, source_register in operations:
+            yield self.check_single_cycle_ld_indexed_reg, op_codes, destination_index_register, source_register, random_byte()
+
+    def check_single_cycle_ld_indexed_reg(self, op_codes, destination_index_register, source_register, operand):
+        # given
+        self.given_next_instruction_is(op_codes[0], op_codes[1], operand)
+
+        register_value = random_byte()
+        self.given_register_contains_value(source_register, register_value)
+
+        self.given_register_contains_value(destination_index_register, 0x1000)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['pc'], 0x0003)
+
+        referenced_address = 0x1000 + twos_complement(operand)
+        assert_equals(self.memory.peek(referenced_address), register_value)
 
     def given_next_instruction_is(self, *args):
         for arg in args:

@@ -55,7 +55,7 @@ class Processor:
             0x41: self.create_ld_reg_from_reg('b', 'c'),
             0x42: self.create_ld_reg_from_reg('b', 'd'),
             0x43: self.create_ld_reg_from_reg('b', 'e'),
-            0x44: self.create_ld_reg_from_reg('b', 'f'),
+            0x44: self.create_ld_reg_from_reg('b', 'h'),
             0x45: self.create_ld_reg_from_reg('b', 'l'),
             0x46: self.create_ld_reg_from_reg_indirect('b', 'hl'),
             0x47: self.create_ld_reg_from_reg('b', 'a'),
@@ -64,7 +64,7 @@ class Processor:
             0x49: self.create_ld_reg_from_reg('c', 'c'),
             0x4a: self.create_ld_reg_from_reg('c', 'd'),
             0x4b: self.create_ld_reg_from_reg('c', 'e'),
-            0x4c: self.create_ld_reg_from_reg('c', 'f'),
+            0x4c: self.create_ld_reg_from_reg('c', 'h'),
             0x4d: self.create_ld_reg_from_reg('c', 'l'),
             0x4e: self.create_ld_reg_from_reg_indirect('c', 'hl'),
             0x4f: self.create_ld_reg_from_reg('c', 'a'),
@@ -73,7 +73,7 @@ class Processor:
             0x51: self.create_ld_reg_from_reg('d', 'c'),
             0x52: self.create_ld_reg_from_reg('d', 'd'),
             0x53: self.create_ld_reg_from_reg('d', 'e'),
-            0x54: self.create_ld_reg_from_reg('d', 'f'),
+            0x54: self.create_ld_reg_from_reg('d', 'h'),
             0x55: self.create_ld_reg_from_reg('d', 'l'),
             0x56: self.create_ld_reg_from_reg_indirect('d', 'hl'),
             0x57: self.create_ld_reg_from_reg('d', 'a'),
@@ -82,7 +82,7 @@ class Processor:
             0x59: self.create_ld_reg_from_reg('e', 'c'),
             0x5a: self.create_ld_reg_from_reg('e', 'd'),
             0x5b: self.create_ld_reg_from_reg('e', 'e'),
-            0x5c: self.create_ld_reg_from_reg('e', 'f'),
+            0x5c: self.create_ld_reg_from_reg('e', 'h'),
             0x5d: self.create_ld_reg_from_reg('e', 'l'),
             0x5e: self.create_ld_reg_from_reg_indirect('e', 'hl'),
             0x5f: self.create_ld_reg_from_reg('e', 'a'),
@@ -91,7 +91,7 @@ class Processor:
             0x61: self.create_ld_reg_from_reg('h', 'c'),
             0x62: self.create_ld_reg_from_reg('h', 'd'),
             0x63: self.create_ld_reg_from_reg('h', 'e'),
-            0x64: self.create_ld_reg_from_reg('h', 'f'),
+            0x64: self.create_ld_reg_from_reg('h', 'h'),
             0x65: self.create_ld_reg_from_reg('h', 'l'),
             0x66: self.create_ld_reg_from_reg_indirect('h', 'hl'),
             0x67: self.create_ld_reg_from_reg('h', 'a'),
@@ -100,7 +100,7 @@ class Processor:
             0x69: self.create_ld_reg_from_reg('l', 'c'),
             0x6a: self.create_ld_reg_from_reg('l', 'd'),
             0x6b: self.create_ld_reg_from_reg('l', 'e'),
-            0x6c: self.create_ld_reg_from_reg('l', 'f'),
+            0x6c: self.create_ld_reg_from_reg('l', 'h'),
             0x6d: self.create_ld_reg_from_reg('l', 'l'),
             0x6e: self.create_ld_reg_from_reg_indirect('l', 'hl'),
             0x6f: self.create_ld_reg_from_reg('l', 'a'),
@@ -109,7 +109,7 @@ class Processor:
             0x71: self.create_ld_reg_indirect_from_reg('hl', 'c'),
             0x72: self.create_ld_reg_indirect_from_reg('hl', 'd'),
             0x73: self.create_ld_reg_indirect_from_reg('hl', 'e'),
-            0x74: self.create_ld_reg_indirect_from_reg('hl', 'f'),
+            0x74: self.create_ld_reg_indirect_from_reg('hl', 'h'),
             0x75: self.create_ld_reg_indirect_from_reg('hl', 'l'),
             0x77: self.create_ld_reg_indirect_from_reg('hl', 'a'),
 
@@ -117,7 +117,7 @@ class Processor:
             0x79: self.create_ld_reg_from_reg('a', 'c'),
             0x7a: self.create_ld_reg_from_reg('a', 'd'),
             0x7b: self.create_ld_reg_from_reg('a', 'e'),
-            0x7c: self.create_ld_reg_from_reg('a', 'f'),
+            0x7c: self.create_ld_reg_from_reg('a', 'h'),
             0x7d: self.create_ld_reg_from_reg('a', 'l'),
             0x7e: self.create_ld_reg_from_reg_indirect('a', 'hl'),
             0x7f: self.create_ld_reg_from_reg('a', 'a'),
@@ -140,6 +140,13 @@ class Processor:
             0x5e: Op(lambda: self.ld_reg_indexed('e', 'ix'), 'ld e, (ix + d)'),
             0x66: Op(lambda: self.ld_reg_indexed('h', 'ix'), 'ld h, (ix + d)'),
             0x6e: Op(lambda: self.ld_reg_indexed('l', 'ix'), 'ld l, (ix + d)'),
+            0x70: Op(lambda: self.ld_indexed_reg('ix', 'b'), 'ld (ix + d), b'),
+            0x71: Op(lambda: self.ld_indexed_reg('ix', 'c'), 'ld (ix + d), c'),
+            0x72: Op(lambda: self.ld_indexed_reg('ix', 'd'), 'ld (ix + d), d'),
+            0x73: Op(lambda: self.ld_indexed_reg('ix', 'e'), 'ld (ix + d), e'),
+            0x74: Op(lambda: self.ld_indexed_reg('ix', 'h'), 'ld (ix + d), h'),
+            0x75: Op(lambda: self.ld_indexed_reg('ix', 'l'), 'ld (ix + d), l'),
+            0x77: Op(lambda: self.ld_indexed_reg('ix', 'a'), 'ld (ix + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed('a', 'ix'), 'ld a, (ix + d)')
         }
 
@@ -151,6 +158,13 @@ class Processor:
             0x5e: Op(lambda: self.ld_reg_indexed('e', 'iy'), 'ld e, (iy + d)'),
             0x66: Op(lambda: self.ld_reg_indexed('h', 'iy'), 'ld h, (iy + d)'),
             0x6e: Op(lambda: self.ld_reg_indexed('l', 'iy'), 'ld l, (iy + d)'),
+            0x70: Op(lambda: self.ld_indexed_reg('iy', 'b'), 'ld (iy + d), b'),
+            0x71: Op(lambda: self.ld_indexed_reg('iy', 'c'), 'ld (iy + d), c'),
+            0x72: Op(lambda: self.ld_indexed_reg('iy', 'd'), 'ld (iy + d), d'),
+            0x73: Op(lambda: self.ld_indexed_reg('iy', 'e'), 'ld (iy + d), e'),
+            0x74: Op(lambda: self.ld_indexed_reg('iy', 'h'), 'ld (iy + d), h'),
+            0x75: Op(lambda: self.ld_indexed_reg('iy', 'l'), 'ld (iy + d), l'),
+            0x77: Op(lambda: self.ld_indexed_reg('iy', 'a'), 'ld (iy + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed('a', 'iy'), 'ld a, (iy + d)')
         }
 
@@ -196,8 +210,12 @@ class Processor:
     def ld_reg_indexed(self, destination_register, index_register):
         operand = self.get_value_at_pc()
         offset = twos_complement(operand)
-
         self.main_registers[destination_register] = self.memory.peek(self.index_registers[index_register] + offset)
+
+    def ld_indexed_reg(self, destination_index_register, source_register):
+        operand = self.get_value_at_pc()
+        offset = twos_complement(operand)
+        self.memory.poke(self.index_registers[destination_index_register] + offset, self.main_registers[source_register])
 
     def ld_hl_indirect_immediate(self):
         operand = self.get_value_at_pc()
@@ -212,4 +230,3 @@ class Processor:
         msb = self.main_registers[register_pair[0]]
         lsb = self.main_registers[register_pair[1]]
         return big_endian_value(msb, lsb)
-

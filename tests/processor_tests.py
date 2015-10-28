@@ -1,6 +1,6 @@
 from nose.tools import *
 from random import randint
-from z80.funcs import twos_complement
+from z80.funcs import big_endian_value, twos_complement
 from z80.memory import Memory
 from z80.processor import Processor
 
@@ -273,6 +273,21 @@ class TestProcessor:
         # then
         assert_equals(self.processor.special_registers['pc'], 0x0003)
         assert_equals(self.processor.main_registers['a'], 0x12)
+
+    def test_ld_a_ext_addr(self):
+        # given
+        memory_address = [random_byte(), random_byte()]
+        self.given_next_instruction_is(0x3a, memory_address[0], memory_address[1])
+
+        memory_value = random_byte()
+        self.memory.poke(big_endian_value(memory_address[0], memory_address[1]), memory_value)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['pc'], 0x0003)
+        assert_equals(self.processor.main_registers['a'], memory_value)
 
     def given_next_instruction_is(self, *args):
         for arg in args:

@@ -1,4 +1,4 @@
-from funcs import twos_complement
+from funcs import big_endian_value, twos_complement
 
 class Op:
     def __init__(self, function, mnemonic):
@@ -48,6 +48,7 @@ class Processor:
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
 
             0x36: Op(lambda: self.ld_hl_indirect_immediate(), 'ld (hl), n'),
+            0x3a: Op(lambda: self.ld_a_ext_addr(), 'ld a, (nn)'),
             0x3e: Op(lambda: self.ld_reg_immediate('a'), 'ld a, n'),
 
             0x40: self.create_ld_reg_from_reg('b', 'b'),
@@ -202,7 +203,13 @@ class Processor:
         operand = self.get_value_at_pc()
         self.memory.poke(self.get_indirect_address('hl'), operand)
 
+    def ld_a_ext_addr(self):
+        msb = self.get_value_at_pc()
+        lsb = self.get_value_at_pc()
+        self.main_registers['a'] = self.memory.peek(big_endian_value(msb, lsb))
+
     def get_indirect_address(self, register_pair):
         msb = self.main_registers[register_pair[0]]
         lsb = self.main_registers[register_pair[1]]
-        return (msb << 8) + lsb
+        return big_endian_value(msb, lsb)
+

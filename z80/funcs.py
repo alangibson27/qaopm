@@ -3,3 +3,6 @@ def twos_complement(val):
         return val - 256
     else:
         return val
+
+def big_endian_value(msb, lsb):
+    return (msb << 8) + lsb

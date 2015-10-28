@@ -13,23 +13,21 @@ class TestMemory:
         self.memory.poke(16384, 128)
         assert_equal(128, self.memory.peek(16384))
 
-    def test_peek_out_of_range_address(self):
-        with assert_raises(MemoryException) as context:
-            self.memory.peek(-0x1)
-        assert_true("invalid address for peek" in context.exception)
+    def test_peek_address_above_range(self):
+        self.memory.poke(0x0000, 0xff)
+        assert_equals(self.memory.peek(0xffff + 0x0001), 0xff)
 
-        with assert_raises(MemoryException) as context:
-            self.memory.peek(0x10000)
-        assert_true("invalid address for peek" in context.exception)
+    def test_peek_address_below_range(self):
+        self.memory.poke(0xffff, 0xff)
+        assert_equals(self.memory.peek(0x0000 - 0x0001), 0xff)
 
-    def test_poke_out_of_range_address(self):
-        with assert_raises(MemoryException) as context:
-            self.memory.poke(-0x1, 128)
-        assert_true("invalid address for poke" in context.exception)
+    def test_poke_address_above_range(self):
+        self.memory.poke(0xffff + 0x0001, 0xff)
+        assert_equals(self.memory.peek(0x0000), 0xff)
 
-        with assert_raises(MemoryException) as context:
-            self.memory.poke(65536, 128)
-        assert_true("invalid address for poke" in context.exception)
+    def test_poke_address_below_range(self):
+        self.memory.poke(0x0000 - 0x0001, 0xff)
+        assert_equals(self.memory.peek(0xffff), 0xff)
 
     def test_poke_out_of_range_value(self):
         with assert_raises(MemoryException) as context:

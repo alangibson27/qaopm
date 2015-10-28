@@ -340,6 +340,22 @@ class TestProcessor:
         referenced_address = 0x1000 + twos_complement(operand)
         assert_equals(self.memory.peek(referenced_address), register_value)
 
+    def test_ld_ext_addr_from_a(self):
+        # given
+        register_value = random_byte()
+        self.given_register_contains_value('a', register_value)
+
+        msb = random_byte()
+        lsb = random_byte()
+        self.given_next_instruction_is(0x32, msb, lsb)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['pc'], 0x0003)
+        assert_equals(self.memory.peek(big_endian_value(msb, lsb)), register_value)
+
     def given_next_instruction_is(self, *args):
         for arg in args:
             self.memory.poke(self.instruction_pointer, arg)

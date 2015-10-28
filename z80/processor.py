@@ -47,6 +47,7 @@ class Processor:
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
 
+            0x32: Op(lambda: self.ld_ext_addr_a(), 'ld (nn), a'),
             0x36: Op(lambda: self.ld_hl_indirect_immediate(), 'ld (hl), n'),
             0x3a: Op(lambda: self.ld_a_ext_addr(), 'ld a, (nn)'),
             0x3e: Op(lambda: self.ld_reg_immediate('a'), 'ld a, n'),
@@ -225,6 +226,11 @@ class Processor:
         msb = self.get_value_at_pc()
         lsb = self.get_value_at_pc()
         self.main_registers['a'] = self.memory.peek(big_endian_value(msb, lsb))
+
+    def ld_ext_addr_a(self):
+        msb = self.get_value_at_pc()
+        lsb = self.get_value_at_pc()
+        self.memory.poke(big_endian_value(msb, lsb), self.main_registers['a'])
 
     def get_indirect_address(self, register_pair):
         msb = self.main_registers[register_pair[0]]

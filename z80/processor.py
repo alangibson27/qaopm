@@ -21,7 +21,7 @@ class Processor:
         return {'ix': 0x0000, 'iy': 0x0000}
 
     def build_special_register_set(self):
-        return {'i': 0x0, 'r': 0x0, 'ix': 0x0000, 'iy': 0x0000, 'sp': 0xffff, 'pc': 0x0000}
+        return {'i': 0x0, 'r': 0x0, 'sp': 0xffff, 'pc': 0x0000}
 
     def create_ld_reg_from_reg(self, destination, source):
         return Op(lambda: self.ld_reg_from_reg(destination, source), 'ld {}, {}'.format(destination, source))
@@ -34,19 +34,23 @@ class Processor:
 
     def init_opcode_map(self):
         return {
+            0x01: Op(lambda: self.ld_16reg_immediate('bc'), 'ld bc, nn'),
             0x02: self.create_ld_reg_indirect_from_reg('bc', 'a'),
             0x06: Op(lambda: self.ld_reg_immediate('b'), 'ld b, n'),
             0x0a: self.create_ld_reg_from_reg_indirect('a', 'bc'),
             0x0e: Op(lambda: self.ld_reg_immediate('c'), 'ld c, n'),
 
+            0x11: Op(lambda: self.ld_16reg_immediate('de'), 'ld de, nn'),
             0x12: self.create_ld_reg_indirect_from_reg('de', 'a'),
             0x16: Op(lambda: self.ld_reg_immediate('d'), 'ld d, n'),
             0x1a: self.create_ld_reg_from_reg_indirect('a', 'de'),
             0x1e: Op(lambda: self.ld_reg_immediate('e'), 'ld e, n'),
 
+            0x21: Op(lambda: self.ld_16reg_immediate('hl'), 'ld hl, nn'),
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
 
+            0x31: Op(lambda: self.ld_sp_immediate(), 'ld sp, nn'),
             0x32: Op(lambda: self.ld_ext_addr_a(), 'ld (nn), a'),
             0x36: Op(lambda: self.ld_hl_indirect_immediate(), 'ld (hl), n'),
             0x3a: Op(lambda: self.ld_a_ext_addr(), 'ld a, (nn)'),
@@ -135,38 +139,42 @@ class Processor:
 
     def init_dd_opcodes(self):
         return {
-            0x46: Op(lambda: self.ld_reg_indexed('b', 'ix'), 'ld b, (ix + d)'),
-            0x4e: Op(lambda: self.ld_reg_indexed('c', 'ix'), 'ld c, (ix + d)'),
-            0x56: Op(lambda: self.ld_reg_indexed('d', 'ix'), 'ld d, (ix + d)'),
-            0x5e: Op(lambda: self.ld_reg_indexed('e', 'ix'), 'ld e, (ix + d)'),
-            0x66: Op(lambda: self.ld_reg_indexed('h', 'ix'), 'ld h, (ix + d)'),
-            0x6e: Op(lambda: self.ld_reg_indexed('l', 'ix'), 'ld l, (ix + d)'),
-            0x70: Op(lambda: self.ld_indexed_reg('ix', 'b'), 'ld (ix + d), b'),
-            0x71: Op(lambda: self.ld_indexed_reg('ix', 'c'), 'ld (ix + d), c'),
-            0x72: Op(lambda: self.ld_indexed_reg('ix', 'd'), 'ld (ix + d), d'),
-            0x73: Op(lambda: self.ld_indexed_reg('ix', 'e'), 'ld (ix + d), e'),
-            0x74: Op(lambda: self.ld_indexed_reg('ix', 'h'), 'ld (ix + d), h'),
-            0x75: Op(lambda: self.ld_indexed_reg('ix', 'l'), 'ld (ix + d), l'),
-            0x77: Op(lambda: self.ld_indexed_reg('ix', 'a'), 'ld (ix + d), a'),
-            0x7e: Op(lambda: self.ld_reg_indexed('a', 'ix'), 'ld a, (ix + d)')
+            0x21: Op(lambda: self.ld_indexed_reg_immediate('ix'), 'ld ix, nn'),
+            0x36: Op(lambda: self.ld_indexed_addr_immediate('ix'), 'ld (ix + d), n'),
+            0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'ix'), 'ld b, (ix + d)'),
+            0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'ix'), 'ld c, (ix + d)'),
+            0x56: Op(lambda: self.ld_reg_indexed_addr('d', 'ix'), 'ld d, (ix + d)'),
+            0x5e: Op(lambda: self.ld_reg_indexed_addr('e', 'ix'), 'ld e, (ix + d)'),
+            0x66: Op(lambda: self.ld_reg_indexed_addr('h', 'ix'), 'ld h, (ix + d)'),
+            0x6e: Op(lambda: self.ld_reg_indexed_addr('l', 'ix'), 'ld l, (ix + d)'),
+            0x70: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'b'), 'ld (ix + d), b'),
+            0x71: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'c'), 'ld (ix + d), c'),
+            0x72: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'd'), 'ld (ix + d), d'),
+            0x73: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'e'), 'ld (ix + d), e'),
+            0x74: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'h'), 'ld (ix + d), h'),
+            0x75: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'l'), 'ld (ix + d), l'),
+            0x77: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'a'), 'ld (ix + d), a'),
+            0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)')
         }
 
     def init_fd_opcodes(self):
         return {
-            0x46: Op(lambda: self.ld_reg_indexed('b', 'iy'), 'ld b, (iy + d)'),
-            0x4e: Op(lambda: self.ld_reg_indexed('c', 'iy'), 'ld c, (iy + d)'),
-            0x56: Op(lambda: self.ld_reg_indexed('d', 'iy'), 'ld d, (iy + d)'),
-            0x5e: Op(lambda: self.ld_reg_indexed('e', 'iy'), 'ld e, (iy + d)'),
-            0x66: Op(lambda: self.ld_reg_indexed('h', 'iy'), 'ld h, (iy + d)'),
-            0x6e: Op(lambda: self.ld_reg_indexed('l', 'iy'), 'ld l, (iy + d)'),
-            0x70: Op(lambda: self.ld_indexed_reg('iy', 'b'), 'ld (iy + d), b'),
-            0x71: Op(lambda: self.ld_indexed_reg('iy', 'c'), 'ld (iy + d), c'),
-            0x72: Op(lambda: self.ld_indexed_reg('iy', 'd'), 'ld (iy + d), d'),
-            0x73: Op(lambda: self.ld_indexed_reg('iy', 'e'), 'ld (iy + d), e'),
-            0x74: Op(lambda: self.ld_indexed_reg('iy', 'h'), 'ld (iy + d), h'),
-            0x75: Op(lambda: self.ld_indexed_reg('iy', 'l'), 'ld (iy + d), l'),
-            0x77: Op(lambda: self.ld_indexed_reg('iy', 'a'), 'ld (iy + d), a'),
-            0x7e: Op(lambda: self.ld_reg_indexed('a', 'iy'), 'ld a, (iy + d)')
+            0x21: Op(lambda: self.ld_indexed_reg_immediate('iy'), 'ld iy, nn'),
+            0x36: Op(lambda: self.ld_indexed_addr_immediate('iy'), 'ld (iy + d), n'),
+            0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'iy'), 'ld b, (iy + d)'),
+            0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'iy'), 'ld c, (iy + d)'),
+            0x56: Op(lambda: self.ld_reg_indexed_addr('d', 'iy'), 'ld d, (iy + d)'),
+            0x5e: Op(lambda: self.ld_reg_indexed_addr('e', 'iy'), 'ld e, (iy + d)'),
+            0x66: Op(lambda: self.ld_reg_indexed_addr('h', 'iy'), 'ld h, (iy + d)'),
+            0x6e: Op(lambda: self.ld_reg_indexed_addr('l', 'iy'), 'ld l, (iy + d)'),
+            0x70: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'b'), 'ld (iy + d), b'),
+            0x71: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'c'), 'ld (iy + d), c'),
+            0x72: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'd'), 'ld (iy + d), d'),
+            0x73: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'e'), 'ld (iy + d), e'),
+            0x74: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'h'), 'ld (iy + d), h'),
+            0x75: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'l'), 'ld (iy + d), l'),
+            0x77: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'a'), 'ld (iy + d), a'),
+            0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)')
         }
 
     def single_cycle(self):
@@ -208,12 +216,12 @@ class Processor:
         operand = self.get_value_at_pc()
         self.main_registers[destination_register] = operand
 
-    def ld_reg_indexed(self, destination_register, index_register):
+    def ld_reg_indexed_addr(self, destination_register, index_register):
         operand = self.get_value_at_pc()
         offset = twos_complement(operand)
         self.main_registers[destination_register] = self.memory.peek(self.index_registers[index_register] + offset)
 
-    def ld_indexed_reg(self, destination_index_register, source_register):
+    def ld_indexed_reg_from_reg(self, destination_index_register, source_register):
         operand = self.get_value_at_pc()
         offset = twos_complement(operand)
         self.memory.poke(self.index_registers[destination_index_register] + offset, self.main_registers[source_register])
@@ -232,7 +240,32 @@ class Processor:
         lsb = self.get_value_at_pc()
         self.memory.poke(big_endian_value(msb, lsb), self.main_registers['a'])
 
+    def ld_indexed_addr_immediate(self, index_register):
+        operand = self.get_value_at_pc()
+        immediate_value = self.get_value_at_pc()
+
+        offset = twos_complement(operand)
+        self.memory.poke(self.index_registers[index_register] + offset, immediate_value)
+
+    def ld_16reg_immediate(self, register_pair):
+        msb = self.get_value_at_pc()
+        lsb = self.get_value_at_pc()
+        self.main_registers[register_pair[0]] = msb
+        self.main_registers[register_pair[1]] = lsb
+
+    def ld_sp_immediate(self):
+        msb = self.get_value_at_pc()
+        lsb = self.get_value_at_pc()
+        self.special_registers['sp'] = big_endian_value(msb, lsb)
+
+    def ld_indexed_reg_immediate(self, index_register):
+        msb = self.get_value_at_pc()
+        lsb = self.get_value_at_pc()
+        self.index_registers[index_register] = big_endian_value(msb, lsb)
+
     def get_indirect_address(self, register_pair):
         msb = self.main_registers[register_pair[0]]
         lsb = self.main_registers[register_pair[1]]
         return big_endian_value(msb, lsb)
+
+

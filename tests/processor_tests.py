@@ -332,6 +332,29 @@ class Test8BitLoadGroup(TestHelper):
 
 
 class Test16BitLoadGroup(TestHelper):
+    def test_ld_16reg_16reg(self):
+        operations = [([0xf9], 'hl'), ([0xdd, 0xf9], 'ix'), ([0xfd, 0xf9], 'iy')]
+        for op_codes, register_pair in operations:
+            yield self.check_ld_16reg_16reg, op_codes, register_pair
+
+    def check_ld_16reg_16reg(self, op_codes, register_pair):
+        # given
+        if register_pair == 'ix' or register_pair == 'iy':
+            self.processor.index_registers[register_pair] = 0xbeef
+        else:
+            self.given_register_pair_contains_value(register_pair, 0xbeef)
+
+        if len(op_codes) == 1:
+            self.given_next_instruction_is(op_codes[0])
+        else:
+            self.given_next_instruction_is(op_codes[0], op_codes[1])
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['sp'], 0xbeef)
+
     def test_ld_16reg_immediate(self):
         operations = [
             ([0x01], 'bc'),

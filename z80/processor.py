@@ -138,6 +138,7 @@ class Processor:
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf6: Op(lambda: self.push('af'), 'push af'),
+            0xf9: Op(lambda: self.ld_sp_16reg('hl'), 'ld sp, hl'),
 
             0xed: self.init_ed_opcodes(),
             0xdd: self.init_dd_opcodes(),
@@ -169,7 +170,9 @@ class Processor:
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)'),
 
             0xe1: Op(lambda: self.pop('ix'), 'pop ix'),
-            0xe6: Op(lambda: self.push('ix'), 'push ix')
+            0xe6: Op(lambda: self.push('ix'), 'push ix'),
+
+            0xf9: Op(lambda: self.ld_sp_16reg('ix'), 'ld sp, ix')
         }
 
     def init_fd_opcodes(self):
@@ -192,7 +195,9 @@ class Processor:
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)'),
 
             0xe1: Op(lambda: self.pop('iy'), 'pop iy'),
-            0xe6: Op(lambda: self.push('iy'), 'push iy')
+            0xe6: Op(lambda: self.push('iy'), 'push iy'),
+
+            0xf9: Op(lambda: self.ld_sp_16reg('iy'), 'ld sp, iy')
         }
 
     def single_cycle(self):
@@ -275,6 +280,12 @@ class Processor:
     def ld_sp_immediate(self):
         little_endian_address = self.get_address_at_pc()
         self.special_registers['sp'] = big_endian_value(little_endian_address)
+
+    def ld_sp_16reg(self, source_register_pair):
+        if source_register_pair == 'ix' or source_register_pair == 'iy':
+            self.special_registers['sp'] = self.index_registers[source_register_pair]
+        elif source_register_pair == 'hl':
+            self.special_registers['sp'] = big_endian_value([self.main_registers['l'], self.main_registers['h']])
 
     def ld_indexed_reg_immediate(self, index_register):
         little_endian_address = self.get_address_at_pc()

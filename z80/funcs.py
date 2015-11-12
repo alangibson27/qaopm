@@ -4,5 +4,8 @@ def twos_complement(val):
     else:
         return val
 
-def big_endian_value(msb, lsb):
+
+def big_endian_value(little_endian_value):
+    lsb = little_endian_value[0]
+    msb = little_endian_value[1]
     return (msb << 8) + lsb

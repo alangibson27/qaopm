@@ -1,6 +1,7 @@
 from nose.tools import *
 from z80.funcs import twos_complement
 
+
 class TestFuncs:
 
     def test_twos_complement(self):

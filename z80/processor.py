@@ -190,6 +190,9 @@ class Processor:
 
         return operation
 
+    def get_address_at_pc(self):
+        return [self.get_value_at_pc(), self.get_value_at_pc()]
+
     def get_value_at_pc(self):
         op_code = self.memory.peek(self.special_registers['pc'])
         self.increment('pc')
@@ -231,14 +234,12 @@ class Processor:
         self.memory.poke(self.get_indirect_address('hl'), operand)
 
     def ld_a_ext_addr(self):
-        msb = self.get_value_at_pc()
-        lsb = self.get_value_at_pc()
-        self.main_registers['a'] = self.memory.peek(big_endian_value(msb, lsb))
+        little_endian_address = self.get_address_at_pc()
+        self.main_registers['a'] = self.memory.peek(big_endian_value(little_endian_address))
 
     def ld_ext_addr_a(self):
-        msb = self.get_value_at_pc()
-        lsb = self.get_value_at_pc()
-        self.memory.poke(big_endian_value(msb, lsb), self.main_registers['a'])
+        little_endian_address = self.get_address_at_pc()
+        self.memory.poke(big_endian_value(little_endian_address), self.main_registers['a'])
 
     def ld_indexed_addr_immediate(self, index_register):
         operand = self.get_value_at_pc()
@@ -266,6 +267,6 @@ class Processor:
     def get_indirect_address(self, register_pair):
         msb = self.main_registers[register_pair[0]]
         lsb = self.main_registers[register_pair[1]]
-        return big_endian_value(msb, lsb)
+        return big_endian_value([lsb, msb])
 
 

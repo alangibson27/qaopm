@@ -32,7 +32,7 @@ class TestHelper:
 
 
 class Test8BitLoadGroup(TestHelper):
-    def test_single_cycle_ld_reg_from_reg(self):
+    def test_ld_reg_reg(self):
         operations = [
             (0x7f, 'a', 'a'), (0x78, 'a', 'b'), (0x79, 'a', 'c'), (0x7a, 'a', 'd'), (0x7b, 'a', 'e'), (0x7c, 'a', 'h'), (0x7d, 'a', 'l'),
             (0x47, 'b', 'a'), (0x40, 'b', 'b'), (0x41, 'b', 'c'), (0x42, 'b', 'd'), (0x43, 'b', 'e'), (0x44, 'b', 'h'), (0x45, 'b', 'l'),
@@ -44,9 +44,9 @@ class Test8BitLoadGroup(TestHelper):
         ]
 
         for (op_code, destination, source) in operations:
-            yield self.check_single_cycle_ld_reg_from_reg, op_code, destination, source
+            yield self.check_ld_reg_reg, op_code, destination, source
 
-    def check_single_cycle_ld_reg_from_reg(self, op_code, destination, source):
+    def check_ld_reg_reg(self, op_code, destination, source):
         # given
         self.given_register_contains_value(source, 0xff)
         self.given_next_instruction_is(op_code)
@@ -59,16 +59,16 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(0xff, self.processor.main_registers[destination])
         assert_equals(0xff, self.processor.main_registers[source])
 
-    def test_single_cycle_ld_reg_from_reg_indirect(self):
+    def test_ld_reg_reg_indirect(self):
         operations = [
             (0x7e, 'a', 'hl'), (0x0a, 'a', 'bc'), (0x1a, 'a', 'de'),
             (0x46, 'b', 'hl'), (0x4e, 'c', 'hl'), (0x56, 'd', 'hl'), (0x5e, 'e', 'hl'), (0x66, 'h', 'hl'), (0x6e, 'l', 'hl')
         ]
 
         for (op_code, destination, source_pointer) in operations:
-            yield self.check_single_cycle_ld_reg_from_reg_indirect, op_code, destination, source_pointer
+            yield self.check_ld_reg_reg_indirect, op_code, destination, source_pointer
 
-    def check_single_cycle_ld_reg_from_reg_indirect(self, op_code, destination, source_pointer):
+    def check_ld_reg_reg_indirect(self, op_code, destination, source_pointer):
         # given
         self.given_register_pair_contains_value(source_pointer, 0xa0a0)
         self.given_next_instruction_is(op_code)
@@ -81,7 +81,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xaa, self.processor.main_registers[destination])
 
-    def test_single_cycle_ld_reg_indirect_from_reg(self):
+    def test_ld_reg_indirect_reg(self):
         operations = [
             (0x77, 'hl', 'a'), (0x70, 'hl', 'b'), (0x71, 'hl', 'c'), (0x72, 'hl', 'd'), (0x73, 'hl', 'e'),
             (0x02, 'bc', 'a'),
@@ -89,9 +89,9 @@ class Test8BitLoadGroup(TestHelper):
         ]
 
         for (op_code, destination_pointer, source_register) in operations:
-            yield self.check_single_cycle_ld_reg_indirect_from_reg, op_code, destination_pointer, source_register
+            yield self.check_ld_reg_indirect_reg, op_code, destination_pointer, source_register
 
-    def check_single_cycle_ld_reg_indirect_from_reg(self, op_code, destination_pointer, source_register):
+    def check_ld_reg_indirect_reg(self, op_code, destination_pointer, source_register):
         # given
         self.given_register_contains_value(source_register, 0xbb)
         self.given_register_pair_contains_value(destination_pointer, 0xb0c0)
@@ -105,7 +105,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xbb, self.memory.peek(0xb0c0))
 
-    def test_single_cycle_ld_reg_indirect_from_reg_where_l_reg_is_used(self):
+    def test_ld_reg_indirect_reg_where_l_reg_is_used(self):
         # given
         self.given_register_pair_contains_value('hl', 0xb0c0)
 
@@ -118,7 +118,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(0x0001, self.processor.special_registers['pc'])
         assert_equals(0xc0, self.memory.peek(0xb0c0))
 
-    def test_single_cycle_ld_reg_indirect_from_reg_where_h_reg_is_used(self):
+    def test_ld_reg_indirect_reg_where_h_reg_is_used(self):
         # given
         self.given_register_pair_contains_value('hl', 0xb0c0)
 
@@ -143,15 +143,15 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(0x0002, self.processor.special_registers['pc'])
         assert_equals(0xff, self.processor.main_registers['a'])
 
-    def test_single_cycle_ld_register_immediate(self):
+    def test_ld_reg_immediate(self):
         operations = [
             (0x3e, 'a', 0x10), (0x06, 'b', 0x11), (0x0e, 'c', 0x22), (0x16, 'd', 0x33), (0x1e, 'e', 0xaa), (0x26, 'h', 0xab), (0x2e, 'l', 0xef)
         ]
 
         for (op_code, destination_register, operand) in operations:
-            yield self.check_single_cycle_ld_register_immediate, op_code, destination_register, operand
+            yield self.check_ld_reg_immediate, op_code, destination_register, operand
 
-    def check_single_cycle_ld_register_immediate(self, op_code, destination_register, operand):
+    def check_ld_reg_immediate(self, op_code, destination_register, operand):
         # given
         self.given_next_instruction_is(op_code, operand)
 
@@ -162,7 +162,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(0x0002, self.processor.special_registers['pc'])
         assert_equals(operand, self.processor.main_registers[destination_register])
 
-    def test_single_cycle_ld_reg_indirect_immediate(self):
+    def test_ld_reg_indirect_immediate(self):
         # given
         self.given_next_instruction_is(0x36, 0xff)
         self.given_register_pair_contains_value('hl', 0xa123)
@@ -174,7 +174,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(0x0002, self.processor.special_registers['pc'])
         assert_equals(0xff, self.memory.peek(0xa123))
 
-    def test_single_cycle_ld_reg_indexed_addr(self):
+    def test_ld_reg_indexed_addr(self):
         operations = [
             ([0xdd, 0x7e], 'a', 'ix'), ([0xfd, 0x7e], 'a', 'iy'),
             ([0xdd, 0x46], 'b', 'ix'), ([0xfd, 0x46], 'b', 'iy'),
@@ -186,9 +186,9 @@ class Test8BitLoadGroup(TestHelper):
         ]
 
         for op_codes, destination_register, index_register in operations:
-            yield self.check_single_cycle_ld_reg_indexed_addr, op_codes, destination_register, index_register, random_byte()
+            yield self.check_ld_reg_indexed_addr, op_codes, destination_register, index_register, random_byte()
 
-    def check_single_cycle_ld_reg_indexed_addr(self, op_codes, destination_register, index_register, operand):
+    def check_ld_reg_indexed_addr(self, op_codes, destination_register, index_register, operand):
         # given
         self.given_next_instruction_is(op_codes[0], op_codes[1], operand)
         self.given_register_contains_value(index_register, 0x1000)
@@ -204,7 +204,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(self.processor.special_registers['pc'], 0x0003)
         assert_equals(self.processor.main_registers[destination_register], address_value)
 
-    def test_single_cycle_ld_reg_indexed_addr_offset_wraparound_low(self):
+    def test_ld_reg_indexed_addr_offset_wraparound_low(self):
         # given
         self.given_next_instruction_is(0xdd, 0x7e, 0x80)
         self.given_register_contains_value('ix', 0x0a)
@@ -218,7 +218,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(self.processor.special_registers['pc'], 0x0003)
         assert_equals(self.processor.main_registers['a'], 0x12)
 
-    def test_single_cycle_ld_reg_indexed_addr_offset_wraparound_high(self):
+    def test_ld_reg_indexed_addr_offset_wraparound_high(self):
         # given
         self.given_next_instruction_is(0xdd, 0x7e, 0x7f)
         self.given_register_contains_value('ix', 0xffff)
@@ -234,11 +234,11 @@ class Test8BitLoadGroup(TestHelper):
 
     def test_ld_a_ext_addr(self):
         # given
-        memory_address = [random_byte(), random_byte()]
-        self.given_next_instruction_is(0x3a, memory_address[0], memory_address[1])
+        little_endian_address = [random_byte(), random_byte()]
+        self.given_next_instruction_is(0x3a, little_endian_address[0], little_endian_address[1])
 
         memory_value = random_byte()
-        self.memory.poke(big_endian_value(memory_address[0], memory_address[1]), memory_value)
+        self.memory.poke(big_endian_value(little_endian_address), memory_value)
 
         # when
         self.processor.single_cycle()
@@ -247,7 +247,7 @@ class Test8BitLoadGroup(TestHelper):
         assert_equals(self.processor.special_registers['pc'], 0x0003)
         assert_equals(self.processor.main_registers['a'], memory_value)
 
-    def test_single_cycle_ld_indexed_reg_from_reg(self):
+    def test_ld_indexed_reg_from_reg(self):
         operations = [
             ([0xdd, 0x77], 'ix', 'a'),
             ([0xfd, 0x77], 'iy', 'a'),
@@ -266,9 +266,9 @@ class Test8BitLoadGroup(TestHelper):
         ]
 
         for op_codes, destination_index_register, source_register in operations:
-            yield self.check_single_cycle_ld_indexed_reg_from_reg, op_codes, destination_index_register, source_register, random_byte()
+            yield self.check_ld_indexed_reg_from_reg, op_codes, destination_index_register, source_register, random_byte()
 
-    def check_single_cycle_ld_indexed_reg_from_reg(self, op_codes, destination_index_register, source_register, operand):
+    def check_ld_indexed_reg_from_reg(self, op_codes, destination_index_register, source_register, operand):
         # given
         self.given_next_instruction_is(op_codes[0], op_codes[1], operand)
 
@@ -291,16 +291,15 @@ class Test8BitLoadGroup(TestHelper):
         register_value = random_byte()
         self.given_register_contains_value('a', register_value)
 
-        msb = random_byte()
-        lsb = random_byte()
-        self.given_next_instruction_is(0x32, msb, lsb)
+        little_endian_address = [random_byte(), random_byte()]
+        self.given_next_instruction_is(0x32, little_endian_address[0], little_endian_address[1])
 
         # when
         self.processor.single_cycle()
 
         # then
         assert_equals(self.processor.special_registers['pc'], 0x0003)
-        assert_equals(self.memory.peek(big_endian_value(msb, lsb)), register_value)
+        assert_equals(self.memory.peek(big_endian_value(little_endian_address)), register_value)
 
     def test_ld_indexed_addr_immediate(self):
         operations = [
@@ -342,23 +341,22 @@ class Test16BitLoadGroup(TestHelper):
 
     def check_ld_16reg_immediate(self, op_codes, register_pair):
         # given
-        msb = random_byte()
-        lsb = random_byte()
+        little_endian_address = [random_byte(), random_byte()]
         if len(op_codes) == 1:
-            self.given_next_instruction_is(op_codes[0], msb, lsb)
+            self.given_next_instruction_is(op_codes[0], little_endian_address[0], little_endian_address[1])
         else:
-            self.given_next_instruction_is(op_codes[0], op_codes[1], msb, lsb)
+            self.given_next_instruction_is(op_codes[0], op_codes[1], little_endian_address[0], little_endian_address[1])
 
         # when
         self.processor.single_cycle()
 
         # then
         if register_pair == 'ix':
-            assert_equals(self.processor.index_registers['ix'], big_endian_value(msb, lsb))
+            assert_equals(self.processor.index_registers['ix'], big_endian_value(little_endian_address))
         elif register_pair == 'iy':
-            assert_equals(self.processor.index_registers['iy'], big_endian_value(msb, lsb))
+            assert_equals(self.processor.index_registers['iy'], big_endian_value(little_endian_address))
         elif register_pair == 'sp':
-            assert_equals(self.processor.special_registers['sp'], big_endian_value(msb, lsb))
+            assert_equals(self.processor.special_registers['sp'], big_endian_value(little_endian_address))
         else:
-            assert_equals(self.processor.main_registers[register_pair[0]], msb)
-            assert_equals(self.processor.main_registers[register_pair[1]], lsb)
+            assert_equals(self.processor.main_registers[register_pair[0]], little_endian_address[0])
+            assert_equals(self.processor.main_registers[register_pair[1]], little_endian_address[1])

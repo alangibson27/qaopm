@@ -127,6 +127,18 @@ class Processor:
             0x7e: self.create_ld_reg_from_reg_indirect('a', 'hl'),
             0x7f: self.create_ld_reg_from_reg('a', 'a'),
 
+            0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
+            0xc6: Op(lambda: self.push('bc'), 'push bc'),
+
+            0xd1: Op(lambda: self.pop('de'), 'pop de'),
+            0xd6: Op(lambda: self.push('de'), 'push de'),
+
+            0xe1: Op(lambda: self.pop('hl'), 'pop hl'),
+            0xe6: Op(lambda: self.push('hl'), 'push hl'),
+
+            0xf1: Op(lambda: self.pop('af'), 'pop af'),
+            0xf6: Op(lambda: self.push('af'), 'push af'),
+
             0xed: self.init_ed_opcodes(),
             0xdd: self.init_dd_opcodes(),
             0xfd: self.init_fd_opcodes()
@@ -154,7 +166,10 @@ class Processor:
             0x74: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'h'), 'ld (ix + d), h'),
             0x75: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'l'), 'ld (ix + d), l'),
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'a'), 'ld (ix + d), a'),
-            0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)')
+            0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)'),
+
+            0xe1: Op(lambda: self.pop('ix'), 'pop ix'),
+            0xe6: Op(lambda: self.push('ix'), 'push ix')
         }
 
     def init_fd_opcodes(self):
@@ -174,7 +189,10 @@ class Processor:
             0x74: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'h'), 'ld (iy + d), h'),
             0x75: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'l'), 'ld (iy + d), l'),
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'a'), 'ld (iy + d), a'),
-            0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)')
+            0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)'),
+
+            0xe1: Op(lambda: self.pop('iy'), 'pop iy'),
+            0xe6: Op(lambda: self.push('iy'), 'push iy')
         }
 
     def single_cycle(self):
@@ -249,20 +267,51 @@ class Processor:
         self.memory.poke(self.index_registers[index_register] + offset, immediate_value)
 
     def ld_16reg_immediate(self, register_pair):
-        msb = self.get_value_at_pc()
         lsb = self.get_value_at_pc()
+        msb = self.get_value_at_pc()
         self.main_registers[register_pair[0]] = msb
         self.main_registers[register_pair[1]] = lsb
 
     def ld_sp_immediate(self):
-        msb = self.get_value_at_pc()
-        lsb = self.get_value_at_pc()
-        self.special_registers['sp'] = big_endian_value(msb, lsb)
+        little_endian_address = self.get_address_at_pc()
+        self.special_registers['sp'] = big_endian_value(little_endian_address)
 
     def ld_indexed_reg_immediate(self, index_register):
-        msb = self.get_value_at_pc()
-        lsb = self.get_value_at_pc()
-        self.index_registers[index_register] = big_endian_value(msb, lsb)
+        little_endian_address = self.get_address_at_pc()
+        self.index_registers[index_register] = big_endian_value(little_endian_address)
+
+    def push(self, register_pair):
+        if register_pair == 'ix' or register_pair == 'iy':
+            self.push_byte(self.index_registers[register_pair] >> 8)
+            self.push_byte(self.index_registers[register_pair] & 0xff)
+        else:
+            self.push_byte(self.main_registers[register_pair[0]])
+            self.push_byte(self.main_registers[register_pair[1]])
+
+    def push_byte(self, byte):
+        if self.special_registers['sp'] == 0:
+            self.special_registers['sp'] = 0xffff
+        else:
+            self.special_registers['sp'] -= 1
+        self.memory.poke(self.special_registers['sp'], byte)
+
+    def pop(self, register_pair):
+        lsb = self.pop_byte()
+        msb = self.pop_byte()
+
+        if register_pair == 'ix' or register_pair == 'iy':
+            self.index_registers[register_pair] = big_endian_value([lsb, msb])
+        else:
+            self.main_registers[register_pair[0]] = msb
+            self.main_registers[register_pair[1]] = lsb
+
+    def pop_byte(self):
+        byte = self.memory.peek(self.special_registers['sp'])
+        if self.special_registers['sp'] == 0xffff:
+            self.special_registers['sp'] = 0
+        else:
+            self.special_registers['sp'] += 1
+        return byte
 
     def get_indirect_address(self, register_pair):
         msb = self.main_registers[register_pair[0]]

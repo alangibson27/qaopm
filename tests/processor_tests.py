@@ -30,6 +30,12 @@ class TestHelper:
         self.processor.main_registers[register_pair[0]] = value >> 8
         self.processor.main_registers[register_pair[1]] = value & 0xff
 
+    def given_stack_pointer_is(self, address):
+        self.processor.special_registers['sp'] = address
+
+    def given_program_counter_is(self, address):
+        self.processor.special_registers['pc'] = address
+        self.instruction_pointer = address
 
 class Test8BitLoadGroup(TestHelper):
     def test_ld_reg_reg(self):
@@ -358,5 +364,111 @@ class Test16BitLoadGroup(TestHelper):
         elif register_pair == 'sp':
             assert_equals(self.processor.special_registers['sp'], big_endian_value(little_endian_address))
         else:
-            assert_equals(self.processor.main_registers[register_pair[0]], little_endian_address[0])
-            assert_equals(self.processor.main_registers[register_pair[1]], little_endian_address[1])
+            assert_equals(self.processor.main_registers[register_pair[0]], little_endian_address[1])
+            assert_equals(self.processor.main_registers[register_pair[1]], little_endian_address[0])
+
+    def test_push_without_wraparound(self):
+        operations = [
+            ([0xf6], 'af'),
+            ([0xc6], 'bc'),
+            ([0xd6], 'de'),
+            ([0xe6], 'hl'),
+            ([0xdd, 0xe6], 'ix'),
+            ([0xfd, 0xe6], 'iy')
+        ]
+
+        for op_codes, register_pair in operations:
+            yield self.check_push_without_wraparound, op_codes, register_pair
+
+    def check_push_without_wraparound(self, op_codes, register_pair):
+        lsb = random_byte()
+        msb = random_byte()
+
+        # given
+        if register_pair == 'ix' or register_pair == 'iy':
+            self.given_register_contains_value(register_pair, big_endian_value([lsb, msb]))
+        else:
+            self.given_register_contains_value(register_pair[0], msb)
+            self.given_register_contains_value(register_pair[1], lsb)
+
+        self.given_stack_pointer_is(0xffff)
+
+        if len(op_codes) == 1:
+            self.given_next_instruction_is(op_codes[0])
+        else:
+            self.given_next_instruction_is(op_codes[0], op_codes[1])
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['sp'], 0xfffd)
+        assert_equals(self.memory.peek(0xfffe), msb)
+        assert_equals(self.memory.peek(0xfffd), lsb)
+
+    def test_push_with_wraparound(self):
+        # given
+        self.given_stack_pointer_is(0x0000)
+        self.given_register_pair_contains_value('hl', 0xabcd)
+
+        self.given_next_instruction_is(0xe6)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.memory.peek(0xffff), 0xab)
+        assert_equals(self.memory.peek(0xfffe), 0xcd)
+
+    def test_pop_without_wraparound(self):
+        operations = [
+            ([0xf1], 'af'), ([0xc1], 'bc'), ([0xd1], 'de'), ([0xe1], 'hl'), ([0xdd, 0xe1], 'ix'), ([0xfd, 0xe1], 'iy')
+        ]
+
+        for op_codes, register_pair in operations:
+            yield self.check_pop_without_workaround, op_codes, register_pair
+
+    def check_pop_without_workaround(self, op_codes, register_pair):
+        # given
+        msb = random_byte()
+        lsb = random_byte()
+
+        self.memory.poke(0xfff0, lsb)
+        self.memory.poke(0xfff1, msb)
+
+        self.given_stack_pointer_is(0xfff0)
+
+        if len(op_codes) == 1:
+            self.given_next_instruction_is(op_codes[0])
+        else:
+            self.given_next_instruction_is(op_codes[0], op_codes[1])
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.special_registers['sp'], 0xfff2)
+
+        if register_pair == 'ix' or register_pair == 'iy':
+            assert_equals(self.processor.index_registers[register_pair], big_endian_value([lsb, msb]))
+        else:
+            assert_equals(self.processor.main_registers[register_pair[0]], msb)
+            assert_equals(self.processor.main_registers[register_pair[1]], lsb)
+
+    def test_pop_with_wraparound(self):
+        # given
+        self.memory.poke(0xffff, 0xab)
+        self.memory.poke(0x0000, 0xcd)
+
+        self.given_stack_pointer_is(0xffff)
+
+        self.given_program_counter_is(0x1000)
+        self.given_next_instruction_is(0xe1)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.processor.main_registers['h'], 0xcd)
+        assert_equals(self.processor.main_registers['l'], 0xab)
+        assert_equals(self.processor.special_registers['sp'], 0x0001)

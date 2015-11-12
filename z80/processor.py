@@ -47,6 +47,7 @@ class Processor:
             0x1e: Op(lambda: self.ld_reg_immediate('e'), 'ld e, n'),
 
             0x21: Op(lambda: self.ld_16reg_immediate('hl'), 'ld hl, nn'),
+            0x22: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
 
@@ -147,12 +148,17 @@ class Processor:
 
     def init_ed_opcodes(self):
         return {
+            0x43: Op(lambda: self.ld_ext_16reg('bc'), 'ld (nn), bc'),
+            0x53: Op(lambda: self.ld_ext_16reg('de'), 'ld (nn), de'),
+            0x63: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
+            0x73: Op(lambda: self.ld_ext_16reg('sp'), 'ld (nn), sp'),
             0x57: Op(self.ld_a_i, 'ld a, i')
         }
 
     def init_dd_opcodes(self):
         return {
             0x21: Op(lambda: self.ld_indexed_reg_immediate('ix'), 'ld ix, nn'),
+            0x22: Op(lambda: self.ld_ext_16reg('ix'), 'ld (nn), ix'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('ix'), 'ld (ix + d), n'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'ix'), 'ld b, (ix + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'ix'), 'ld c, (ix + d)'),
@@ -178,6 +184,7 @@ class Processor:
     def init_fd_opcodes(self):
         return {
             0x21: Op(lambda: self.ld_indexed_reg_immediate('iy'), 'ld iy, nn'),
+            0x22: Op(lambda: self.ld_ext_16reg('iy'), 'ld (nn), iy'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('iy'), 'ld (iy + d), n'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'iy'), 'ld b, (iy + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'iy'), 'ld c, (iy + d)'),
@@ -210,7 +217,6 @@ class Processor:
         if isinstance(operation, dict):
             op_code = self.get_value_at_pc()
             operation = operation[op_code]
-
         return operation
 
     def get_address_at_pc(self):
@@ -290,6 +296,19 @@ class Processor:
     def ld_indexed_reg_immediate(self, index_register):
         little_endian_address = self.get_address_at_pc()
         self.index_registers[index_register] = big_endian_value(little_endian_address)
+
+    def ld_ext_16reg(self, source_register_pair):
+        dest_address = big_endian_value(self.get_address_at_pc())
+
+        if source_register_pair == 'ix' or source_register_pair == 'iy':
+            self.memory.poke(dest_address, self.index_registers[source_register_pair] & 0xff)
+            self.memory.poke(dest_address + 1, self.index_registers[source_register_pair] >> 8)
+        elif source_register_pair == 'sp':
+            self.memory.poke(dest_address, self.special_registers[source_register_pair] & 0xff)
+            self.memory.poke(dest_address + 1, self.special_registers[source_register_pair] >> 8)
+        else:
+            self.memory.poke(dest_address, self.main_registers[source_register_pair[1]])
+            self.memory.poke(dest_address + 1, self.main_registers[source_register_pair[0]])
 
     def push(self, register_pair):
         if register_pair == 'ix' or register_pair == 'iy':

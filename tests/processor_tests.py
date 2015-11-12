@@ -495,3 +495,39 @@ class Test16BitLoadGroup(TestHelper):
         assert_equals(self.processor.main_registers['h'], 0xcd)
         assert_equals(self.processor.main_registers['l'], 0xab)
         assert_equals(self.processor.special_registers['sp'], 0x0001)
+
+    def test_ld_ext_addr_16reg(self):
+        operations = [
+            ([0x22], 'hl'),
+            ([0xed, 0x43], 'bc'),
+            ([0xed, 0x53], 'de'),
+            ([0xed, 0x63], 'hl'),
+            ([0xed, 0x73], 'sp'),
+            ([0xdd, 0x22], 'ix'),
+            ([0xfd, 0x22], 'iy')
+        ]
+
+        for op_codes, dest_register_pair in operations:
+            yield self.check_ld_ext_addr_16reg, op_codes, dest_register_pair
+
+    def check_ld_ext_addr_16reg(self, op_codes, dest_register_pair):
+        # given
+        if dest_register_pair == 'ix' or dest_register_pair == 'iy':
+            self.processor.index_registers[dest_register_pair] = 0x1234
+        elif dest_register_pair == 'sp':
+            self.processor.special_registers[dest_register_pair] = 0x1234
+        else:
+            self.processor.main_registers[dest_register_pair[0]] = 0x12
+            self.processor.main_registers[dest_register_pair[1]] = 0x34
+
+        if len(op_codes) == 1:
+            self.given_next_instruction_is(op_codes[0], 0xee, 0xbe)
+        else:
+            self.given_next_instruction_is(op_codes[0], op_codes[1], 0xee, 0xbe)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        assert_equals(self.memory.peek(0xbeee), 0x34)
+        assert_equals(self.memory.peek(0xbeef), 0x12)

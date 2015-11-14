@@ -140,7 +140,7 @@ class Processor:
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf6: Op(lambda: self.push('af'), 'push af'),
-            0xf9: Op(lambda: self.ld_sp_16reg('hl'), 'ld sp, hl'),
+            0xf9: Op(lambda: self.ld_sp_hl(), 'ld sp, hl'),
 
             0xed: self.init_ed_opcodes(),
             0xdd: self.init_dd_opcodes(),
@@ -158,8 +158,8 @@ class Processor:
             0x63: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
             0x6b: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
 
-            0x73: Op(lambda: self.ld_ext_16reg('sp'), 'ld (nn), sp'),
-            0x7b: Op(lambda: self.ld_16reg_ext('sp'), 'ld sp, (nn)'),
+            0x73: Op(lambda: self.ld_ext_sp(), 'ld (nn), sp'),
+            0x7b: Op(lambda: self.ld_sp_ext(), 'ld sp, (nn)'),
 
             0x57: Op(self.ld_a_i, 'ld a, i')
         }
@@ -167,8 +167,8 @@ class Processor:
     def init_dd_opcodes(self):
         return {
             0x21: Op(lambda: self.ld_indexed_reg_immediate('ix'), 'ld ix, nn'),
-            0x22: Op(lambda: self.ld_ext_16reg('ix'), 'ld (nn), ix'),
-            0x2a: Op(lambda: self.ld_16reg_ext('ix'), 'ld ix, (nn)'),
+            0x22: Op(lambda: self.ld_ext_indexed_16reg('ix'), 'ld (nn), ix'),
+            0x2a: Op(lambda: self.ld_indexed_16reg_ext('ix'), 'ld ix, (nn)'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('ix'), 'ld (ix + d), n'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'ix'), 'ld b, (ix + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'ix'), 'ld c, (ix + d)'),
@@ -185,17 +185,17 @@ class Processor:
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'a'), 'ld (ix + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)'),
 
-            0xe1: Op(lambda: self.pop('ix'), 'pop ix'),
-            0xe6: Op(lambda: self.push('ix'), 'push ix'),
+            0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
+            0xe6: Op(lambda: self.push_indexed('ix'), 'push ix'),
 
-            0xf9: Op(lambda: self.ld_sp_16reg('ix'), 'ld sp, ix')
+            0xf9: Op(lambda: self.ld_sp_indexed_16reg('ix'), 'ld sp, ix')
         }
 
     def init_fd_opcodes(self):
         return {
             0x21: Op(lambda: self.ld_indexed_reg_immediate('iy'), 'ld iy, nn'),
-            0x22: Op(lambda: self.ld_ext_16reg('iy'), 'ld (nn), iy'),
-            0x2a: Op(lambda: self.ld_16reg_ext('iy'), 'ld iy, (nn)'),
+            0x22: Op(lambda: self.ld_ext_indexed_16reg('iy'), 'ld (nn), iy'),
+            0x2a: Op(lambda: self.ld_indexed_16reg_ext('iy'), 'ld iy, (nn)'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('iy'), 'ld (iy + d), n'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'iy'), 'ld b, (iy + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'iy'), 'ld c, (iy + d)'),
@@ -212,10 +212,10 @@ class Processor:
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'a'), 'ld (iy + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)'),
 
-            0xe1: Op(lambda: self.pop('iy'), 'pop iy'),
-            0xe6: Op(lambda: self.push('iy'), 'push iy'),
+            0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
+            0xe6: Op(lambda: self.push_indexed('iy'), 'push iy'),
 
-            0xf9: Op(lambda: self.ld_sp_16reg('iy'), 'ld sp, iy')
+            0xf9: Op(lambda: self.ld_sp_indexed_16reg('iy'), 'ld sp, iy')
         }
 
     def single_cycle(self):
@@ -298,49 +298,57 @@ class Processor:
         little_endian_address = self.get_address_at_pc()
         self.special_registers['sp'] = big_endian_value(little_endian_address)
 
-    def ld_sp_16reg(self, source_register_pair):
-        if source_register_pair == 'ix' or source_register_pair == 'iy':
-            self.special_registers['sp'] = self.index_registers[source_register_pair]
-        elif source_register_pair == 'hl':
-            self.special_registers['sp'] = big_endian_value([self.main_registers['l'], self.main_registers['h']])
+    def ld_sp_indexed_16reg(self, source_register_pair):
+        self.special_registers['sp'] = self.index_registers[source_register_pair]
+
+    def ld_sp_hl(self):
+        self.special_registers['sp'] = big_endian_value([self.main_registers['l'], self.main_registers['h']])
 
     def ld_indexed_reg_immediate(self, index_register):
         little_endian_address = self.get_address_at_pc()
         self.index_registers[index_register] = big_endian_value(little_endian_address)
 
+    def ld_ext_indexed_16reg(self, source_register_pair):
+        dest_address = big_endian_value(self.get_address_at_pc())
+        self.memory.poke(dest_address, self.index_registers[source_register_pair] & 0xff)
+        self.memory.poke(dest_address + 1, self.index_registers[source_register_pair] >> 8)
+
+    def ld_ext_sp(self):
+        dest_address = big_endian_value(self.get_address_at_pc())
+        self.memory.poke(dest_address, self.special_registers['sp'] & 0xff)
+        self.memory.poke(dest_address + 1, self.special_registers['sp'] >> 8)
+
     def ld_ext_16reg(self, source_register_pair):
         dest_address = big_endian_value(self.get_address_at_pc())
+        self.memory.poke(dest_address, self.main_registers[source_register_pair[1]])
+        self.memory.poke(dest_address + 1, self.main_registers[source_register_pair[0]])
 
-        if source_register_pair == 'ix' or source_register_pair == 'iy':
-            self.memory.poke(dest_address, self.index_registers[source_register_pair] & 0xff)
-            self.memory.poke(dest_address + 1, self.index_registers[source_register_pair] >> 8)
-        elif source_register_pair == 'sp':
-            self.memory.poke(dest_address, self.special_registers[source_register_pair] & 0xff)
-            self.memory.poke(dest_address + 1, self.special_registers[source_register_pair] >> 8)
-        else:
-            self.memory.poke(dest_address, self.main_registers[source_register_pair[1]])
-            self.memory.poke(dest_address + 1, self.main_registers[source_register_pair[0]])
+    def ld_indexed_16reg_ext(self, dest_register_pair):
+        src_address = big_endian_value(self.get_address_at_pc())
+        low_byte = self.memory.peek(src_address)
+        high_byte = self.memory.peek(src_address + 1)
+        self.index_registers[dest_register_pair] = big_endian_value([low_byte, high_byte])
+
+    def ld_sp_ext(self):
+        src_address = big_endian_value(self.get_address_at_pc())
+        low_byte = self.memory.peek(src_address)
+        high_byte = self.memory.peek(src_address + 1)
+        self.special_registers['sp'] = big_endian_value([low_byte, high_byte])
 
     def ld_16reg_ext(self, dest_register_pair):
         src_address = big_endian_value(self.get_address_at_pc())
         low_byte = self.memory.peek(src_address)
         high_byte = self.memory.peek(src_address + 1)
+        self.main_registers[dest_register_pair[0]] = high_byte
+        self.main_registers[dest_register_pair[1]] = low_byte
 
-        if dest_register_pair == 'ix' or dest_register_pair == 'iy':
-            self.index_registers[dest_register_pair] = big_endian_value([low_byte, high_byte])
-        elif dest_register_pair == 'sp':
-            self.special_registers[dest_register_pair] = big_endian_value([low_byte, high_byte])
-        else:
-            self.main_registers[dest_register_pair[0]] = high_byte
-            self.main_registers[dest_register_pair[1]] = low_byte
+    def push_indexed(self, register_pair):
+        self.push_byte(self.index_registers[register_pair] >> 8)
+        self.push_byte(self.index_registers[register_pair] & 0xff)
 
     def push(self, register_pair):
-        if register_pair == 'ix' or register_pair == 'iy':
-            self.push_byte(self.index_registers[register_pair] >> 8)
-            self.push_byte(self.index_registers[register_pair] & 0xff)
-        else:
-            self.push_byte(self.main_registers[register_pair[0]])
-            self.push_byte(self.main_registers[register_pair[1]])
+        self.push_byte(self.main_registers[register_pair[0]])
+        self.push_byte(self.main_registers[register_pair[1]])
 
     def push_byte(self, byte):
         if self.special_registers['sp'] == 0:
@@ -349,15 +357,16 @@ class Processor:
             self.special_registers['sp'] -= 1
         self.memory.poke(self.special_registers['sp'], byte)
 
+    def pop_indexed(self, register_pair):
+        lsb = self.pop_byte()
+        msb = self.pop_byte()
+        self.index_registers[register_pair] = big_endian_value([lsb, msb])
+
     def pop(self, register_pair):
         lsb = self.pop_byte()
         msb = self.pop_byte()
-
-        if register_pair == 'ix' or register_pair == 'iy':
-            self.index_registers[register_pair] = big_endian_value([lsb, msb])
-        else:
-            self.main_registers[register_pair[0]] = msb
-            self.main_registers[register_pair[1]] = lsb
+        self.main_registers[register_pair[0]] = msb
+        self.main_registers[register_pair[1]] = lsb
 
     def pop_byte(self):
         byte = self.memory.peek(self.special_registers['sp'])
@@ -371,5 +380,3 @@ class Processor:
         msb = self.main_registers[register_pair[0]]
         lsb = self.main_registers[register_pair[1]]
         return big_endian_value([lsb, msb])
-
-

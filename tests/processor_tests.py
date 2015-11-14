@@ -17,8 +17,15 @@ class TestHelper:
 
     def given_next_instruction_is(self, *args):
         for arg in args:
-            self.memory.poke(self.instruction_pointer, arg)
-            self.instruction_pointer += 1
+            if isinstance(arg, list):
+                for sub_arg in arg:
+                    self.poke_at_ip(sub_arg)
+            else:
+                self.poke_at_ip(arg)
+
+    def poke_at_ip(self, byte):
+        self.memory.poke(self.instruction_pointer, byte)
+        self.instruction_pointer += 1
 
     def given_register_contains_value(self, register, value):
         if register == 'ix' or register == 'iy':
@@ -344,10 +351,7 @@ class Test16BitLoadGroup(TestHelper):
         else:
             self.given_register_pair_contains_value(register_pair, 0xbeef)
 
-        if len(op_codes) == 1:
-            self.given_next_instruction_is(op_codes[0])
-        else:
-            self.given_next_instruction_is(op_codes[0], op_codes[1])
+        self.given_next_instruction_is(op_codes)
 
         # when
         self.processor.single_cycle()
@@ -371,10 +375,7 @@ class Test16BitLoadGroup(TestHelper):
     def check_ld_16reg_immediate(self, op_codes, register_pair):
         # given
         little_endian_address = [random_byte(), random_byte()]
-        if len(op_codes) == 1:
-            self.given_next_instruction_is(op_codes[0], little_endian_address[0], little_endian_address[1])
-        else:
-            self.given_next_instruction_is(op_codes[0], op_codes[1], little_endian_address[0], little_endian_address[1])
+        self.given_next_instruction_is(op_codes, little_endian_address)
 
         # when
         self.processor.single_cycle()
@@ -416,10 +417,7 @@ class Test16BitLoadGroup(TestHelper):
 
         self.given_stack_pointer_is(0xffff)
 
-        if len(op_codes) == 1:
-            self.given_next_instruction_is(op_codes[0])
-        else:
-            self.given_next_instruction_is(op_codes[0], op_codes[1])
+        self.given_next_instruction_is(op_codes)
 
         # when
         self.processor.single_cycle()
@@ -461,10 +459,7 @@ class Test16BitLoadGroup(TestHelper):
 
         self.given_stack_pointer_is(0xfff0)
 
-        if len(op_codes) == 1:
-            self.given_next_instruction_is(op_codes[0])
-        else:
-            self.given_next_instruction_is(op_codes[0], op_codes[1])
+        self.given_next_instruction_is(op_codes)
 
         # when
         self.processor.single_cycle()
@@ -520,10 +515,7 @@ class Test16BitLoadGroup(TestHelper):
             self.processor.main_registers[dest_register_pair[0]] = 0x12
             self.processor.main_registers[dest_register_pair[1]] = 0x34
 
-        if len(op_codes) == 1:
-            self.given_next_instruction_is(op_codes[0], 0xee, 0xbe)
-        else:
-            self.given_next_instruction_is(op_codes[0], op_codes[1], 0xee, 0xbe)
+        self.given_next_instruction_is(op_codes, 0xee, 0xbe)
 
         # when
         self.processor.single_cycle()
@@ -551,10 +543,7 @@ class Test16BitLoadGroup(TestHelper):
         self.memory.poke(0x1000, 0x10)
         self.memory.poke(0x1001, 0x20)
 
-        if len(op_codes) == 1:
-            self.given_next_instruction_is(op_codes[0], 0x00, 0x10)
-        else:
-            self.given_next_instruction_is(op_codes[0], op_codes[1], 0x00, 0x10)
+        self.given_next_instruction_is(op_codes, 0x00, 0x10)
 
         # when
         self.processor.single_cycle()

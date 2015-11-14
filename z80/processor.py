@@ -49,6 +49,7 @@ class Processor:
             0x21: Op(lambda: self.ld_16reg_immediate('hl'), 'ld hl, nn'),
             0x22: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
+            0x2a: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
 
             0x31: Op(lambda: self.ld_sp_immediate(), 'ld sp, nn'),
@@ -149,9 +150,17 @@ class Processor:
     def init_ed_opcodes(self):
         return {
             0x43: Op(lambda: self.ld_ext_16reg('bc'), 'ld (nn), bc'),
+            0x4b: Op(lambda: self.ld_16reg_ext('bc'), 'ld bc, (nn)'),
+
             0x53: Op(lambda: self.ld_ext_16reg('de'), 'ld (nn), de'),
+            0x5b: Op(lambda: self.ld_16reg_ext('de'), 'ld de, (nn)'),
+
             0x63: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
+            0x6b: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
+
             0x73: Op(lambda: self.ld_ext_16reg('sp'), 'ld (nn), sp'),
+            0x7b: Op(lambda: self.ld_16reg_ext('sp'), 'ld sp, (nn)'),
+
             0x57: Op(self.ld_a_i, 'ld a, i')
         }
 
@@ -159,6 +168,7 @@ class Processor:
         return {
             0x21: Op(lambda: self.ld_indexed_reg_immediate('ix'), 'ld ix, nn'),
             0x22: Op(lambda: self.ld_ext_16reg('ix'), 'ld (nn), ix'),
+            0x2a: Op(lambda: self.ld_16reg_ext('ix'), 'ld ix, (nn)'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('ix'), 'ld (ix + d), n'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'ix'), 'ld b, (ix + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'ix'), 'ld c, (ix + d)'),
@@ -185,6 +195,7 @@ class Processor:
         return {
             0x21: Op(lambda: self.ld_indexed_reg_immediate('iy'), 'ld iy, nn'),
             0x22: Op(lambda: self.ld_ext_16reg('iy'), 'ld (nn), iy'),
+            0x2a: Op(lambda: self.ld_16reg_ext('iy'), 'ld iy, (nn)'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('iy'), 'ld (iy + d), n'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'iy'), 'ld b, (iy + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'iy'), 'ld c, (iy + d)'),
@@ -309,6 +320,19 @@ class Processor:
         else:
             self.memory.poke(dest_address, self.main_registers[source_register_pair[1]])
             self.memory.poke(dest_address + 1, self.main_registers[source_register_pair[0]])
+
+    def ld_16reg_ext(self, dest_register_pair):
+        src_address = big_endian_value(self.get_address_at_pc())
+        low_byte = self.memory.peek(src_address)
+        high_byte = self.memory.peek(src_address + 1)
+
+        if dest_register_pair == 'ix' or dest_register_pair == 'iy':
+            self.index_registers[dest_register_pair] = big_endian_value([low_byte, high_byte])
+        elif dest_register_pair == 'sp':
+            self.special_registers[dest_register_pair] = big_endian_value([low_byte, high_byte])
+        else:
+            self.main_registers[dest_register_pair[0]] = high_byte
+            self.main_registers[dest_register_pair[1]] = low_byte
 
     def push(self, register_pair):
         if register_pair == 'ix' or register_pair == 'iy':

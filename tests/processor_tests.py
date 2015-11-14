@@ -531,3 +531,39 @@ class Test16BitLoadGroup(TestHelper):
         # then
         assert_equals(self.memory.peek(0xbeee), 0x34)
         assert_equals(self.memory.peek(0xbeef), 0x12)
+
+    def test_ld_16reg_ext_addr_without_wraparound(self):
+        operations = [
+            ([0xed, 0x4b], 'bc'),
+            ([0xed, 0x5b], 'de'),
+            ([0x2a], 'hl'),
+            ([0xed, 0x6b], 'hl'),
+            ([0xed, 0x7b], 'sp'),
+            ([0xdd, 0x2a], 'ix'),
+            ([0xfd, 0x2a], 'iy')
+        ]
+
+        for op_codes, dest_register in operations:
+            yield self.check_ld_16reg_ext_addr_without_wraparound, op_codes, dest_register
+
+    def check_ld_16reg_ext_addr_without_wraparound(self, op_codes, dest_register):
+        # given
+        self.memory.poke(0x1000, 0x10)
+        self.memory.poke(0x1001, 0x20)
+
+        if len(op_codes) == 1:
+            self.given_next_instruction_is(op_codes[0], 0x00, 0x10)
+        else:
+            self.given_next_instruction_is(op_codes[0], op_codes[1], 0x00, 0x10)
+
+        # when
+        self.processor.single_cycle()
+
+        # then
+        if dest_register == 'ix' or dest_register == 'iy':
+            assert_equals(self.processor.index_registers[dest_register], 0x2010)
+        elif dest_register == 'sp':
+            assert_equals(self.processor.special_registers['sp'], 0x2010)
+        else:
+            assert_equals(self.processor.main_registers[dest_register[0]], 0x20)
+            assert_equals(self.processor.main_registers[dest_register[1]], 0x10)

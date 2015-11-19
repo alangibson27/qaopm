@@ -13,6 +13,14 @@ class Processor:
         self.special_registers = self.build_special_register_set()
         self.index_registers = self.build_index_register_set()
         self.operations_by_opcode = self.init_opcode_map()
+        self.condition_masks = {
+            'c': 0b00000001,
+            'n': 0b00000010,
+            'p': 0b00000100,
+            'h': 0b00010000,
+            'z': 0b01000000,
+            's': 0b10000000
+        }
 
     def build_swappable_register_set(self):
         return {'a': 0x0, 'f': 0x0, 'b': 0x0, 'c': 0x0, 'd': 0x0, 'e': 0x0, 'h': 0x0, 'l': 0x0}
@@ -37,6 +45,7 @@ class Processor:
             0x01: Op(lambda: self.ld_16reg_immediate('bc'), 'ld bc, nn'),
             0x02: self.create_ld_reg_indirect_from_reg('bc', 'a'),
             0x06: Op(lambda: self.ld_reg_immediate('b'), 'ld b, n'),
+            0x08: Op(self.ex_af_alt_af, "ex af, af'"),
             0x0a: self.create_ld_reg_from_reg_indirect('a', 'bc'),
             0x0e: Op(lambda: self.ld_reg_immediate('c'), 'ld c, n'),
 
@@ -53,9 +62,9 @@ class Processor:
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
 
             0x31: Op(lambda: self.ld_sp_immediate(), 'ld sp, nn'),
-            0x32: Op(lambda: self.ld_ext_addr_a(), 'ld (nn), a'),
+            0x32: Op(self.ld_ext_addr_a, 'ld (nn), a'),
             0x36: Op(lambda: self.ld_hl_indirect_immediate(), 'ld (hl), n'),
-            0x3a: Op(lambda: self.ld_a_ext_addr(), 'ld a, (nn)'),
+            0x3a: Op(self.ld_a_ext_addr, 'ld a, (nn)'),
             0x3e: Op(lambda: self.ld_reg_immediate('a'), 'ld a, n'),
 
             0x40: self.create_ld_reg_from_reg('b', 'b'),
@@ -134,15 +143,18 @@ class Processor:
 
             0xd1: Op(lambda: self.pop('de'), 'pop de'),
             0xd6: Op(lambda: self.push('de'), 'push de'),
+            0xd9: Op(self.exx, 'exx'),
 
             0xe1: Op(lambda: self.pop('hl'), 'pop hl'),
             0xe6: Op(lambda: self.push('hl'), 'push hl'),
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf6: Op(lambda: self.push('af'), 'push af'),
-            0xf9: Op(lambda: self.ld_sp_hl(), 'ld sp, hl'),
+            0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
 
+            0xe3: Op(self.ex_sp_indirect_hl, 'ex (sp), hl'),
             0xed: self.init_ed_opcodes(),
+            0xeb: Op(self.ex_de_hl, 'ex de, hl'),
             0xdd: self.init_dd_opcodes(),
             0xfd: self.init_fd_opcodes()
         }
@@ -161,7 +173,9 @@ class Processor:
             0x73: Op(lambda: self.ld_ext_sp(), 'ld (nn), sp'),
             0x7b: Op(lambda: self.ld_sp_ext(), 'ld sp, (nn)'),
 
-            0x57: Op(self.ld_a_i, 'ld a, i')
+            0x57: Op(self.ld_a_i, 'ld a, i'),
+
+            0xa0: Op(self.ldi, 'ldi')
         }
 
     def init_dd_opcodes(self):
@@ -186,6 +200,7 @@ class Processor:
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
+            0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
             0xe6: Op(lambda: self.push_indexed('ix'), 'push ix'),
 
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('ix'), 'ld sp, ix')
@@ -213,6 +228,7 @@ class Processor:
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
+            0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
             0xe6: Op(lambda: self.push_indexed('iy'), 'push iy'),
 
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('iy'), 'ld sp, iy')
@@ -375,6 +391,81 @@ class Processor:
         else:
             self.special_registers['sp'] += 1
         return byte
+
+    def ex_de_hl(self):
+        old_h = self.main_registers['h']
+        old_l = self.main_registers['l']
+        self.main_registers['h'] = self.main_registers['d']
+        self.main_registers['l'] = self.main_registers['e']
+        self.main_registers['d'] = old_h
+        self.main_registers['e'] = old_l
+
+    def ex_af_alt_af(self):
+        self.ex_with_alternate('af')
+
+    def exx(self):
+        self.ex_with_alternate('bc')
+        self.ex_with_alternate('de')
+        self.ex_with_alternate('hl')
+
+    def ex_sp_indirect_hl(self):
+        old_h = self.main_registers['h']
+        old_l = self.main_registers['l']
+
+        self.main_registers['h'] = self.memory.peek(self.special_registers['sp'] + 1)
+        self.main_registers['l'] = self.memory.peek(self.special_registers['sp'])
+
+        self.memory.poke(self.special_registers['sp'], old_l)
+        self.memory.poke(self.special_registers['sp'] + 1, old_h)
+
+    def ex_with_alternate(self, register_pair):
+        old_main = [self.main_registers[register_pair[0]], self.main_registers[register_pair[1]]]
+        self.main_registers[register_pair[0]] = self.alternate_registers[register_pair[0]]
+        self.main_registers[register_pair[1]] = self.alternate_registers[register_pair[1]]
+        self.alternate_registers[register_pair[0]] = old_main[0]
+        self.alternate_registers[register_pair[1]] = old_main[1]
+
+    def ex_sp_indirect_index_reg(self, register):
+        old_index = self.index_registers[register]
+        self.index_registers[register] = big_endian_value([self.memory.peek(self.special_registers['sp']),
+                                                           self.memory.peek(self.special_registers['sp'] + 1)])
+        self.memory.poke(self.special_registers['sp'], old_index & 0xff)
+        self.memory.poke(self.special_registers['sp'] + 1, old_index >> 8)
+
+    def ldi(self):
+        src_addr = self.get_indirect_address('hl')
+        tgt_addr = self.get_indirect_address('de')
+
+        self.memory.poke(tgt_addr, self.memory.peek(src_addr))
+
+        src_addr = (src_addr + 1) % 0x10000
+        tgt_addr = (tgt_addr + 1) % 0x10000
+
+        self.main_registers['h'] = src_addr >> 8
+        self.main_registers['l'] = src_addr & 0xff
+        self.main_registers['d'] = tgt_addr >> 8
+        self.main_registers['e'] = tgt_addr & 0xff
+
+        counter = self.get_indirect_address('bc')
+        counter = (counter - 1) % 0x10000
+
+        self.main_registers['b'] = counter >> 8
+        self.main_registers['c'] = counter & 0xff
+
+        self.set_condition('h', False)
+        self.set_condition('p', counter != 0)
+        self.set_condition('n', False)
+
+    def set_condition(self, flag, value):
+        mask = self.condition_masks[flag]
+        if value:
+            self.main_registers['f'] = self.main_registers['f'] | mask
+        else:
+            self.main_registers['f'] = self.main_registers['f'] & (0xff ^ mask)
+
+    def condition(self, flag):
+        mask = self.condition_masks[flag]
+        return self.main_registers['f'] & mask > 0
 
     def get_indirect_address(self, register_pair):
         msb = self.main_registers[register_pair[0]]

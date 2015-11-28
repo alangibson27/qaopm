@@ -22,7 +22,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(op_codes)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         assert_equals(self.processor.special_registers['sp'], 0xbeef)
@@ -46,7 +46,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(op_codes, little_endian_address)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         if register_pair == 'ix':
@@ -88,7 +88,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(op_codes)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         assert_equals(self.processor.special_registers['sp'], 0xfffd)
@@ -103,7 +103,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(0xe6)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         assert_equals(self.memory.peek(0xffff), 0xab)
@@ -130,7 +130,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(op_codes)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         assert_equals(self.processor.special_registers['sp'], 0xfff2)
@@ -152,7 +152,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(0xe1)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         assert_equals(self.processor.main_registers['h'], 0xcd)
@@ -186,7 +186,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(op_codes, 0xee, 0xbe)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         assert_equals(self.memory.peek(0xbeee), 0x34)
@@ -214,7 +214,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_next_instruction_is(op_codes, 0x00, 0x10)
 
         # when
-        self.processor.single_cycle()
+        self.processor.execute()
 
         # then
         if dest_register == 'ix' or dest_register == 'iy':

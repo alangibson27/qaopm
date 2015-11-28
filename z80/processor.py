@@ -1,9 +1,11 @@
 from funcs import big_endian_value, twos_complement
 
+
 class Op:
     def __init__(self, function, mnemonic):
         self.function = function
         self.mnemonic = mnemonic
+
 
 class Processor:
     def __init__(self, memory):
@@ -13,6 +15,7 @@ class Processor:
         self.special_registers = self.build_special_register_set()
         self.index_registers = self.build_index_register_set()
         self.operations_by_opcode = self.init_opcode_map()
+        self.cycles = 0
         self.condition_masks = {
             'c': 0b00000001,
             'n': 0b00000010,
@@ -22,23 +25,28 @@ class Processor:
             's': 0b10000000
         }
 
-    def build_swappable_register_set(self):
+    @staticmethod
+    def build_swappable_register_set():
         return {'a': 0x0, 'f': 0x0, 'b': 0x0, 'c': 0x0, 'd': 0x0, 'e': 0x0, 'h': 0x0, 'l': 0x0}
 
-    def build_index_register_set(self):
+    @staticmethod
+    def build_index_register_set():
         return {'ix': 0x0000, 'iy': 0x0000}
 
-    def build_special_register_set(self):
+    @staticmethod
+    def build_special_register_set():
         return {'i': 0x0, 'r': 0x0, 'sp': 0xffff, 'pc': 0x0000}
 
     def create_ld_reg_from_reg(self, destination, source):
         return Op(lambda: self.ld_reg_from_reg(destination, source), 'ld {}, {}'.format(destination, source))
 
     def create_ld_reg_from_reg_indirect(self, destination, source_register):
-        return Op(lambda: self.ld_reg_from_reg_indirect(destination, source_register), 'ld {}, ({})'.format(destination, source_register))
+        return Op(lambda: self.ld_reg_from_reg_indirect(destination, source_register),
+                  'ld {}, ({})'.format(destination, source_register))
 
     def create_ld_reg_indirect_from_reg(self, destination_register, source_register):
-        return Op(lambda: self.ld_reg_indirect_from_reg(destination_register, source_register), 'ld ({}), {}'.format(destination_register, source_register))
+        return Op(lambda: self.ld_reg_indirect_from_reg(destination_register, source_register),
+                  'ld ({}), {}'.format(destination_register, source_register))
 
     def init_opcode_map(self):
         return {
@@ -175,7 +183,8 @@ class Processor:
 
             0x57: Op(self.ld_a_i, 'ld a, i'),
 
-            0xa0: Op(self.ldi, 'ldi')
+            0xa0: Op(self.ldi, 'ldi'),
+            0xb0: Op(self.ldir, 'ldir')
         }
 
     def init_dd_opcodes(self):
@@ -234,9 +243,10 @@ class Processor:
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('iy'), 'ld sp, iy')
         }
 
-    def single_cycle(self):
+    def execute(self):
         operation = self.get_operation()
         operation.function()
+        self.cycles += 1
 
     def get_operation(self):
         op_code = self.get_value_at_pc()
@@ -283,7 +293,8 @@ class Processor:
     def ld_indexed_reg_from_reg(self, destination_index_register, source_register):
         operand = self.get_value_at_pc()
         offset = twos_complement(operand)
-        self.memory.poke(self.index_registers[destination_index_register] + offset, self.main_registers[source_register])
+        self.memory.poke(self.index_registers[destination_index_register] + offset,
+                         self.main_registers[source_register])
 
     def ld_hl_indirect_immediate(self):
         operand = self.get_value_at_pc()
@@ -456,12 +467,18 @@ class Processor:
         self.set_condition('p', counter != 0)
         self.set_condition('n', False)
 
+    def ldir(self):
+        self.ldi()
+        self.set_condition('p', False)
+        if not (self.main_registers['b'] == 0x00 and self.main_registers['c'] == 0x00):
+            self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
+
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]
         if value:
-            self.main_registers['f'] = self.main_registers['f'] | mask
+            self.main_registers['f'] |= mask
         else:
-            self.main_registers['f'] = self.main_registers['f'] & (0xff ^ mask)
+            self.main_registers['f'] &= (0xff ^ mask)
 
     def condition(self, flag):
         mask = self.condition_masks[flag]

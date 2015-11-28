@@ -1,3 +1,4 @@
+from nose.tools import assert_equals
 from random import randint
 
 from z80.memory import Memory
@@ -47,4 +48,8 @@ class TestHelper:
         self.processor.special_registers['pc'] = address
         self.instruction_pointer = address
 
+    def assert_cycles_taken(self, cycles):
+        assert_equals(self.processor.cycles, cycles)
 
+    def assert_pc_address(self, address):
+        assert_equals(self.processor.special_registers['pc'], address)

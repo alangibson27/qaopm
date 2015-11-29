@@ -112,7 +112,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
 
         assert_equals(self.processor.index_registers[register_pair], 0x3412)
 
-    def test_ldi(self):
+    def test_ldi_with_bc_decrementing_to_nonzero(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
         self.given_register_pair_contains_value('de', 0x2000)
@@ -238,6 +238,139 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         assert_equals(self.processor.main_registers['l'], 0x01)
         assert_equals(self.processor.main_registers['d'], 0x20)
         assert_equals(self.processor.main_registers['e'], 0x01)
+        assert_equals(self.processor.main_registers['b'], 0xff)
+        assert_equals(self.processor.main_registers['c'], 0xff)
+
+        assert_equals(self.processor.condition('h'), False)
+        assert_equals(self.processor.condition('p'), False)
+        assert_equals(self.processor.condition('n'), False)
+
+    def test_ldd_with_bc_decrementing_to_nonzero(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.given_register_pair_contains_value('de', 0x2000)
+        self.given_register_pair_contains_value('bc', 0xbeef)
+
+        self.memory.poke(0x1000, 0xba)
+
+        self.given_next_instruction_is(0xed, 0xa8)
+
+        # when
+        self.processor.execute()
+
+        # then
+        assert_equals(self.memory.peek(0x2000), 0xba)
+        assert_equals(self.processor.main_registers['h'], 0x0f)
+        assert_equals(self.processor.main_registers['l'], 0xff)
+        assert_equals(self.processor.main_registers['d'], 0x1f)
+        assert_equals(self.processor.main_registers['e'], 0xff)
+        assert_equals(self.processor.main_registers['b'], 0xbe)
+        assert_equals(self.processor.main_registers['c'], 0xee)
+
+        assert_equals(self.processor.condition('h'), False)
+        assert_equals(self.processor.condition('p'), True)
+        assert_equals(self.processor.condition('n'), False)
+
+    def test_ldd_with_bc_decrementing_to_zero(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.given_register_pair_contains_value('de', 0x2000)
+        self.given_register_pair_contains_value('bc', 0x0001)
+
+        self.memory.poke(0x1000, 0xba)
+
+        self.given_next_instruction_is(0xed, 0xa8)
+
+        # when
+        self.processor.execute()
+
+        # then
+        assert_equals(self.memory.peek(0x2000), 0xba)
+        assert_equals(self.processor.main_registers['h'], 0x0f)
+        assert_equals(self.processor.main_registers['l'], 0xff)
+        assert_equals(self.processor.main_registers['d'], 0x1f)
+        assert_equals(self.processor.main_registers['e'], 0xff)
+        assert_equals(self.processor.main_registers['b'], 0x00)
+        assert_equals(self.processor.main_registers['c'], 0x00)
+
+        assert_equals(self.processor.condition('h'), False)
+        assert_equals(self.processor.condition('p'), False)
+        assert_equals(self.processor.condition('n'), False)
+
+    def test_lddr_with_bc_greater_than_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.given_register_pair_contains_value('de', 0x2000)
+        self.given_register_pair_contains_value('bc', 0x000a)
+
+        self.memory.poke(0x1000, 0xff)
+
+        self.given_next_instruction_is(0xed, 0xb8)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address(0x0000)
+        assert_equals(self.memory.peek(0x2000), 0xff)
+        assert_equals(self.processor.main_registers['h'], 0x0f)
+        assert_equals(self.processor.main_registers['l'], 0xff)
+        assert_equals(self.processor.main_registers['d'], 0x1f)
+        assert_equals(self.processor.main_registers['e'], 0xff)
+        assert_equals(self.processor.main_registers['b'], 0x00)
+        assert_equals(self.processor.main_registers['c'], 0x09)
+
+        assert_equals(self.processor.condition('h'), False)
+        assert_equals(self.processor.condition('p'), False)
+        assert_equals(self.processor.condition('n'), False)
+
+    def test_lddr_with_bc_equal_to_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.given_register_pair_contains_value('de', 0x2000)
+        self.given_register_pair_contains_value('bc', 0x0001)
+
+        self.memory.poke(0x1000, 0xff)
+
+        self.given_next_instruction_is(0xed, 0xb8)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address(0x0002)
+        assert_equals(self.memory.peek(0x2000), 0xff)
+        assert_equals(self.processor.main_registers['h'], 0x0f)
+        assert_equals(self.processor.main_registers['l'], 0xff)
+        assert_equals(self.processor.main_registers['d'], 0x1f)
+        assert_equals(self.processor.main_registers['e'], 0xff)
+        assert_equals(self.processor.main_registers['b'], 0x00)
+        assert_equals(self.processor.main_registers['c'], 0x00)
+
+        assert_equals(self.processor.condition('h'), False)
+        assert_equals(self.processor.condition('p'), False)
+        assert_equals(self.processor.condition('n'), False)
+
+    def test_lddr_with_bc_equal_to_zero(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.given_register_pair_contains_value('de', 0x2000)
+        self.given_register_pair_contains_value('bc', 0x0000)
+
+        self.memory.poke(0x1000, 0xff)
+
+        self.given_next_instruction_is(0xed, 0xb8)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address(0x0000)
+        assert_equals(self.memory.peek(0x2000), 0xff)
+        assert_equals(self.processor.main_registers['h'], 0x0f)
+        assert_equals(self.processor.main_registers['l'], 0xff)
+        assert_equals(self.processor.main_registers['d'], 0x1f)
+        assert_equals(self.processor.main_registers['e'], 0xff)
         assert_equals(self.processor.main_registers['b'], 0xff)
         assert_equals(self.processor.main_registers['c'], 0xff)
 

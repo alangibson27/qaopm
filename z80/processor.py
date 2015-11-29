@@ -184,7 +184,9 @@ class Processor:
             0x57: Op(self.ld_a_i, 'ld a, i'),
 
             0xa0: Op(self.ldi, 'ldi'),
-            0xb0: Op(self.ldir, 'ldir')
+            0xa8: Op(self.ldd, 'ldd'),
+            0xb0: Op(self.ldir, 'ldir'),
+            0xb8: Op(self.lddr, 'lddr')
         }
 
     def init_dd_opcodes(self):
@@ -443,14 +445,14 @@ class Processor:
         self.memory.poke(self.special_registers['sp'], old_index & 0xff)
         self.memory.poke(self.special_registers['sp'] + 1, old_index >> 8)
 
-    def ldi(self):
+    def block_transfer(self, increment):
         src_addr = self.get_indirect_address('hl')
         tgt_addr = self.get_indirect_address('de')
 
         self.memory.poke(tgt_addr, self.memory.peek(src_addr))
 
-        src_addr = (src_addr + 1) % 0x10000
-        tgt_addr = (tgt_addr + 1) % 0x10000
+        src_addr = (src_addr + increment) % 0x10000
+        tgt_addr = (tgt_addr + increment) % 0x10000
 
         self.main_registers['h'] = src_addr >> 8
         self.main_registers['l'] = src_addr & 0xff
@@ -467,8 +469,20 @@ class Processor:
         self.set_condition('p', counter != 0)
         self.set_condition('n', False)
 
+    def ldi(self):
+        self.block_transfer(1)
+
+    def ldd(self):
+        self.block_transfer(-1)
+
     def ldir(self):
         self.ldi()
+        self.set_condition('p', False)
+        if not (self.main_registers['b'] == 0x00 and self.main_registers['c'] == 0x00):
+            self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
+
+    def lddr(self):
+        self.ldd()
         self.set_condition('p', False)
         if not (self.main_registers['b'] == 0x00 and self.main_registers['c'] == 0x00):
             self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000

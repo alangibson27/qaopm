@@ -3,9 +3,6 @@ from nose.tools import assert_equals
 from tests.processor.processor_tests import TestHelper, random_byte
 from z80.funcs import to_signed, big_endian_value
 
-__author__ = 'alan'
-
-
 class Test8BitLoadGroup(TestHelper):
     def test_ld_reg_reg(self):
         operations = [

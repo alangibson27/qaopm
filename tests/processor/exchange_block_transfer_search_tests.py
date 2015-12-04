@@ -119,9 +119,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x2001)
         self.assert_register_pair('bc').equals(0xbeee)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_reset()
 
     def test_ldi_with_bc_decrementing_to_zero(self):
         # given
@@ -142,9 +142,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x2001)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_ldir_with_bc_greater_than_one(self):
         # given
@@ -166,9 +166,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x2001)
         self.assert_register_pair('bc').equals(0x0009)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_ldir_with_bc_equal_to_one(self):
         # given
@@ -190,9 +190,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x2001)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_ldir_with_bc_equal_to_zero(self):
         # given
@@ -214,9 +214,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x2001)
         self.assert_register_pair('bc').equals(0xffff)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_ldd_with_bc_decrementing_to_nonzero(self):
         # given
@@ -237,9 +237,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x1fff)
         self.assert_register_pair('bc').equals(0xbeee)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_reset()
 
     def test_ldd_with_bc_decrementing_to_zero(self):
         # given
@@ -260,9 +260,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x1fff)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_lddr_with_bc_greater_than_one(self):
         # given
@@ -284,9 +284,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x1fff)
         self.assert_register_pair('bc').equals(0x0009)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_lddr_with_bc_equal_to_one(self):
         # given
@@ -308,9 +308,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x1fff)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_lddr_with_bc_equal_to_zero(self):
         # given
@@ -332,9 +332,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('de').equals(0x1fff)
         self.assert_register_pair('bc').equals(0xffff)
 
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(False)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
 
     def test_cpi_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
@@ -353,11 +353,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0x008f)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_set()
 
     def test_cpi_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
@@ -376,11 +376,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpi_with_memory_less_than_a_and_half_borrow(self):
         # given
@@ -399,11 +399,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(False)
-        self.assert_flag('h').equals(True)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_set()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpi_with_memory_greater_than_a_and_half_borrow(self):
         # given
@@ -422,11 +422,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(False)
-        self.assert_flag('h').equals(True)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_set()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpi_with_memory_greater_than_a_and_full_borrow(self):
         # given
@@ -445,11 +445,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(True)
-        self.assert_flag('z').equals(False)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_set()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpir_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
@@ -470,11 +470,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0x008f)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_set()
 
     def test_cpir_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
@@ -495,11 +495,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpir_with_memory_equal_to_a_and_bc_equal_to_zero(self):
         # given
@@ -520,11 +520,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x1001)
         self.assert_register_pair('bc').equals(0xffff)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_set()
 
     def test_cpd_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
@@ -543,11 +543,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0x008f)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_set()
 
     def test_cpd_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
@@ -566,11 +566,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpd_with_memory_less_than_a_and_half_borrow(self):
         # given
@@ -589,11 +589,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(False)
-        self.assert_flag('h').equals(True)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_set()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpd_with_memory_greater_than_a_and_half_borrow(self):
         # given
@@ -612,11 +612,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(False)
-        self.assert_flag('h').equals(True)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_set()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpd_with_memory_greater_than_a_and_full_borrow(self):
         # given
@@ -635,11 +635,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(True)
-        self.assert_flag('z').equals(False)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_set()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpdr_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
@@ -660,11 +660,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0x008f)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_set()
 
     def test_cpdr_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
@@ -685,11 +685,11 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0x0000)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(False)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
 
     def test_cpdr_with_memory_equal_to_a_and_bc_equal_to_zero(self):
         # given
@@ -710,8 +710,8 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_register_pair('hl').equals(0x0fff)
         self.assert_register_pair('bc').equals(0xffff)
 
-        self.assert_flag('s').equals(False)
-        self.assert_flag('z').equals(True)
-        self.assert_flag('h').equals(False)
-        self.assert_flag('p').equals(True)
-        self.assert_flag('n').equals(True)
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_set()

@@ -54,6 +54,9 @@ class TestHelper:
     def assert_pc_address(self):
         return EqualsBuilder('pc', self.processor.special_registers['pc'])
 
+    def assert_register(self, reg):
+        return EqualsBuilder('reg ' + reg, self.processor.main_registers[reg])
+
     def assert_register_pair(self, reg_pair):
         return EqualsBuilder('reg pair ' + reg_pair, self.processor.get_16bit_reg(reg_pair))
 
@@ -61,7 +64,7 @@ class TestHelper:
         return EqualsBuilder('alt reg pair ' + reg_pair, self.processor.get_16bit_alt_reg(reg_pair))
 
     def assert_flag(self, flag_name):
-        return EqualsBuilder('flag ' + flag_name, self.processor.condition(flag_name))
+        return FlagSetBuilder(self.processor.condition(flag_name))
 
     def assert_memory(self, address):
         return ContainsBuilder(self.memory.peek(address))
@@ -75,9 +78,21 @@ class EqualsBuilder:
     def equals(self, expected):
         assert_equals(self.value, expected, '{} != {} (was {})'.format(self.object, expected, self.value))
 
+
 class ContainsBuilder:
     def __init__(self, value):
         self.value = value
 
     def contains(self, expected):
         assert_equals(self.value, expected)
+
+
+class FlagSetBuilder:
+    def __init__(self, value):
+        self.value = value
+
+    def is_set(self):
+        assert_equals(self.value, True, 'flag {} not set')
+
+    def is_reset(self):
+        assert_equals(self.value, False, 'flag {} not reset')

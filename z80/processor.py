@@ -1,4 +1,4 @@
-from funcs import big_endian_value, to_signed, bitwise_sub
+from funcs import big_endian_value, to_signed, bitwise_sub, bitwise_add
 
 
 class Op:
@@ -145,6 +145,14 @@ class Processor:
             0x7d: self.create_ld_reg_from_reg('a', 'l'),
             0x7e: self.create_ld_reg_from_reg_indirect('a', 'hl'),
             0x7f: self.create_ld_reg_from_reg('a', 'a'),
+
+            0x80: Op(lambda: self.add_a_reg('b'), 'add a, b'),
+            0x81: Op(lambda: self.add_a_reg('c'), 'add a, c'),
+            0x82: Op(lambda: self.add_a_reg('d'), 'add a, d'),
+            0x83: Op(lambda: self.add_a_reg('e'), 'add a, e'),
+            0x84: Op(lambda: self.add_a_reg('h'), 'add a, h'),
+            0x85: Op(lambda: self.add_a_reg('l'), 'add a, l'),
+            0x87: Op(lambda: self.add_a_reg('a'), 'add a, a'),
 
             0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
             0xc6: Op(lambda: self.push('bc'), 'push bc'),
@@ -525,6 +533,16 @@ class Processor:
         self.cpd()
         if not (self.get_16bit_reg('bc') == 0x0000):
             self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
+
+    def add_a_reg(self, other_reg):
+        result, half_carry, full_carry = bitwise_add(self.main_registers['a'], self.main_registers[other_reg])
+        self.main_registers['a'] = result
+        self.set_condition('s', to_signed(result) < 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', half_carry)
+        self.set_condition('p', False)
+        self.set_condition('n', False)
+        self.set_condition('c', full_carry)
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

@@ -64,7 +64,7 @@ class TestHelper:
         return EqualsBuilder('alt reg pair ' + reg_pair, self.processor.get_16bit_alt_reg(reg_pair))
 
     def assert_flag(self, flag_name):
-        return FlagSetBuilder(self.processor.condition(flag_name))
+        return FlagSetBuilder(flag_name, self.processor.condition(flag_name))
 
     def assert_memory(self, address):
         return ContainsBuilder(self.memory.peek(address))
@@ -88,11 +88,12 @@ class ContainsBuilder:
 
 
 class FlagSetBuilder:
-    def __init__(self, value):
+    def __init__(self, flag, value):
+        self.flag = flag
         self.value = value
 
     def is_set(self):
-        assert_equals(self.value, True, 'flag {} not set')
+        assert_equals(self.value, True, 'flag {} not set'.format(self.flag))
 
     def is_reset(self):
-        assert_equals(self.value, False, 'flag {} not reset')
+        assert_equals(self.value, False, 'flag {} not reset'.format(self.flag))

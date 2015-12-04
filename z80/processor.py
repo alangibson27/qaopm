@@ -152,20 +152,31 @@ class Processor:
             0x83: Op(lambda: self.add_a_reg('e'), 'add a, e'),
             0x84: Op(lambda: self.add_a_reg('h'), 'add a, h'),
             0x85: Op(lambda: self.add_a_reg('l'), 'add a, l'),
+            0x86: Op(self.add_a_hl_indirect, 'add a, (hl)'),
             0x87: Op(lambda: self.add_a_reg('a'), 'add a, a'),
+            0x88: Op(lambda: self.adc_a_reg('b'), 'adc a, b'),
+            0x89: Op(lambda: self.adc_a_reg('c'), 'adc a, c'),
+            0x8a: Op(lambda: self.adc_a_reg('d'), 'adc a, d'),
+            0x8b: Op(lambda: self.adc_a_reg('e'), 'adc a, e'),
+            0x8c: Op(lambda: self.adc_a_reg('h'), 'adc a, h'),
+            0x8d: Op(lambda: self.adc_a_reg('l'), 'adc a, l'),
+            0x8e: Op(self.adc_a_hl_indirect, 'adc a, (hl)'),
+            0x8f: Op(lambda: self.adc_a_reg('a'), 'adc a, a'),
 
             0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
-            0xc6: Op(lambda: self.push('bc'), 'push bc'),
+            0xc5: Op(lambda: self.push('bc'), 'push bc'),
+            0xc6: Op(self.add_a_immediate, 'add a, n'),
+            0xce: Op(self.adc_a_immediate, 'adc a, n'),
 
             0xd1: Op(lambda: self.pop('de'), 'pop de'),
-            0xd6: Op(lambda: self.push('de'), 'push de'),
+            0xd5: Op(lambda: self.push('de'), 'push de'),
             0xd9: Op(self.exx, 'exx'),
 
             0xe1: Op(lambda: self.pop('hl'), 'pop hl'),
-            0xe6: Op(lambda: self.push('hl'), 'push hl'),
+            0xe5: Op(lambda: self.push('hl'), 'push hl'),
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
-            0xf6: Op(lambda: self.push('af'), 'push af'),
+            0xf5: Op(lambda: self.push('af'), 'push af'),
             0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
 
             0xe3: Op(self.ex_sp_indirect_hl, 'ex (sp), hl'),
@@ -223,9 +234,12 @@ class Processor:
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'a'), 'ld (ix + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)'),
 
+            0x86: Op(lambda: self.add_a_indexed_indirect('ix'), 'ld a, (ix + d)'),
+            0x8e: Op(lambda: self.adc_a_indexed_indirect('ix'), 'ld a, (ix + d)'),
+
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
-            0xe6: Op(lambda: self.push_indexed('ix'), 'push ix'),
+            0xe5: Op(lambda: self.push_indexed('ix'), 'push ix'),
 
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('ix'), 'ld sp, ix')
         }
@@ -251,9 +265,12 @@ class Processor:
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'a'), 'ld (iy + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)'),
 
+            0x86: Op(lambda: self.add_a_indexed_indirect('iy'), 'ld a, (iy + d)'),
+            0x8e: Op(lambda: self.adc_a_indexed_indirect('iy'), 'ld a, (iy + d)'),
+
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
-            0xe6: Op(lambda: self.push_indexed('iy'), 'push iy'),
+            0xe5: Op(lambda: self.push_indexed('iy'), 'push iy'),
 
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('iy'), 'ld sp, iy')
         }
@@ -535,12 +552,48 @@ class Processor:
             self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
 
     def add_a_reg(self, other_reg):
-        result, half_carry, full_carry = bitwise_add(self.main_registers['a'], self.main_registers[other_reg])
+        self.add_a(self.main_registers[other_reg], False)
+
+    def adc_a_reg(self, other_reg):
+        self.add_a(self.main_registers[other_reg], self.condition('c'))
+
+    def add_a_immediate(self):
+        value = self.get_value_at_pc()
+        self.add_a(value, False)
+
+    def adc_a_immediate(self):
+        value = self.get_value_at_pc()
+        self.add_a(value, self.condition('c'))
+
+    def add_a_hl_indirect(self):
+        value = self.memory.peek(self.get_16bit_reg('hl'))
+        self.add_a(value, False)
+
+    def adc_a_hl_indirect(self):
+        value = self.memory.peek(self.get_16bit_reg('hl'))
+        self.add_a(value, self.condition('c'))
+
+    def add_a_indexed_indirect(self, index_reg):
+        offset = to_signed(self.get_value_at_pc())
+        value = self.memory.peek(self.index_registers[index_reg] + offset)
+        self.add_a(value, False)
+
+    def adc_a_indexed_indirect(self, index_reg):
+        offset = to_signed(self.get_value_at_pc())
+        value = self.memory.peek(self.index_registers[index_reg] + offset)
+        self.add_a(value, self.condition('c'))
+
+    def add_a(self, value, carry):
+        signed_a = to_signed(self.main_registers['a'])
+        if carry:
+            value = (value + 1) & 0xff
+        result, half_carry, full_carry = bitwise_add(self.main_registers['a'], value)
+        signed_result = to_signed(result)
         self.main_registers['a'] = result
-        self.set_condition('s', to_signed(result) < 0)
+        self.set_condition('s', signed_result < 0)
         self.set_condition('z', result == 0)
         self.set_condition('h', half_carry)
-        self.set_condition('p', False)
+        self.set_condition('p', (signed_a < 0) != (signed_result < 0))
         self.set_condition('n', False)
         self.set_condition('c', full_carry)
 

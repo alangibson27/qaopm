@@ -1,7 +1,7 @@
 from nose.tools import assert_equals
 
 from tests.processor.processor_tests import TestHelper, random_byte
-from z80.funcs import twos_complement, big_endian_value
+from z80.funcs import to_signed, big_endian_value
 
 __author__ = 'alan'
 
@@ -44,7 +44,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0001)
+        self.assert_pc_address().equals(0x0001)
         assert_equals(0xff, self.processor.main_registers[destination])
         assert_equals(0xff, self.processor.main_registers[source])
 
@@ -69,7 +69,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0001)
+        self.assert_pc_address().equals(0x0001)
         assert_equals(0xaa, self.processor.main_registers[destination])
 
     def test_ld_reg_indirect_reg(self):
@@ -94,7 +94,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0001)
+        self.assert_pc_address().equals(0x0001)
 
         assert_equals(0xbb, self.memory.peek(0xb0c0))
 
@@ -109,7 +109,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0001)
+        self.assert_pc_address().equals(0x0001)
 
         assert_equals(0xc0, self.memory.peek(0xb0c0))
 
@@ -124,7 +124,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0001)
+        self.assert_pc_address().equals(0x0001)
 
         assert_equals(0xb0, self.memory.peek(0xb0c0))
 
@@ -138,7 +138,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0002)
+        self.assert_pc_address().equals(0x0002)
 
         assert_equals(0xff, self.processor.main_registers['a'])
 
@@ -160,7 +160,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0002)
+        self.assert_pc_address().equals(0x0002)
 
         assert_equals(operand, self.processor.main_registers[destination_register])
 
@@ -174,7 +174,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0002)
+        self.assert_pc_address().equals(0x0002)
 
         assert_equals(0xff, self.memory.peek(0xa123))
 
@@ -197,7 +197,7 @@ class Test8BitLoadGroup(TestHelper):
         self.given_next_instruction_is(op_codes[0], op_codes[1], operand)
         self.given_register_contains_value(index_register, 0x1000)
 
-        referenced_address = 0x1000 + twos_complement(operand)
+        referenced_address = 0x1000 + to_signed(operand)
         address_value = random_byte()
         self.memory.poke(referenced_address, address_value)
 
@@ -206,7 +206,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0003)
+        self.assert_pc_address().equals(0x0003)
 
         assert_equals(self.processor.main_registers[destination_register], address_value)
 
@@ -222,7 +222,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0003)
+        self.assert_pc_address().equals(0x0003)
 
         assert_equals(self.processor.main_registers['a'], 0x12)
 
@@ -253,7 +253,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0003)
+        self.assert_pc_address().equals(0x0003)
 
         assert_equals(self.processor.main_registers['a'], memory_value)
 
@@ -293,9 +293,9 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0003)
+        self.assert_pc_address().equals(0x0003)
 
-        referenced_address = 0x1000 + twos_complement(operand)
+        referenced_address = 0x1000 + to_signed(operand)
         assert_equals(self.memory.peek(referenced_address), register_value)
 
     def test_ld_ext_addr_from_a(self):
@@ -311,7 +311,7 @@ class Test8BitLoadGroup(TestHelper):
 
         # then
         self.assert_cycles_taken(1)
-        self.assert_pc_address(0x0003)
+        self.assert_pc_address().equals(0x0003)
 
         assert_equals(self.memory.peek(big_endian_value(little_endian_address)), register_value)
 
@@ -336,4 +336,4 @@ class Test8BitLoadGroup(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0x1000 + twos_complement(operand)), immediate_value)
+        assert_equals(self.memory.peek(0x1000 + to_signed(operand)), immediate_value)

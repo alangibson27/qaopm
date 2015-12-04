@@ -37,7 +37,7 @@ class TestHelper:
         self.processor.main_registers[register_pair[0]] = value >> 8
         self.processor.main_registers[register_pair[1]] = value & 0xff
 
-    def given_alternate_register_pair_contains_value(self, register_pair, value):
+    def given_alt_register_pair_contains_value(self, register_pair, value):
         self.processor.alternate_registers[register_pair[0]] = value >> 8
         self.processor.alternate_registers[register_pair[1]] = value & 0xff
 
@@ -51,5 +51,33 @@ class TestHelper:
     def assert_cycles_taken(self, cycles):
         assert_equals(self.processor.cycles, cycles)
 
-    def assert_pc_address(self, address):
-        assert_equals(self.processor.special_registers['pc'], address)
+    def assert_pc_address(self):
+        return EqualsBuilder('pc', self.processor.special_registers['pc'])
+
+    def assert_register_pair(self, reg_pair):
+        return EqualsBuilder('reg pair ' + reg_pair, self.processor.get_16bit_reg(reg_pair))
+
+    def assert_alt_register_pair(self, reg_pair):
+        return EqualsBuilder('alt reg pair ' + reg_pair, self.processor.get_16bit_alt_reg(reg_pair))
+
+    def assert_flag(self, flag_name):
+        return EqualsBuilder('flag ' + flag_name, self.processor.condition(flag_name))
+
+    def assert_memory(self, address):
+        return ContainsBuilder(self.memory.peek(address))
+
+
+class EqualsBuilder:
+    def __init__(self, object, value):
+        self.object = object
+        self.value = value
+
+    def equals(self, expected):
+        assert_equals(self.value, expected, '{} != {} (was {})'.format(self.object, expected, self.value))
+
+class ContainsBuilder:
+    def __init__(self, value):
+        self.value = value
+
+    def contains(self, expected):
+        assert_equals(self.value, expected)

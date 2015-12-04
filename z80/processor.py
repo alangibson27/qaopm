@@ -1,4 +1,4 @@
-from funcs import big_endian_value, twos_complement
+from funcs import big_endian_value, to_signed, bitwise_sub
 
 
 class Op:
@@ -184,8 +184,11 @@ class Processor:
             0x57: Op(self.ld_a_i, 'ld a, i'),
 
             0xa0: Op(self.ldi, 'ldi'),
+            0xa1: Op(self.cpi, 'cpi'),
             0xa8: Op(self.ldd, 'ldd'),
+
             0xb0: Op(self.ldir, 'ldir'),
+            0xb1: Op(self.cpir, 'cpir'),
             0xb8: Op(self.lddr, 'lddr')
         }
 
@@ -273,11 +276,11 @@ class Processor:
         self.main_registers[destination] = self.main_registers[source]
 
     def ld_reg_from_reg_indirect(self, destination, source_register):
-        address = self.get_indirect_address(source_register)
+        address = self.get_16bit_reg(source_register)
         self.main_registers[destination] = self.memory.peek(address)
 
     def ld_reg_indirect_from_reg(self, destination_register, source_register):
-        address = self.get_indirect_address(destination_register)
+        address = self.get_16bit_reg(destination_register)
         self.memory.poke(address, self.main_registers[source_register])
 
     def ld_a_i(self):
@@ -289,18 +292,18 @@ class Processor:
 
     def ld_reg_indexed_addr(self, destination_register, index_register):
         operand = self.get_value_at_pc()
-        offset = twos_complement(operand)
+        offset = to_signed(operand)
         self.main_registers[destination_register] = self.memory.peek(self.index_registers[index_register] + offset)
 
     def ld_indexed_reg_from_reg(self, destination_index_register, source_register):
         operand = self.get_value_at_pc()
-        offset = twos_complement(operand)
+        offset = to_signed(operand)
         self.memory.poke(self.index_registers[destination_index_register] + offset,
                          self.main_registers[source_register])
 
     def ld_hl_indirect_immediate(self):
         operand = self.get_value_at_pc()
-        self.memory.poke(self.get_indirect_address('hl'), operand)
+        self.memory.poke(self.get_16bit_reg('hl'), operand)
 
     def ld_a_ext_addr(self):
         little_endian_address = self.get_address_at_pc()
@@ -314,7 +317,7 @@ class Processor:
         operand = self.get_value_at_pc()
         immediate_value = self.get_value_at_pc()
 
-        offset = twos_complement(operand)
+        offset = to_signed(operand)
         self.memory.poke(self.index_registers[index_register] + offset, immediate_value)
 
     def ld_16reg_immediate(self, register_pair):
@@ -446,28 +449,31 @@ class Processor:
         self.memory.poke(self.special_registers['sp'] + 1, old_index >> 8)
 
     def block_transfer(self, increment):
-        src_addr = self.get_indirect_address('hl')
-        tgt_addr = self.get_indirect_address('de')
+        src_addr = self.get_16bit_reg('hl')
+        tgt_addr = self.get_16bit_reg('de')
 
         self.memory.poke(tgt_addr, self.memory.peek(src_addr))
 
         src_addr = (src_addr + increment) % 0x10000
-        tgt_addr = (tgt_addr + increment) % 0x10000
-
         self.main_registers['h'] = src_addr >> 8
         self.main_registers['l'] = src_addr & 0xff
+
+        tgt_addr = (tgt_addr + increment) % 0x10000
         self.main_registers['d'] = tgt_addr >> 8
         self.main_registers['e'] = tgt_addr & 0xff
 
-        counter = self.get_indirect_address('bc')
-        counter = (counter - 1) % 0x10000
-
-        self.main_registers['b'] = counter >> 8
-        self.main_registers['c'] = counter & 0xff
+        counter = self.decrement_bc()
 
         self.set_condition('h', False)
         self.set_condition('p', counter != 0)
         self.set_condition('n', False)
+
+    def decrement_bc(self):
+        counter = self.get_16bit_reg('bc')
+        counter = (counter - 1) % 0x10000
+        self.main_registers['b'] = counter >> 8
+        self.main_registers['c'] = counter & 0xff
+        return counter
 
     def ldi(self):
         self.block_transfer(1)
@@ -487,6 +493,29 @@ class Processor:
         if not (self.main_registers['b'] == 0x00 and self.main_registers['c'] == 0x00):
             self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
 
+    def cpi(self):
+        src_addr = self.get_16bit_reg('hl')
+
+        value_to_compare = self.memory.peek(src_addr)
+        result, half_carry, full_carry = bitwise_sub(self.main_registers['a'], value_to_compare)
+
+        src_addr = (src_addr + 1) % 0x10000
+        self.main_registers['h'] = src_addr >> 8
+        self.main_registers['l'] = src_addr & 0xff
+
+        new_bc = self.decrement_bc()
+
+        self.set_condition('s', result & 0b10000000 != 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', half_carry)
+        self.set_condition('p', new_bc != 0)
+        self.set_condition('n', True)
+
+    def cpir(self):
+        self.cpi()
+        if not (self.get_16bit_reg('bc') == 0x0000):
+            self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
+
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]
         if value:
@@ -498,7 +527,12 @@ class Processor:
         mask = self.condition_masks[flag]
         return self.main_registers['f'] & mask > 0
 
-    def get_indirect_address(self, register_pair):
+    def get_16bit_reg(self, register_pair):
         msb = self.main_registers[register_pair[0]]
         lsb = self.main_registers[register_pair[1]]
+        return big_endian_value([lsb, msb])
+
+    def get_16bit_alt_reg(self, register_pair):
+        msb = self.alternate_registers[register_pair[0]]
+        lsb = self.alternate_registers[register_pair[1]]
         return big_endian_value([lsb, msb])

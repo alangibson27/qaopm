@@ -15,15 +15,13 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.processor.main_registers['h'], 0x12)
-        assert_equals(self.processor.main_registers['l'], 0x34)
-        assert_equals(self.processor.main_registers['d'], 0xab)
-        assert_equals(self.processor.main_registers['e'], 0xcd)
+        self.assert_register_pair('hl').equals(0x1234)
+        self.assert_register_pair('de').equals(0xabcd)
 
     def test_ex_af_alt_af(self):
         # given
         self.given_register_pair_contains_value('af', 0x1234)
-        self.given_alternate_register_pair_contains_value('af', 0xabcd)
+        self.given_alt_register_pair_contains_value('af', 0xabcd)
 
         self.given_next_instruction_is(0x08)
 
@@ -31,21 +29,19 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.processor.main_registers['a'], 0xab)
-        assert_equals(self.processor.main_registers['f'], 0xcd)
-        assert_equals(self.processor.alternate_registers['a'], 0x12)
-        assert_equals(self.processor.alternate_registers['f'], 0x34)
+        self.assert_register_pair('af').equals(0xabcd)
+        self.assert_alt_register_pair('af').equals(0x1234)
 
     def test_exx(self):
         # given
         self.given_register_pair_contains_value('bc', 0x1234)
-        self.given_alternate_register_pair_contains_value('bc', 0x4321)
+        self.given_alt_register_pair_contains_value('bc', 0x4321)
 
         self.given_register_pair_contains_value('de', 0x5678)
-        self.given_alternate_register_pair_contains_value('de', 0x8765)
+        self.given_alt_register_pair_contains_value('de', 0x8765)
 
         self.given_register_pair_contains_value('hl', 0x9abc)
-        self.given_alternate_register_pair_contains_value('hl', 0xcba9)
+        self.given_alt_register_pair_contains_value('hl', 0xcba9)
 
         self.given_next_instruction_is(0xd9)
 
@@ -53,20 +49,14 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.processor.main_registers['b'], 0x43)
-        assert_equals(self.processor.main_registers['c'], 0x21)
-        assert_equals(self.processor.alternate_registers['b'], 0x12)
-        assert_equals(self.processor.alternate_registers['c'], 0x34)
+        self.assert_register_pair('bc').equals(0x4321)
+        self.assert_alt_register_pair('bc').equals(0x1234)
 
-        assert_equals(self.processor.main_registers['d'], 0x87)
-        assert_equals(self.processor.main_registers['e'], 0x65)
-        assert_equals(self.processor.alternate_registers['d'], 0x56)
-        assert_equals(self.processor.alternate_registers['e'], 0x78)
+        self.assert_register_pair('de').equals(0x8765)
+        self.assert_alt_register_pair('de').equals(0x5678)
 
-        assert_equals(self.processor.main_registers['h'], 0xcb)
-        assert_equals(self.processor.main_registers['l'], 0xa9)
-        assert_equals(self.processor.alternate_registers['h'], 0x9a)
-        assert_equals(self.processor.alternate_registers['l'], 0xbc)
+        self.assert_register_pair('hl').equals(0xcba9)
+        self.assert_alt_register_pair('hl').equals(0x9abc)
 
     def test_ex_sp_indirect_hl(self):
         # given
@@ -82,11 +72,9 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0xbeef), 0x34)
-        assert_equals(self.memory.peek(0xbef0), 0x12)
-
-        assert_equals(self.processor.main_registers['h'], 0xbe)
-        assert_equals(self.processor.main_registers['l'], 0xba)
+        self.assert_memory(0xbeef).contains(0x34)
+        self.assert_memory(0xbef0).contains(0x12)
+        self.assert_register_pair('hl').equals(0xbeba)
 
     def test_ex_sp_indirect_index_reg(self):
         operations = [([0xdd, 0xe3], 'ix'), ([0xfd, 0xe3], 'iy')]
@@ -107,8 +95,8 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0xbeef), 0xba)
-        assert_equals(self.memory.peek(0xbef0), 0xbe)
+        self.assert_memory(0xbeef).contains(0xba)
+        self.assert_memory(0xbef0).contains(0xbe)
 
         assert_equals(self.processor.index_registers[register_pair], 0x3412)
 
@@ -126,17 +114,14 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0x2000), 0xba)
-        assert_equals(self.processor.main_registers['h'], 0x10)
-        assert_equals(self.processor.main_registers['l'], 0x01)
-        assert_equals(self.processor.main_registers['d'], 0x20)
-        assert_equals(self.processor.main_registers['e'], 0x01)
-        assert_equals(self.processor.main_registers['b'], 0xbe)
-        assert_equals(self.processor.main_registers['c'], 0xee)
+        self.assert_memory(0x2000).contains(0xba)
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('de').equals(0x2001)
+        self.assert_register_pair('bc').equals(0xbeee)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), True)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(False)
 
     def test_ldi_with_bc_decrementing_to_zero(self):
         # given
@@ -152,17 +137,14 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0x2000), 0xba)
-        assert_equals(self.processor.main_registers['h'], 0x10)
-        assert_equals(self.processor.main_registers['l'], 0x01)
-        assert_equals(self.processor.main_registers['d'], 0x20)
-        assert_equals(self.processor.main_registers['e'], 0x01)
-        assert_equals(self.processor.main_registers['b'], 0x00)
-        assert_equals(self.processor.main_registers['c'], 0x00)
+        self.assert_memory(0x2000).contains(0xba)
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('de').equals(0x2001)
+        self.assert_register_pair('bc').equals(0x0000)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
 
     def test_ldir_with_bc_greater_than_one(self):
         # given
@@ -178,18 +160,15 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        self.assert_pc_address(0x0000)
-        assert_equals(self.memory.peek(0x2000), 0xff)
-        assert_equals(self.processor.main_registers['h'], 0x10)
-        assert_equals(self.processor.main_registers['l'], 0x01)
-        assert_equals(self.processor.main_registers['d'], 0x20)
-        assert_equals(self.processor.main_registers['e'], 0x01)
-        assert_equals(self.processor.main_registers['b'], 0x00)
-        assert_equals(self.processor.main_registers['c'], 0x09)
+        self.assert_pc_address().equals(0x0000)
+        self.assert_memory(0x2000).contains(0xff)
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('de').equals(0x2001)
+        self.assert_register_pair('bc').equals(0x0009)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
 
     def test_ldir_with_bc_equal_to_one(self):
         # given
@@ -205,18 +184,15 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        self.assert_pc_address(0x0002)
-        assert_equals(self.memory.peek(0x2000), 0xff)
-        assert_equals(self.processor.main_registers['h'], 0x10)
-        assert_equals(self.processor.main_registers['l'], 0x01)
-        assert_equals(self.processor.main_registers['d'], 0x20)
-        assert_equals(self.processor.main_registers['e'], 0x01)
-        assert_equals(self.processor.main_registers['b'], 0x00)
-        assert_equals(self.processor.main_registers['c'], 0x00)
+        self.assert_pc_address().equals(0x0002)
+        self.assert_memory(0x2000).contains(0xff)
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('de').equals(0x2001)
+        self.assert_register_pair('bc').equals(0x0000)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
 
     def test_ldir_with_bc_equal_to_zero(self):
         # given
@@ -232,18 +208,15 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        self.assert_pc_address(0x0000)
-        assert_equals(self.memory.peek(0x2000), 0xff)
-        assert_equals(self.processor.main_registers['h'], 0x10)
-        assert_equals(self.processor.main_registers['l'], 0x01)
-        assert_equals(self.processor.main_registers['d'], 0x20)
-        assert_equals(self.processor.main_registers['e'], 0x01)
-        assert_equals(self.processor.main_registers['b'], 0xff)
-        assert_equals(self.processor.main_registers['c'], 0xff)
+        self.assert_pc_address().equals(0x0000)
+        self.assert_memory(0x2000).contains(0xff)
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('de').equals(0x2001)
+        self.assert_register_pair('bc').equals(0xffff)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
 
     def test_ldd_with_bc_decrementing_to_nonzero(self):
         # given
@@ -259,17 +232,14 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0x2000), 0xba)
-        assert_equals(self.processor.main_registers['h'], 0x0f)
-        assert_equals(self.processor.main_registers['l'], 0xff)
-        assert_equals(self.processor.main_registers['d'], 0x1f)
-        assert_equals(self.processor.main_registers['e'], 0xff)
-        assert_equals(self.processor.main_registers['b'], 0xbe)
-        assert_equals(self.processor.main_registers['c'], 0xee)
+        self.assert_memory(0x2000).contains(0xba)
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('de').equals(0x1fff)
+        self.assert_register_pair('bc').equals(0xbeee)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), True)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(False)
 
     def test_ldd_with_bc_decrementing_to_zero(self):
         # given
@@ -285,17 +255,14 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0x2000), 0xba)
-        assert_equals(self.processor.main_registers['h'], 0x0f)
-        assert_equals(self.processor.main_registers['l'], 0xff)
-        assert_equals(self.processor.main_registers['d'], 0x1f)
-        assert_equals(self.processor.main_registers['e'], 0xff)
-        assert_equals(self.processor.main_registers['b'], 0x00)
-        assert_equals(self.processor.main_registers['c'], 0x00)
+        self.assert_memory(0x2000).contains(0xba)
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('de').equals(0x1fff)
+        self.assert_register_pair('bc').equals(0x0000)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
 
     def test_lddr_with_bc_greater_than_one(self):
         # given
@@ -311,18 +278,15 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        self.assert_pc_address(0x0000)
-        assert_equals(self.memory.peek(0x2000), 0xff)
-        assert_equals(self.processor.main_registers['h'], 0x0f)
-        assert_equals(self.processor.main_registers['l'], 0xff)
-        assert_equals(self.processor.main_registers['d'], 0x1f)
-        assert_equals(self.processor.main_registers['e'], 0xff)
-        assert_equals(self.processor.main_registers['b'], 0x00)
-        assert_equals(self.processor.main_registers['c'], 0x09)
+        self.assert_pc_address().equals(0x0000)
+        self.assert_memory(0x2000).contains(0xff)
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('de').equals(0x1fff)
+        self.assert_register_pair('bc').equals(0x0009)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
 
     def test_lddr_with_bc_equal_to_one(self):
         # given
@@ -338,18 +302,15 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        self.assert_pc_address(0x0002)
-        assert_equals(self.memory.peek(0x2000), 0xff)
-        assert_equals(self.processor.main_registers['h'], 0x0f)
-        assert_equals(self.processor.main_registers['l'], 0xff)
-        assert_equals(self.processor.main_registers['d'], 0x1f)
-        assert_equals(self.processor.main_registers['e'], 0xff)
-        assert_equals(self.processor.main_registers['b'], 0x00)
-        assert_equals(self.processor.main_registers['c'], 0x00)
+        self.assert_pc_address().equals(0x0002)
+        self.assert_memory(0x2000).contains(0xff)
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('de').equals(0x1fff)
+        self.assert_register_pair('bc').equals(0x0000)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
 
     def test_lddr_with_bc_equal_to_zero(self):
         # given
@@ -365,15 +326,202 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.processor.execute()
 
         # then
-        self.assert_pc_address(0x0000)
-        assert_equals(self.memory.peek(0x2000), 0xff)
-        assert_equals(self.processor.main_registers['h'], 0x0f)
-        assert_equals(self.processor.main_registers['l'], 0xff)
-        assert_equals(self.processor.main_registers['d'], 0x1f)
-        assert_equals(self.processor.main_registers['e'], 0xff)
-        assert_equals(self.processor.main_registers['b'], 0xff)
-        assert_equals(self.processor.main_registers['c'], 0xff)
+        self.assert_pc_address().equals(0x0000)
+        self.assert_memory(0x2000).contains(0xff)
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('de').equals(0x1fff)
+        self.assert_register_pair('bc').equals(0xffff)
 
-        assert_equals(self.processor.condition('h'), False)
-        assert_equals(self.processor.condition('p'), False)
-        assert_equals(self.processor.condition('n'), False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(False)
+
+    def test_cpi_with_memory_equal_to_a_and_bc_greater_than_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0090)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xa1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0x008f)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(True)
+
+    def test_cpi_with_memory_equal_to_a_and_bc_equal_to_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xa1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpi_with_memory_less_than_a_and_half_borrow(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0b00001000)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0b10000000)
+
+        self.given_next_instruction_is(0xed, 0xa1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(False)
+        self.assert_flag('h').equals(True)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpi_with_memory_greater_than_a_and_half_borrow(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0b00001000)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0b10000000)
+
+        self.given_next_instruction_is(0xed, 0xa1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(False)
+        self.assert_flag('h').equals(True)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpi_with_memory_greater_than_a_and_full_borrow(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0b10000000)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0b00000001)
+
+        self.given_next_instruction_is(0xed, 0xa1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(True)
+        self.assert_flag('z').equals(False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpir_with_memory_equal_to_a_and_bc_greater_than_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0090)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xb1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x0000)
+
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0x008f)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(True)
+
+    def test_cpir_with_memory_equal_to_a_and_bc_equal_to_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xb1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x0002)
+
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpir_with_memory_equal_to_a_and_bc_equal_to_zero(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0000)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xb1)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x0000)
+
+        self.assert_register_pair('hl').equals(0x1001)
+        self.assert_register_pair('bc').equals(0xffff)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(True)

@@ -61,12 +61,12 @@ class Test16BitLoadGroup(TestHelper):
 
     def test_push_without_wraparound(self):
         operations = [
-            ([0xf6], 'af'),
-            ([0xc6], 'bc'),
-            ([0xd6], 'de'),
-            ([0xe6], 'hl'),
-            ([0xdd, 0xe6], 'ix'),
-            ([0xfd, 0xe6], 'iy')
+            ([0xf5], 'af'),
+            ([0xc5], 'bc'),
+            ([0xd5], 'de'),
+            ([0xe5], 'hl'),
+            ([0xdd, 0xe5], 'ix'),
+            ([0xfd, 0xe5], 'iy')
         ]
 
         for op_codes, register_pair in operations:
@@ -100,7 +100,7 @@ class Test16BitLoadGroup(TestHelper):
         self.given_stack_pointer_is(0x0000)
         self.given_register_pair_contains_value('hl', 0xabcd)
 
-        self.given_next_instruction_is(0xe6)
+        self.given_next_instruction_is(0xe5)
 
         # when
         self.processor.execute()

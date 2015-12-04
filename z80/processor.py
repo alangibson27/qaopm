@@ -186,10 +186,12 @@ class Processor:
             0xa0: Op(self.ldi, 'ldi'),
             0xa1: Op(self.cpi, 'cpi'),
             0xa8: Op(self.ldd, 'ldd'),
+            0xa9: Op(self.cpd, 'cpd'),
 
             0xb0: Op(self.ldir, 'ldir'),
             0xb1: Op(self.cpir, 'cpir'),
-            0xb8: Op(self.lddr, 'lddr')
+            0xb8: Op(self.lddr, 'lddr'),
+            0xb9: Op(self.cpdr, 'cpdr')
         }
 
     def init_dd_opcodes(self):
@@ -455,12 +457,10 @@ class Processor:
         self.memory.poke(tgt_addr, self.memory.peek(src_addr))
 
         src_addr = (src_addr + increment) % 0x10000
-        self.main_registers['h'] = src_addr >> 8
-        self.main_registers['l'] = src_addr & 0xff
+        self.set_16bit_reg('hl', src_addr)
 
         tgt_addr = (tgt_addr + increment) % 0x10000
-        self.main_registers['d'] = tgt_addr >> 8
-        self.main_registers['e'] = tgt_addr & 0xff
+        self.set_16bit_reg('de', tgt_addr)
 
         counter = self.decrement_bc()
 
@@ -471,8 +471,8 @@ class Processor:
     def decrement_bc(self):
         counter = self.get_16bit_reg('bc')
         counter = (counter - 1) % 0x10000
-        self.main_registers['b'] = counter >> 8
-        self.main_registers['c'] = counter & 0xff
+
+        self.set_16bit_reg('bc', counter)
         return counter
 
     def ldi(self):
@@ -493,15 +493,14 @@ class Processor:
         if not (self.main_registers['b'] == 0x00 and self.main_registers['c'] == 0x00):
             self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
 
-    def cpi(self):
+    def block_compare(self, increment):
         src_addr = self.get_16bit_reg('hl')
 
         value_to_compare = self.memory.peek(src_addr)
         result, half_carry, full_carry = bitwise_sub(self.main_registers['a'], value_to_compare)
 
-        src_addr = (src_addr + 1) % 0x10000
-        self.main_registers['h'] = src_addr >> 8
-        self.main_registers['l'] = src_addr & 0xff
+        src_addr = (src_addr + increment) % 0x10000
+        self.set_16bit_reg('hl', src_addr)
 
         new_bc = self.decrement_bc()
 
@@ -511,8 +510,19 @@ class Processor:
         self.set_condition('p', new_bc != 0)
         self.set_condition('n', True)
 
+    def cpi(self):
+        self.block_compare(1)
+
+    def cpd(self):
+        self.block_compare(-1)
+
     def cpir(self):
         self.cpi()
+        if not (self.get_16bit_reg('bc') == 0x0000):
+            self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
+
+    def cpdr(self):
+        self.cpd()
         if not (self.get_16bit_reg('bc') == 0x0000):
             self.special_registers['pc'] = (self.special_registers['pc'] - 2) % 0x10000
 
@@ -531,6 +541,10 @@ class Processor:
         msb = self.main_registers[register_pair[0]]
         lsb = self.main_registers[register_pair[1]]
         return big_endian_value([lsb, msb])
+
+    def set_16bit_reg(self, register_pair, val_16bit):
+        self.main_registers[register_pair[0]] = val_16bit >> 8
+        self.main_registers[register_pair[1]] = val_16bit & 0xff
 
     def get_16bit_alt_reg(self, register_pair):
         msb = self.alternate_registers[register_pair[0]]

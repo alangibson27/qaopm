@@ -525,3 +525,193 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.assert_flag('h').equals(False)
         self.assert_flag('p').equals(True)
         self.assert_flag('n').equals(True)
+
+    def test_cpd_with_memory_equal_to_a_and_bc_greater_than_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0090)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xa9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0x008f)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(True)
+
+    def test_cpd_with_memory_equal_to_a_and_bc_equal_to_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xa9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpd_with_memory_less_than_a_and_half_borrow(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0b00001000)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0b10000000)
+
+        self.given_next_instruction_is(0xed, 0xa9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(False)
+        self.assert_flag('h').equals(True)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpd_with_memory_greater_than_a_and_half_borrow(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0b00001000)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0b10000000)
+
+        self.given_next_instruction_is(0xed, 0xa9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(False)
+        self.assert_flag('h').equals(True)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpd_with_memory_greater_than_a_and_full_borrow(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0b10000000)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0b00000001)
+
+        self.given_next_instruction_is(0xed, 0xa9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(True)
+        self.assert_flag('z').equals(False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpdr_with_memory_equal_to_a_and_bc_greater_than_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0090)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xb9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x0000)
+
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0x008f)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(True)
+
+    def test_cpdr_with_memory_equal_to_a_and_bc_equal_to_one(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0001)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xb9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x0002)
+
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0x0000)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(False)
+        self.assert_flag('n').equals(True)
+
+    def test_cpdr_with_memory_equal_to_a_and_bc_equal_to_zero(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x1000)
+        self.memory.poke(0x1000, 0xbe)
+
+        self.given_register_pair_contains_value('bc', 0x0000)
+        self.given_register_contains_value('a', 0xbe)
+
+        self.given_next_instruction_is(0xed, 0xb9)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x0000)
+
+        self.assert_register_pair('hl').equals(0x0fff)
+        self.assert_register_pair('bc').equals(0xffff)
+
+        self.assert_flag('s').equals(False)
+        self.assert_flag('z').equals(True)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(True)
+        self.assert_flag('n').equals(True)

@@ -4,10 +4,12 @@ def to_signed(val):
     else:
         return val
 
+
 def big_endian_value(little_endian_value):
     lsb = little_endian_value[0]
     msb = little_endian_value[1]
     return (msb << 8) + lsb
+
 
 def bitwise_add(v1, v2):
     v1_low_nib = v1 & 0xf
@@ -18,6 +20,7 @@ def bitwise_add(v1, v2):
 
     result = v1 + v2
     return result & 0xff, half_carry, result > 0xff
+
 
 def bitwise_sub(v1, v2):
     v1_low_nib = v1 & 0xf

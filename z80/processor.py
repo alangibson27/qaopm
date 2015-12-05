@@ -163,6 +163,24 @@ class Processor:
             0x8e: Op(self.adc_a_hl_indirect, 'adc a, (hl)'),
             0x8f: Op(lambda: self.adc_a_reg('a'), 'adc a, a'),
 
+            0x90: Op(lambda: self.sub_a_reg('b'), 'sub b'),
+            0x91: Op(lambda: self.sub_a_reg('c'), 'sub c'),
+            0x92: Op(lambda: self.sub_a_reg('d'), 'sub d'),
+            0x93: Op(lambda: self.sub_a_reg('e'), 'sub e'),
+            0x94: Op(lambda: self.sub_a_reg('h'), 'sub h'),
+            0x95: Op(lambda: self.sub_a_reg('l'), 'sub l'),
+            0x96: Op(self.sub_a_hl_indirect, 'sub (hl)'),
+            0x97: Op(lambda: self.sub_a_reg('a'), 'sub a'),
+
+            0x98: Op(lambda: self.sbc_a_reg('b'), 'sbc b'),
+            0x99: Op(lambda: self.sbc_a_reg('c'), 'sbc c'),
+            0x9a: Op(lambda: self.sbc_a_reg('d'), 'sbc d'),
+            0x9b: Op(lambda: self.sbc_a_reg('e'), 'sbc e'),
+            0x9c: Op(lambda: self.sbc_a_reg('h'), 'sbc h'),
+            0x9d: Op(lambda: self.sbc_a_reg('l'), 'sbc l'),
+            0x9e: Op(self.sbc_a_hl_indirect, 'sbc (hl)'),
+            0x9f: Op(lambda: self.sbc_a_reg('a'), 'sbc a'),
+
             0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
             0xc5: Op(lambda: self.push('bc'), 'push bc'),
             0xc6: Op(self.add_a_immediate, 'add a, n'),
@@ -170,7 +188,9 @@ class Processor:
 
             0xd1: Op(lambda: self.pop('de'), 'pop de'),
             0xd5: Op(lambda: self.push('de'), 'push de'),
+            0xd6: Op(self.sub_a_immediate, 'sub n'),
             0xd9: Op(self.exx, 'exx'),
+            0xde: Op(self.sbc_a_immediate, 'sbc n'),
 
             0xe1: Op(lambda: self.pop('hl'), 'pop hl'),
             0xe5: Op(lambda: self.push('hl'), 'push hl'),
@@ -234,8 +254,11 @@ class Processor:
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('ix', 'a'), 'ld (ix + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'ix'), 'ld a, (ix + d)'),
 
-            0x86: Op(lambda: self.add_a_indexed_indirect('ix'), 'ld a, (ix + d)'),
-            0x8e: Op(lambda: self.adc_a_indexed_indirect('ix'), 'ld a, (ix + d)'),
+            0x86: Op(lambda: self.add_a_indexed_indirect('ix'), 'add a, (ix + d)'),
+            0x8e: Op(lambda: self.adc_a_indexed_indirect('ix'), 'adc a, (ix + d)'),
+
+            0x96: Op(lambda: self.sub_a_indexed_indirect('ix'), 'sub (ix + d)'),
+            0x9e: Op(lambda: self.sbc_a_indexed_indirect('ix'), 'sbc (ix + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
@@ -265,8 +288,11 @@ class Processor:
             0x77: Op(lambda: self.ld_indexed_reg_from_reg('iy', 'a'), 'ld (iy + d), a'),
             0x7e: Op(lambda: self.ld_reg_indexed_addr('a', 'iy'), 'ld a, (iy + d)'),
 
-            0x86: Op(lambda: self.add_a_indexed_indirect('iy'), 'ld a, (iy + d)'),
-            0x8e: Op(lambda: self.adc_a_indexed_indirect('iy'), 'ld a, (iy + d)'),
+            0x86: Op(lambda: self.add_a_indexed_indirect('iy'), 'add a, (iy + d)'),
+            0x8e: Op(lambda: self.adc_a_indexed_indirect('iy'), 'adc a, (iy + d)'),
+
+            0x96: Op(lambda: self.sub_a_indexed_indirect('iy'), 'sub (iy + d)'),
+            0x9e: Op(lambda: self.sbc_a_indexed_indirect('iy'), 'sbc (iy + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
@@ -595,6 +621,52 @@ class Processor:
         self.set_condition('h', half_carry)
         self.set_condition('p', (signed_a < 0) != (signed_result < 0))
         self.set_condition('n', False)
+        self.set_condition('c', full_carry)
+
+    def sub_a_reg(self, other_reg):
+        self.sub_a(self.main_registers[other_reg], False)
+
+    def sbc_a_reg(self, other_reg):
+        self.sub_a(self.main_registers[other_reg], self.condition('c'))
+
+    def sub_a_immediate(self):
+        value = self.get_value_at_pc()
+        self.sub_a(value, False)
+
+    def sbc_a_immediate(self):
+        value = self.get_value_at_pc()
+        self.sub_a(value, self.condition('c'))
+
+    def sub_a_hl_indirect(self):
+        value = self.memory.peek(self.get_16bit_reg('hl'))
+        self.sub_a(value, False)
+
+    def sbc_a_hl_indirect(self):
+        value = self.memory.peek(self.get_16bit_reg('hl'))
+        self.sub_a(value, self.condition('c'))
+
+    def sub_a_indexed_indirect(self, index_reg):
+        offset = to_signed(self.get_value_at_pc())
+        value = self.memory.peek(self.index_registers[index_reg] + offset)
+        self.sub_a(value, False)
+
+    def sbc_a_indexed_indirect(self, index_reg):
+        offset = to_signed(self.get_value_at_pc())
+        value = self.memory.peek(self.index_registers[index_reg] + offset)
+        self.sub_a(value, self.condition('c'))
+
+    def sub_a(self, value, carry):
+        signed_a = to_signed(self.main_registers['a'])
+        if carry:
+            value = (value + 1) & 0xff
+        result, half_carry, full_carry = bitwise_sub(self.main_registers['a'], value)
+        signed_result = to_signed(result)
+        self.main_registers['a'] = result
+        self.set_condition('s', signed_result < 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', half_carry)
+        self.set_condition('p', (signed_a < 0) != (signed_result < 0))
+        self.set_condition('n', True)
         self.set_condition('c', full_carry)
 
     def set_condition(self, flag, value):

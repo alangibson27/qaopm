@@ -2,7 +2,7 @@ import random
 from tests.processor.processor_tests import TestHelper
 from z80.funcs import to_signed
 
-class Test8BitArithmeticGroup(TestHelper):
+class Test8BitAddition(TestHelper):
     def test_add_a_with_other_reg_giving_positive_result_with_no_carries_or_overflow(self):
         values = [('b', 0x80), ('c', 0x81), ('d', 0x82), ('e', 0x83), ('h', 0x84), ('l', 0x85)]
         for register, op_code in values:

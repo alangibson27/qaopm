@@ -190,6 +190,15 @@ class Processor:
             0xa6: Op(self.and_hl_indirect, 'and (hl)'),
             0xa7: Op(lambda: self.and_a_reg('a'), 'and a'),
 
+            0xa8: Op(lambda: self.xor_a_reg('b'), 'xor b'),
+            0xa9: Op(lambda: self.xor_a_reg('c'), 'xor c'),
+            0xaa: Op(lambda: self.xor_a_reg('d'), 'xor d'),
+            0xab: Op(lambda: self.xor_a_reg('e'), 'xor e'),
+            0xac: Op(lambda: self.xor_a_reg('h'), 'xor h'),
+            0xad: Op(lambda: self.xor_a_reg('l'), 'xor l'),
+            0xae: Op(self.xor_hl_indirect, 'xor (hl)'),
+            0xaf: Op(lambda: self.xor_a_reg('a'), 'xor a'),
+
             0xb0: Op(lambda: self.or_a_reg('b'), 'or b'),
             0xb1: Op(lambda: self.or_a_reg('c'), 'or c'),
             0xb2: Op(lambda: self.or_a_reg('d'), 'or d'),
@@ -198,6 +207,15 @@ class Processor:
             0xb5: Op(lambda: self.or_a_reg('l'), 'or l'),
             0xb6: Op(self.or_hl_indirect, 'or (hl)'),
             0xb7: Op(lambda: self.or_a_reg('a'), 'or a'),
+
+            0xb8: Op(lambda: self.cp_reg('b'), 'cp b'),
+            0xb9: Op(lambda: self.cp_reg('c'), 'cp c'),
+            0xba: Op(lambda: self.cp_reg('d'), 'cp d'),
+            0xbb: Op(lambda: self.cp_reg('e'), 'cp e'),
+            0xbc: Op(lambda: self.cp_reg('h'), 'cp h'),
+            0xbd: Op(lambda: self.cp_reg('l'), 'cp l'),
+            0xbe: Op(self.cp_hl_indirect, 'cp (hl)'),
+            0xbf: Op(lambda: self.cp_reg('a'), 'cp a'),
 
             0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
             0xc5: Op(lambda: self.push('bc'), 'push bc'),
@@ -215,11 +233,13 @@ class Processor:
             0xe3: Op(self.ex_sp_indirect_hl, 'ex (sp), hl'),
             0xe6: Op(self.and_a_immediate, 'and a, n'),
             0xeb: Op(self.ex_de_hl, 'ex de, hl'),
+            0xee: Op(self.xor_a_immediate, 'xor a, n'),
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf5: Op(lambda: self.push('af'), 'push af'),
             0xf6: Op(self.or_a_immediate, 'or a, n'),
             0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
+            0xfe: Op(self.cp_immediate, 'cp n'),
 
             0xed: self.init_ed_opcodes(),
             0xdd: self.init_dd_opcodes(),
@@ -281,7 +301,9 @@ class Processor:
             0x9e: Op(lambda: self.sbc_a_indexed_indirect('ix'), 'sbc (ix + d)'),
 
             0xa6: Op(lambda: self.and_indexed_indirect('ix'), 'and (ix + d)'),
+            0xae: Op(lambda: self.xor_indexed_indirect('ix'), 'xor (ix + d)'),
             0xb6: Op(lambda: self.or_indexed_indirect('ix'), 'or (ix + d)'),
+            0xbe: Op(lambda: self.cp_indexed_indirect('ix'), 'cp (ix + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
@@ -318,7 +340,9 @@ class Processor:
             0x9e: Op(lambda: self.sbc_a_indexed_indirect('iy'), 'sbc (iy + d)'),
 
             0xa6: Op(lambda: self.and_indexed_indirect('iy'), 'and (ix + y)'),
+            0xae: Op(lambda: self.xor_indexed_indirect('iy'), 'xor (iy + d)'),
             0xb6: Op(lambda: self.or_indexed_indirect('iy'), 'or (iy + d)'),
+            0xbe: Op(lambda: self.cp_indexed_indirect('iy'), 'cp (iy + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
@@ -740,6 +764,58 @@ class Processor:
         self.set_condition('p', has_parity(result))
         self.set_condition('n', False)
         self.set_condition('c', False)
+
+    def xor_a_reg(self, other_reg):
+        self.xor_a_value(self.main_registers[other_reg])
+
+    def xor_a_immediate(self):
+        self.xor_a_value(self.get_value_at_pc())
+
+    def xor_hl_indirect(self):
+        self.xor_a_value(self.memory.peek(self.get_16bit_reg('hl')))
+
+    def xor_indexed_indirect(self, register):
+        offset = to_signed(self.get_value_at_pc())
+        self.xor_a_value(self.memory.peek(self.index_registers[register] + offset))
+
+    def xor_a_value(self, value):
+        result = self.main_registers['a'] ^ value
+        self.main_registers['a'] = result
+        self.set_condition('s', result & 0b10000000 > 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', False)
+        self.set_condition('p', has_parity(result))
+        self.set_condition('n', False)
+        self.set_condition('c', False)
+
+    def cp_reg(self, other_reg):
+        self.cp(self.main_registers[other_reg], False)
+
+    def cp_immediate(self):
+        value = self.get_value_at_pc()
+        self.cp(value, False)
+
+    def cp_hl_indirect(self):
+        value = self.memory.peek(self.get_16bit_reg('hl'))
+        self.cp(value, False)
+
+    def cp_indexed_indirect(self, index_reg):
+        offset = to_signed(self.get_value_at_pc())
+        value = self.memory.peek(self.index_registers[index_reg] + offset)
+        self.cp(value, False)
+
+    def cp(self, value, carry):
+        signed_a = to_signed(self.main_registers['a'])
+        if carry:
+            value = (value + 1) & 0xff
+        result, half_carry, full_carry = bitwise_sub(self.main_registers['a'], value)
+        signed_result = to_signed(result)
+        self.set_condition('s', signed_result < 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', half_carry)
+        self.set_condition('p', (signed_a < 0) != (signed_result < 0))
+        self.set_condition('n', True)
+        self.set_condition('c', full_carry)
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

@@ -90,3 +90,11 @@ class TestFuncs:
         assert_equals(result[0], 0b01111000)
         assert_true(result[2])
         assert_true(result[1])
+
+    def test_has_parity_with_even_parity(self):
+        result = has_parity(0b10101010)
+        assert_true(result)
+
+    def test_has_parity_with_odd_parity(self):
+        result = has_parity(0b00010000)
+        assert_false(result)

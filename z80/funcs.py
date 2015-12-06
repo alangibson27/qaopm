@@ -31,3 +31,7 @@ def bitwise_sub(v1, v2):
 
     result = v1 - v2
     return result & 0xff, half_borrow, result < 0x00
+
+
+def has_parity(v):
+    return bin(v).count('1') % 2 == 0

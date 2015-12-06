@@ -1,4 +1,4 @@
-from funcs import big_endian_value, to_signed, bitwise_sub, bitwise_add
+from funcs import big_endian_value, to_signed, bitwise_sub, bitwise_add, has_parity
 
 
 class Op:
@@ -181,6 +181,24 @@ class Processor:
             0x9e: Op(self.sbc_a_hl_indirect, 'sbc (hl)'),
             0x9f: Op(lambda: self.sbc_a_reg('a'), 'sbc a'),
 
+            0xa0: Op(lambda: self.and_a_reg('b'), 'and b'),
+            0xa1: Op(lambda: self.and_a_reg('c'), 'and c'),
+            0xa2: Op(lambda: self.and_a_reg('d'), 'and d'),
+            0xa3: Op(lambda: self.and_a_reg('e'), 'and e'),
+            0xa4: Op(lambda: self.and_a_reg('h'), 'and h'),
+            0xa5: Op(lambda: self.and_a_reg('l'), 'and l'),
+            0xa6: Op(self.and_hl_indirect, 'and (hl)'),
+            0xa7: Op(lambda: self.and_a_reg('a'), 'and a'),
+
+            0xb0: Op(lambda: self.or_a_reg('b'), 'or b'),
+            0xb1: Op(lambda: self.or_a_reg('c'), 'or c'),
+            0xb2: Op(lambda: self.or_a_reg('d'), 'or d'),
+            0xb3: Op(lambda: self.or_a_reg('e'), 'or e'),
+            0xb4: Op(lambda: self.or_a_reg('h'), 'or h'),
+            0xb5: Op(lambda: self.or_a_reg('l'), 'or l'),
+            0xb6: Op(self.or_hl_indirect, 'or (hl)'),
+            0xb7: Op(lambda: self.or_a_reg('a'), 'or a'),
+
             0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
             0xc5: Op(lambda: self.push('bc'), 'push bc'),
             0xc6: Op(self.add_a_immediate, 'add a, n'),
@@ -194,14 +212,16 @@ class Processor:
 
             0xe1: Op(lambda: self.pop('hl'), 'pop hl'),
             0xe5: Op(lambda: self.push('hl'), 'push hl'),
+            0xe3: Op(self.ex_sp_indirect_hl, 'ex (sp), hl'),
+            0xe6: Op(self.and_a_immediate, 'and a, n'),
+            0xeb: Op(self.ex_de_hl, 'ex de, hl'),
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf5: Op(lambda: self.push('af'), 'push af'),
+            0xf6: Op(self.or_a_immediate, 'or a, n'),
             0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
 
-            0xe3: Op(self.ex_sp_indirect_hl, 'ex (sp), hl'),
             0xed: self.init_ed_opcodes(),
-            0xeb: Op(self.ex_de_hl, 'ex de, hl'),
             0xdd: self.init_dd_opcodes(),
             0xfd: self.init_fd_opcodes()
         }
@@ -260,6 +280,9 @@ class Processor:
             0x96: Op(lambda: self.sub_a_indexed_indirect('ix'), 'sub (ix + d)'),
             0x9e: Op(lambda: self.sbc_a_indexed_indirect('ix'), 'sbc (ix + d)'),
 
+            0xa6: Op(lambda: self.and_indexed_indirect('ix'), 'and (ix + d)'),
+            0xb6: Op(lambda: self.or_indexed_indirect('ix'), 'or (ix + d)'),
+
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
             0xe5: Op(lambda: self.push_indexed('ix'), 'push ix'),
@@ -293,6 +316,9 @@ class Processor:
 
             0x96: Op(lambda: self.sub_a_indexed_indirect('iy'), 'sub (iy + d)'),
             0x9e: Op(lambda: self.sbc_a_indexed_indirect('iy'), 'sbc (iy + d)'),
+
+            0xa6: Op(lambda: self.and_indexed_indirect('iy'), 'and (ix + y)'),
+            0xb6: Op(lambda: self.or_indexed_indirect('iy'), 'or (iy + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
@@ -668,6 +694,52 @@ class Processor:
         self.set_condition('p', (signed_a < 0) != (signed_result < 0))
         self.set_condition('n', True)
         self.set_condition('c', full_carry)
+
+    def and_a_reg(self, other_reg):
+        self.and_a_value(self.main_registers[other_reg])
+
+    def and_a_immediate(self):
+        self.and_a_value(self.get_value_at_pc())
+
+    def and_hl_indirect(self):
+        self.and_a_value(self.memory.peek(self.get_16bit_reg('hl')))
+
+    def and_indexed_indirect(self, register):
+        offset = to_signed(self.get_value_at_pc())
+        self.and_a_value(self.memory.peek(self.index_registers[register] + offset))
+
+    def and_a_value(self, value):
+        result = self.main_registers['a'] & value
+        self.main_registers['a'] = result
+        self.set_condition('s', result & 0b10000000 > 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', True)
+        self.set_condition('p', has_parity(result))
+        self.set_condition('n', False)
+        self.set_condition('c', False)
+
+    def or_a_reg(self, other_reg):
+        self.or_a_value(self.main_registers[other_reg])
+
+    def or_a_immediate(self):
+        self.or_a_value(self.get_value_at_pc())
+
+    def or_hl_indirect(self):
+        self.or_a_value(self.memory.peek(self.get_16bit_reg('hl')))
+
+    def or_indexed_indirect(self, register):
+        offset = to_signed(self.get_value_at_pc())
+        self.or_a_value(self.memory.peek(self.index_registers[register] + offset))
+
+    def or_a_value(self, value):
+        result = self.main_registers['a'] | value
+        self.main_registers['a'] = result
+        self.set_condition('s', result & 0b10000000 > 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', False)
+        self.set_condition('p', has_parity(result))
+        self.set_condition('n', False)
+        self.set_condition('c', False)
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

@@ -142,7 +142,7 @@ class Test8BitComparison(TestHelper):
         self.given_register_contains_value('a', 0b00001000)
         self.processor.index_registers[register] = 0xbeef
 
-        offset = random.randint(0, 256)
+        offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
         self.memory.poke(0xbeef + signed_offset, 0b00000001)

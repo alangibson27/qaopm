@@ -181,7 +181,7 @@ class Test8BitAddition(TestHelper):
         self.given_register_contains_value('a', 0b00001000)
         self.processor.index_registers[register] = 0xbeef
 
-        offset = random.randint(0, 256)
+        offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
         self.memory.poke(0xbeef + signed_offset, 0b01000001)
@@ -345,7 +345,7 @@ class Test8BitAddition(TestHelper):
         self.processor.set_condition('c', True)
         self.processor.index_registers[register] = 0xbeef
 
-        offset = random.randint(0, 256)
+        offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
         self.memory.poke(0xbeef + signed_offset, 0b01000001)

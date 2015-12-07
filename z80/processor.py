@@ -76,6 +76,7 @@ class Processor:
             0x24: Op(lambda: self.inc_reg('h'), 'inc h'),
             0x25: Op(lambda: self.dec_reg('h'), 'dec h'),
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
+            0x27: Op(self.daa, 'daa'),
             0x2a: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
             0x2c: Op(lambda: self.inc_reg('l'), 'inc l'),
             0x2d: Op(lambda: self.dec_reg('l'), 'dec l'),
@@ -884,6 +885,76 @@ class Processor:
         self.set_condition('h', half_carry)
         self.set_condition('n', True)
         return result
+
+    def daa(self):
+        digits = [int(x,16) for x in hex(self.main_registers['a'])[2:].zfill(2)]
+        fc = self.condition('c')
+        hc = self.condition('h')
+
+        if self.condition('n'):
+            self.daa_after_sub(digits, fc, hc)
+        else:
+            self.daa_after_add(digits, fc, hc)
+
+    def daa_after_add(self, digits, fc, hc):
+        if not fc and not hc:
+            if digits[0] <= 0x9 and digits[1] <= 0x9:
+                pass
+            elif digits[0] <= 0x8 and digits[1] >= 0xa:
+                self.main_registers['a'] += 0x6
+            elif digits[0] >= 0xa and digits[1] <= 0x9:
+                self.main_registers['a'] += 0x60
+                self.set_condition('c', True)
+            elif digits[0] >= 0x9 and digits[1] >= 0xa:
+                self.main_registers['a'] += 0x66
+                self.set_condition('c', True)
+        elif not fc and hc:
+            if digits[0] <= 0x9 and digits[1] <= 0x3:
+                self.main_registers['a'] += 0x6
+            elif digits[0] >= 0xa and digits[1] <= 0x3:
+                self.main_registers['a'] += 0x66
+                self.set_condition('c', True)
+        elif fc and not hc:
+            if digits[0] <= 0x2 and digits[1] <= 0x9:
+                self.main_registers['a'] += 0x60
+                self.set_condition('c', True)
+            elif digits[0] <= 0x2 and digits[1] >= 0xa:
+                self.main_registers['a'] += 0x66
+                self.set_condition('c', True)
+        elif fc and hc:
+            if digits[0] <= 0x3 and digits[1] <= 0x3:
+                self.main_registers['a'] += 0x66
+                self.set_condition('c', True)
+
+        self.main_registers['a'] &= 0xff
+
+        result = self.main_registers['a']
+        self.set_condition('s', (result & 0b10000000) > 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('p', has_parity(result))
+
+    def daa_after_sub(self, digits, fc, hc):
+        if not fc and not hc:
+            if digits[0] <= 0x9 and digits[1] <= 0x9:
+                pass
+        elif not fc and hc:
+            if digits[0] <= 0x8 and digits[1] >= 0x6:
+                self.main_registers['a'] += 0xfa
+        elif fc and not hc:
+            if digits[0] >= 0x7 and digits[1] <= 0x9:
+                self.main_registers['a'] += 0xa0
+                self.set_condition('c', True)
+        elif fc and hc:
+            if digits[0] >= 0x6 and digits[1] >= 0x6:
+                self.main_registers['a'] += 0x9a
+                self.set_condition('c', True)
+
+        self.main_registers['a'] &= 0xff
+
+        result = self.main_registers['a']
+        self.set_condition('s', (result & 0b10000000) > 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('p', has_parity(result))
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

@@ -5,6 +5,13 @@ def to_signed(val):
         return val
 
 
+def to_signed_16bit(val):
+    if val & 0x8000 != 0:
+        return val - 0x10000
+    else:
+        return val
+
+
 def big_endian_value(little_endian_value):
     lsb = little_endian_value[0]
     msb = little_endian_value[1]
@@ -31,6 +38,17 @@ def bitwise_sub(v1, v2):
 
     result = v1 - v2
     return result & 0xff, half_borrow, result < 0x00
+
+
+def bitwise_add_16bit(v1, v2):
+    v1_low_triple = v1 & 0x0fff
+    v2_low_triple = v2 & 0x0fff
+
+    low_triple = v1_low_triple + v2_low_triple
+    half_carry = low_triple > 0x0fff
+
+    result = v1 + v2
+    return result & 0xffff, half_carry, result > 0xffff
 
 
 def has_parity(v):

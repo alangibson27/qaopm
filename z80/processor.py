@@ -1,4 +1,4 @@
-from funcs import big_endian_value, to_signed, bitwise_sub, bitwise_add, has_parity
+from funcs import *
 
 
 class Op:
@@ -50,12 +50,15 @@ class Processor:
 
     def init_opcode_map(self):
         return {
+            0x00: Op(self.nop, 'nop'),
+
             0x01: Op(lambda: self.ld_16reg_immediate('bc'), 'ld bc, nn'),
             0x02: self.create_ld_reg_indirect_from_reg('bc', 'a'),
             0x04: Op(lambda: self.inc_reg('b'), 'inc b'),
             0x05: Op(lambda: self.dec_reg('b'), 'dec b'),
             0x06: Op(lambda: self.ld_reg_immediate('b'), 'ld b, n'),
             0x08: Op(self.ex_af_alt_af, "ex af, af'"),
+            0x09: Op(lambda: self.add_hl_reg('bc'), 'add hl, bc'),
             0x0a: self.create_ld_reg_from_reg_indirect('a', 'bc'),
             0x0c: Op(lambda: self.inc_reg('c'), 'inc c'),
             0x0d: Op(lambda: self.dec_reg('c'), 'dec c'),
@@ -66,6 +69,7 @@ class Processor:
             0x14: Op(lambda: self.inc_reg('d'), 'inc d'),
             0x15: Op(lambda: self.dec_reg('d'), 'dec d'),
             0x16: Op(lambda: self.ld_reg_immediate('d'), 'ld d, n'),
+            0x19: Op(lambda: self.add_hl_reg('de'), 'add hl, de'),
             0x1a: self.create_ld_reg_from_reg_indirect('a', 'de'),
             0x1c: Op(lambda: self.inc_reg('e'), 'inc e'),
             0x1d: Op(lambda: self.dec_reg('e'), 'dec e'),
@@ -77,6 +81,7 @@ class Processor:
             0x25: Op(lambda: self.dec_reg('h'), 'dec h'),
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
             0x27: Op(self.daa, 'daa'),
+            0x29: Op(lambda: self.add_hl_reg('hl'), 'add hl, hl'),
             0x2a: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
             0x2c: Op(lambda: self.inc_reg('l'), 'inc l'),
             0x2d: Op(lambda: self.dec_reg('l'), 'dec l'),
@@ -88,6 +93,8 @@ class Processor:
             0x34: Op(self.inc_hl_indirect, 'inc (hl)'),
             0x35: Op(self.dec_hl_indirect, 'dec (hl)'),
             0x36: Op(lambda: self.ld_hl_indirect_immediate(), 'ld (hl), n'),
+            0x37: Op(self.scf, 'scf'),
+            0x39: Op(lambda: self.add_hl_reg('sp'), 'add hl, sp'),
             0x3a: Op(self.ld_a_ext_addr, 'ld a, (nn)'),
             0x3c: Op(lambda: self.inc_reg('a'), 'inc a'),
             0x3d: Op(lambda: self.dec_reg('a'), 'dec a'),
@@ -269,15 +276,19 @@ class Processor:
         return {
             0x43: Op(lambda: self.ld_ext_16reg('bc'), 'ld (nn), bc'),
             0x44: Op(self.neg, 'neg'),
+            0x4a: Op(lambda: self.adc_hl_reg('bc'), 'adc hl, bc'),
             0x4b: Op(lambda: self.ld_16reg_ext('bc'), 'ld bc, (nn)'),
 
             0x53: Op(lambda: self.ld_ext_16reg('de'), 'ld (nn), de'),
+            0x5a: Op(lambda: self.adc_hl_reg('de'), 'adc hl, de'),
             0x5b: Op(lambda: self.ld_16reg_ext('de'), 'ld de, (nn)'),
 
             0x63: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
+            0x6a: Op(lambda: self.adc_hl_reg('hl'), 'adc hl, hl'),
             0x6b: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
 
             0x73: Op(lambda: self.ld_ext_sp(), 'ld (nn), sp'),
+            0x7a: Op(lambda: self.adc_hl_reg('sp'), 'adc hl, sp'),
             0x7b: Op(lambda: self.ld_sp_ext(), 'ld sp, (nn)'),
 
             0x57: Op(self.ld_a_i, 'ld a, i'),
@@ -979,6 +990,36 @@ class Processor:
         self.set_condition('h', self.condition('c'))
         self.set_condition('c', not self.condition('c'))
         self.set_condition('n', False)
+
+    def scf(self):
+        self.set_condition('h', False)
+        self.set_condition('n', False)
+        self.set_condition('c', True)
+
+    def nop(self):
+        pass
+
+    def add_hl_reg(self, reg_pair):
+        result, half_carry, full_carry = bitwise_add_16bit(self.get_16bit_reg('hl'), self.get_16bit_reg(reg_pair))
+        self.set_16bit_reg('hl', result)
+
+        self.set_condition('h', half_carry)
+        self.set_condition('n', False)
+        self.set_condition('c', full_carry)
+
+    def adc_hl_reg(self, reg_pair):
+        signed_hl = to_signed_16bit(self.get_16bit_reg('hl'))
+        to_add = (self.get_16bit_reg(reg_pair) + (1 if self.condition('c') else 0)) & 0xffff
+        result, half_carry, full_carry = bitwise_add_16bit(self.get_16bit_reg('hl'), to_add)
+        signed_result = to_signed_16bit(result)
+
+        self.set_16bit_reg('hl', result)
+        self.set_condition('s', result & 0x8000 > 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', half_carry)
+        self.set_condition('p', (signed_hl < 0) != (signed_result < 0))
+        self.set_condition('n', False)
+        self.set_condition('c', full_carry)
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

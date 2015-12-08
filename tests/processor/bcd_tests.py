@@ -1,3 +1,5 @@
+from nose.tools import assert_true
+
 from processor_tests import TestHelper
 
 
@@ -252,6 +254,51 @@ class TestBcdAdjustment(TestHelper):
             self.assert_flag('h').is_reset()
             self.assert_flag('c').is_set()
         self.assert_flag('n').is_reset()
+
+    def test_scf(self):
+        for value in [True, False]:
+            yield self.check_scf, value
+
+    def check_scf(self, input_value):
+        # given
+        self.processor.set_condition('c', input_value)
+        self.given_next_instruction_is(0x37)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_flag('h').is_reset()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_set()
+
+    def test_nop(self):
+        # given
+        self.given_next_instruction_is(0x00)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x0001)
+
+    def test_halt(self):
+        assert_true(False)
+
+    def test_di(self):
+        assert_true(False)
+
+    def test_ei(self):
+        assert_true(False)
+
+    def test_im0(self):
+        assert_true(False)
+
+    def test_im1(self):
+        assert_true(False)
+
+    def test_im2(self):
+        assert_true(False)
 
     def _add_(self, v1, v2):
         self.given_next_instruction_is(0x3e, v1)

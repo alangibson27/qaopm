@@ -81,6 +81,7 @@ class Processor:
             0x2c: Op(lambda: self.inc_reg('l'), 'inc l'),
             0x2d: Op(lambda: self.dec_reg('l'), 'dec l'),
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
+            0x2f: Op(self.cpl, 'cpl'),
 
             0x31: Op(lambda: self.ld_sp_immediate(), 'ld sp, nn'),
             0x32: Op(self.ld_ext_addr_a, 'ld (nn), a'),
@@ -91,6 +92,7 @@ class Processor:
             0x3c: Op(lambda: self.inc_reg('a'), 'inc a'),
             0x3d: Op(lambda: self.dec_reg('a'), 'dec a'),
             0x3e: Op(lambda: self.ld_reg_immediate('a'), 'ld a, n'),
+            0x3f: Op(self.ccf, 'ccf'),
 
             0x40: self.create_ld_reg_from_reg('b', 'b'),
             0x41: self.create_ld_reg_from_reg('b', 'c'),
@@ -266,6 +268,7 @@ class Processor:
     def init_ed_opcodes(self):
         return {
             0x43: Op(lambda: self.ld_ext_16reg('bc'), 'ld (nn), bc'),
+            0x44: Op(self.neg, 'neg'),
             0x4b: Op(lambda: self.ld_16reg_ext('bc'), 'ld bc, (nn)'),
 
             0x53: Op(lambda: self.ld_ext_16reg('de'), 'ld (nn), de'),
@@ -955,6 +958,27 @@ class Processor:
         self.set_condition('s', (result & 0b10000000) > 0)
         self.set_condition('z', result == 0)
         self.set_condition('p', has_parity(result))
+
+    def cpl(self):
+        self.main_registers['a'] = 0xff - self.main_registers['a']
+        self.set_condition('h', True)
+        self.set_condition('n', True)
+
+    def neg(self):
+        result, half_carry, _ = bitwise_sub(0, self.main_registers['a'])
+
+        self.set_condition('s', to_signed(result) < 0)
+        self.set_condition('z', result == 0)
+        self.set_condition('h', half_carry)
+        self.set_condition('p', self.main_registers['a'] == 0x80)
+        self.set_condition('n', True)
+        self.set_condition('c', self.main_registers['a'] != 0x00)
+        self.main_registers['a'] = result
+
+    def ccf(self):
+        self.set_condition('h', self.condition('c'))
+        self.set_condition('c', not self.condition('c'))
+        self.set_condition('n', False)
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

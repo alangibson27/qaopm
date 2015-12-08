@@ -146,6 +146,113 @@ class TestBcdAdjustment(TestHelper):
         self.assert_flag('c').is_reset()
         self.assert_flag('p').is_set()
 
+    def test_cpl(self):
+        # given
+        self.given_register_contains_value('a', 0b10101010)
+        self.given_next_instruction_is(0x2f)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register('a').equals(0b01010101)
+
+        self.assert_flag('h').is_set()
+        self.assert_flag('n').is_set()
+
+    def test_neg_of_0(self):
+        # given
+        self.given_register_contains_value('a', 0b00000000)
+        self.given_next_instruction_is(0xed, 0x44)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register('a').equals(0b00000000)
+
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_set()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
+        self.assert_flag('c').is_reset()
+
+    def test_neg_of_positive(self):
+        # given
+        self.given_register_contains_value('a', 0b00000001)
+        self.given_next_instruction_is(0xed, 0x44)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register('a').equals(0b11111111)
+
+        self.assert_flag('s').is_set()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_set()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
+        self.assert_flag('c').is_set()
+
+    def test_neg_of_negative(self):
+        # given
+        self.given_register_contains_value('a', 0b10000001)
+        self.given_next_instruction_is(0xed, 0x44)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register('a').equals(0b01111111)
+
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_set()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_set()
+        self.assert_flag('c').is_set()
+
+    def test_neg_of_0x80(self):
+        # given
+        self.given_register_contains_value('a', 0x80)
+        self.given_next_instruction_is(0xed, 0x44)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register('a').equals(0x80)
+
+        self.assert_flag('s').is_set()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_set()
+        self.assert_flag('c').is_set()
+
+    def test_ccf(self):
+        for value in [True, False]:
+            yield self.check_ccf, value
+
+    def check_ccf(self, input_value):
+        # given
+        self.processor.set_condition('c', input_value)
+        self.given_next_instruction_is(0x3f)
+
+        # when
+        self.processor.execute()
+
+        # then
+        if input_value:
+            self.assert_flag('h').is_set()
+            self.assert_flag('c').is_reset()
+        else:
+            self.assert_flag('h').is_reset()
+            self.assert_flag('c').is_set()
+        self.assert_flag('n').is_reset()
+
     def _add_(self, v1, v2):
         self.given_next_instruction_is(0x3e, v1)
         self.processor.execute()

@@ -34,8 +34,11 @@ class TestHelper:
             self.processor.main_registers[register] = value
 
     def given_register_pair_contains_value(self, register_pair, value):
-        self.processor.main_registers[register_pair[0]] = value >> 8
-        self.processor.main_registers[register_pair[1]] = value & 0xff
+        if register_pair == 'sp':
+            self.processor.special_registers['sp'] = value
+        else:
+            self.processor.main_registers[register_pair[0]] = value >> 8
+            self.processor.main_registers[register_pair[1]] = value & 0xff
 
     def given_alt_register_pair_contains_value(self, register_pair, value):
         self.processor.alternate_registers[register_pair[0]] = value >> 8
@@ -58,7 +61,8 @@ class TestHelper:
         return EqualsBuilder('reg ' + reg, self.processor.main_registers[reg])
 
     def assert_register_pair(self, reg_pair):
-        return EqualsBuilder('reg pair ' + reg_pair, self.processor.get_16bit_reg(reg_pair))
+        value = self.processor.special_registers['sp'] if reg_pair == 'sp' else self.processor.get_16bit_reg(reg_pair)
+        return EqualsBuilder('reg pair ' + reg_pair, value)
 
     def assert_alt_register_pair(self, reg_pair):
         return EqualsBuilder('alt reg pair ' + reg_pair, self.processor.get_16bit_alt_reg(reg_pair))

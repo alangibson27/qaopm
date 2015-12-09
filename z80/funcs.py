@@ -51,5 +51,16 @@ def bitwise_add_16bit(v1, v2):
     return result & 0xffff, half_carry, result > 0xffff
 
 
+def bitwise_sub_16bit(v1, v2):
+    v1_low_triple = v1 & 0x0fff
+    v2_low_triple = v2 & 0x0fff
+
+    low_triple = v1_low_triple - v2_low_triple
+    half_carry = low_triple < 0x0000
+
+    result = v1 - v2
+    return result & 0xffff, half_carry, result < 0x0000
+
+
 def has_parity(v):
     return bin(v).count('1') % 2 == 0

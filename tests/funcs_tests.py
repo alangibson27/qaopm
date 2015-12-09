@@ -135,3 +135,21 @@ class TestFuncs:
         assert_equals(result, 0x1000)
         assert_true(half_carry)
         assert_true(full_carry)
+
+    def test_bitwise_sub_16bit_with_no_borrow_or_half_borrow(self):
+        result, half_borrow, full_borrow = bitwise_sub_16bit(0x1101, 0x0001)
+        assert_equals(result, 0x1100)
+        assert_false(half_borrow)
+        assert_false(full_borrow)
+
+    def test_bitwise_sub_16bit_with_half_borrow(self):
+        result, half_borrow, full_borrow = bitwise_sub_16bit(0x1011, 0x0100)
+        assert_equals(result, 0x0f11)
+        assert_true(half_borrow)
+        assert_false(full_borrow)
+
+    def test_bitwise_sub_16bit_with_full_and_half_borrow(self):
+        result, half_borrow, full_borrow = bitwise_sub_16bit(0x1011, 0x2100)
+        assert_equals(result, 0xef11)
+        assert_true(half_borrow)
+        assert_true(full_borrow)

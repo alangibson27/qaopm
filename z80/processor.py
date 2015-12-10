@@ -1,5 +1,5 @@
 from funcs import *
-
+from rotate_shift import *
 
 class Op:
     def __init__(self, function, mnemonic):
@@ -58,6 +58,7 @@ class Processor:
             0x04: Op(lambda: self.inc_reg('b'), 'inc b'),
             0x05: Op(lambda: self.dec_reg('b'), 'dec b'),
             0x06: Op(lambda: self.ld_reg_immediate('b'), 'ld b, n'),
+            0x07: Op(lambda: rlca(self), 'rlca'),
             0x08: Op(self.ex_af_alt_af, "ex af, af'"),
             0x09: Op(lambda: self.add_hl_reg('bc'), 'add hl, bc'),
             0x0a: self.create_ld_reg_from_reg_indirect('a', 'bc'),
@@ -65,6 +66,7 @@ class Processor:
             0x0c: Op(lambda: self.inc_reg('c'), 'inc c'),
             0x0d: Op(lambda: self.dec_reg('c'), 'dec c'),
             0x0e: Op(lambda: self.ld_reg_immediate('c'), 'ld c, n'),
+            0x0f: Op(lambda: rrca(self), 'rrca'),
 
             0x11: Op(lambda: self.ld_16reg_immediate('de'), 'ld de, nn'),
             0x12: self.create_ld_reg_indirect_from_reg('de', 'a'),
@@ -72,12 +74,14 @@ class Processor:
             0x14: Op(lambda: self.inc_reg('d'), 'inc d'),
             0x15: Op(lambda: self.dec_reg('d'), 'dec d'),
             0x16: Op(lambda: self.ld_reg_immediate('d'), 'ld d, n'),
+            0x17: Op(lambda: rla(self), 'rla'),
             0x19: Op(lambda: self.add_hl_reg('de'), 'add hl, de'),
             0x1a: self.create_ld_reg_from_reg_indirect('a', 'de'),
             0x1b: Op(lambda: self.dec_16reg('de'), 'dec de'),
             0x1c: Op(lambda: self.inc_reg('e'), 'inc e'),
             0x1d: Op(lambda: self.dec_reg('e'), 'dec e'),
             0x1e: Op(lambda: self.ld_reg_immediate('e'), 'ld e, n'),
+            0x1f: Op(lambda: rra(self), 'rra'),
 
             0x21: Op(lambda: self.ld_16reg_immediate('hl'), 'ld hl, nn'),
             0x22: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
@@ -275,9 +279,21 @@ class Processor:
             0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
             0xfe: Op(self.cp_immediate, 'cp n'),
 
+            0xcb: self.init_cb_opcodes(),
             0xed: self.init_ed_opcodes(),
             0xdd: self.init_dd_opcodes(),
             0xfd: self.init_fd_opcodes()
+        }
+
+    def init_cb_opcodes(self):
+        return {
+            0x00: Op(lambda: rlc_reg(self, 'b'), 'rlc b'),
+            0x01: Op(lambda: rlc_reg(self, 'c'), 'rlc c'),
+            0x02: Op(lambda: rlc_reg(self, 'd'), 'rlc d'),
+            0x03: Op(lambda: rlc_reg(self, 'e'), 'rlc e'),
+            0x04: Op(lambda: rlc_reg(self, 'h'), 'rlc h'),
+            0x05: Op(lambda: rlc_reg(self, 'l'), 'rlc l'),
+            0x07: Op(lambda: rlc_reg(self, 'a'), 'rlc a')
         }
 
     def init_ed_opcodes(self):

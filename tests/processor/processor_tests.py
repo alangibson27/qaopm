@@ -96,6 +96,9 @@ class FlagSetBuilder:
         self.flag = flag
         self.value = value
 
+    def equals(self, expected):
+        assert_equals(self.value, expected, 'flag {} not {}'.format(self.flag, 'set' if expected else 'reset'))
+
     def is_set(self):
         assert_equals(self.value, True, 'flag {} not set'.format(self.flag))
 

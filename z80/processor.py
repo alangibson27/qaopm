@@ -1,6 +1,6 @@
-from funcs import *
 from rotate_shift import *
 from arithmetic_16 import *
+
 
 class Op:
     def __init__(self, function, mnemonic):
@@ -294,7 +294,17 @@ class Processor:
             0x03: Op(lambda: rlc_reg(self, 'e'), 'rlc e'),
             0x04: Op(lambda: rlc_reg(self, 'h'), 'rlc h'),
             0x05: Op(lambda: rlc_reg(self, 'l'), 'rlc l'),
-            0x07: Op(lambda: rlc_reg(self, 'a'), 'rlc a')
+            0x06: Op(lambda: rlc_hl_indirect(self, self.memory), 'rlc (hl)'),
+            0x07: Op(lambda: rlc_reg(self, 'a'), 'rlc a'),
+
+            0x10: Op(lambda: rl_reg(self, 'b'), 'rl b'),
+            0x11: Op(lambda: rl_reg(self, 'c'), 'rl c'),
+            0x12: Op(lambda: rl_reg(self, 'd'), 'rl d'),
+            0x13: Op(lambda: rl_reg(self, 'e'), 'rl e'),
+            0x14: Op(lambda: rl_reg(self, 'h'), 'rl h'),
+            0x15: Op(lambda: rl_reg(self, 'l'), 'rl l'),
+            0x16: Op(lambda: rl_hl_indirect(self, self.memory), 'rlc (hl)'),
+            0x17: Op(lambda: rl_reg(self, 'a'), 'rl a')
         }
 
     def init_ed_opcodes(self):
@@ -373,6 +383,8 @@ class Processor:
             0xb6: Op(lambda: self.or_indexed_indirect('ix'), 'or (ix + d)'),
             0xbe: Op(lambda: self.cp_indexed_indirect('ix'), 'cp (ix + d)'),
 
+            0xcb: Op(lambda: rotate_indexed(self, self.memory, 'ix'), 'rlc (ix + d)'),
+
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
             0xe5: Op(lambda: self.push_indexed('ix'), 'push ix'),
@@ -419,6 +431,8 @@ class Processor:
             0xae: Op(lambda: self.xor_indexed_indirect('iy'), 'xor (iy + d)'),
             0xb6: Op(lambda: self.or_indexed_indirect('iy'), 'or (iy + d)'),
             0xbe: Op(lambda: self.cp_indexed_indirect('iy'), 'cp (iy + d)'),
+
+            0xcb: Op(lambda: rotate_indexed(self, self.memory, 'iy'), 'rlc (iy + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),

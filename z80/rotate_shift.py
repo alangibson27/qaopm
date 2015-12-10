@@ -1,20 +1,15 @@
-from funcs import has_parity
+from funcs import has_parity, to_signed
 
 
 def rlca(processor):
-    _rlc(processor, 'a')
+    result = _rlc_value(processor, processor.main_registers['a'])
+    processor.main_registers['a'] = result
 
 
 def rla(processor):
-    high_bit = processor.main_registers['a'] >> 7
-    rotated = (processor.main_registers['a'] << 1) & 0xff
-    if processor.condition('c'):
-        rotated |= 0b1
-
+    value = processor.main_registers['a']
+    rotated = _rl_value(processor, value)
     processor.main_registers['a'] = rotated
-    processor.set_condition('c', high_bit == 1)
-    processor.set_condition('h', False)
-    processor.set_condition('n', False)
 
 
 def rrca(processor):
@@ -42,19 +37,83 @@ def rra(processor):
 
 
 def rlc_reg(processor, reg):
-    result = _rlc(processor, reg)
+    result = _rlc_value(processor, processor.main_registers[reg])
+    processor.main_registers[reg] = result
+    _set_flags_after_rotate(processor, result)
+
+
+def rl_reg(processor, reg):
+    result = _rl_value(processor, processor.main_registers[reg])
+    processor.main_registers[reg] = result
+    _set_flags_after_rotate(processor, result)
+
+
+def rlc_hl_indirect(processor, memory):
+    address = processor.get_16bit_reg('hl')
+    result = _rlc_value(processor, memory.peek(address))
+    memory.poke(address, result)
+    _set_flags_after_rotate(processor, result)
+
+
+def rl_hl_indirect(processor, memory):
+    address = processor.get_16bit_reg('hl')
+    result = _rl_value(processor, memory.peek(address))
+    memory.poke(address, result)
+    _set_flags_after_rotate(processor, result)
+
+
+def rotate_indexed(processor, memory, register):
+    offset = to_signed(processor.get_value_at_pc())
+    operation = processor.get_value_at_pc()
+
+    if operation == 0x06:
+        _rlc_indexed(processor, memory, register, offset)
+    elif operation == 0x16:
+        _rl_indexed(processor, memory, register, offset)
+    else:
+        pass
+
+
+def _rlc_indexed(processor, memory, register, offset):
+    address = processor.index_registers[register] + offset
+    value = memory.peek(address)
+    result = _rlc_value(processor, value)
+    memory.poke(address, result)
+    _set_flags_after_rotate(processor, result)
+
+
+def _rl_indexed(processor, memory, register, offset):
+    address = processor.index_registers[register] + offset
+    value = memory.peek(address)
+    result = _rl_value(processor, value)
+    memory.poke(address, result)
+    _set_flags_after_rotate(processor, result)
+
+
+def _set_flags_after_rotate(processor, result):
     processor.set_condition('s', result & 0b10000000 > 0)
     processor.set_condition('z', result == 0)
     processor.set_condition('p', has_parity(result))
 
 
-def _rlc(processor, reg):
-    high_bit = processor.main_registers[reg] >> 7
-    rotated = (processor.main_registers[reg] << 1) & 0xff
+def _rlc_value(processor, value):
+    high_bit = value >> 7
+    rotated = (value << 1) & 0xff
     rotated |= high_bit
-    processor.main_registers[reg] = rotated
+    _set_carry_and_negate_flags(processor, high_bit)
+    return rotated
+
+
+def _rl_value(processor, value):
+    high_bit = value >> 7
+    rotated = (value << 1) & 0xff
+    if processor.condition('c'):
+        rotated |= 0b1
+    _set_carry_and_negate_flags(processor, high_bit)
+    return rotated
+
+
+def _set_carry_and_negate_flags(processor, high_bit):
     processor.set_condition('c', high_bit == 1)
     processor.set_condition('h', False)
     processor.set_condition('n', False)
-    return rotated
-

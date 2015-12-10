@@ -1,5 +1,6 @@
 from funcs import *
 from rotate_shift import *
+from arithmetic_16 import *
 
 class Op:
     def __init__(self, function, mnemonic):
@@ -54,15 +55,15 @@ class Processor:
 
             0x01: Op(lambda: self.ld_16reg_immediate('bc'), 'ld bc, nn'),
             0x02: self.create_ld_reg_indirect_from_reg('bc', 'a'),
-            0x03: Op(lambda: self.inc_16reg('bc'), 'inc bc'),
+            0x03: Op(lambda: inc_16reg(self, 'bc'), 'inc bc'),
             0x04: Op(lambda: self.inc_reg('b'), 'inc b'),
             0x05: Op(lambda: self.dec_reg('b'), 'dec b'),
             0x06: Op(lambda: self.ld_reg_immediate('b'), 'ld b, n'),
             0x07: Op(lambda: rlca(self), 'rlca'),
             0x08: Op(self.ex_af_alt_af, "ex af, af'"),
-            0x09: Op(lambda: self.add_hl_reg('bc'), 'add hl, bc'),
+            0x09: Op(lambda: add_hl_reg(self, 'bc'), 'add hl, bc'),
             0x0a: self.create_ld_reg_from_reg_indirect('a', 'bc'),
-            0x0b: Op(lambda: self.dec_16reg('bc'), 'dec bc'),
+            0x0b: Op(lambda: dec_16reg(self, 'bc'), 'dec bc'),
             0x0c: Op(lambda: self.inc_reg('c'), 'inc c'),
             0x0d: Op(lambda: self.dec_reg('c'), 'dec c'),
             0x0e: Op(lambda: self.ld_reg_immediate('c'), 'ld c, n'),
@@ -70,14 +71,14 @@ class Processor:
 
             0x11: Op(lambda: self.ld_16reg_immediate('de'), 'ld de, nn'),
             0x12: self.create_ld_reg_indirect_from_reg('de', 'a'),
-            0x13: Op(lambda: self.inc_16reg('de'), 'inc de'),
+            0x13: Op(lambda: inc_16reg(self, 'de'), 'inc de'),
             0x14: Op(lambda: self.inc_reg('d'), 'inc d'),
             0x15: Op(lambda: self.dec_reg('d'), 'dec d'),
             0x16: Op(lambda: self.ld_reg_immediate('d'), 'ld d, n'),
             0x17: Op(lambda: rla(self), 'rla'),
-            0x19: Op(lambda: self.add_hl_reg('de'), 'add hl, de'),
+            0x19: Op(lambda: add_hl_reg(self, 'de'), 'add hl, de'),
             0x1a: self.create_ld_reg_from_reg_indirect('a', 'de'),
-            0x1b: Op(lambda: self.dec_16reg('de'), 'dec de'),
+            0x1b: Op(lambda: dec_16reg(self, 'de'), 'dec de'),
             0x1c: Op(lambda: self.inc_reg('e'), 'inc e'),
             0x1d: Op(lambda: self.dec_reg('e'), 'dec e'),
             0x1e: Op(lambda: self.ld_reg_immediate('e'), 'ld e, n'),
@@ -85,14 +86,14 @@ class Processor:
 
             0x21: Op(lambda: self.ld_16reg_immediate('hl'), 'ld hl, nn'),
             0x22: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
-            0x23: Op(lambda: self.inc_16reg('hl'), 'inc hl'),
+            0x23: Op(lambda: inc_16reg(self, 'hl'), 'inc hl'),
             0x24: Op(lambda: self.inc_reg('h'), 'inc h'),
             0x25: Op(lambda: self.dec_reg('h'), 'dec h'),
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
             0x27: Op(self.daa, 'daa'),
-            0x29: Op(lambda: self.add_hl_reg('hl'), 'add hl, hl'),
+            0x29: Op(lambda: add_hl_reg(self, 'hl'), 'add hl, hl'),
             0x2a: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
-            0x2b: Op(lambda: self.dec_16reg('hl'), 'dec hl'),
+            0x2b: Op(lambda: dec_16reg(self, 'hl'), 'dec hl'),
             0x2c: Op(lambda: self.inc_reg('l'), 'inc l'),
             0x2d: Op(lambda: self.dec_reg('l'), 'dec l'),
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
@@ -100,14 +101,14 @@ class Processor:
 
             0x31: Op(lambda: self.ld_sp_immediate(), 'ld sp, nn'),
             0x32: Op(self.ld_ext_addr_a, 'ld (nn), a'),
-            0x33: Op(lambda: self.inc_16reg('sp'), 'inc sp'),
+            0x33: Op(lambda: inc_16reg(self, 'sp'), 'inc sp'),
             0x34: Op(self.inc_hl_indirect, 'inc (hl)'),
             0x35: Op(self.dec_hl_indirect, 'dec (hl)'),
             0x36: Op(lambda: self.ld_hl_indirect_immediate(), 'ld (hl), n'),
             0x37: Op(self.scf, 'scf'),
-            0x39: Op(lambda: self.add_hl_reg('sp'), 'add hl, sp'),
+            0x39: Op(lambda: add_hl_reg(self, 'sp'), 'add hl, sp'),
             0x3a: Op(self.ld_a_ext_addr, 'ld a, (nn)'),
-            0x3b: Op(lambda: self.dec_16reg('sp'), 'dec sp'),
+            0x3b: Op(lambda: dec_16reg(self, 'sp'), 'dec sp'),
             0x3c: Op(lambda: self.inc_reg('a'), 'inc a'),
             0x3d: Op(lambda: self.dec_reg('a'), 'dec a'),
             0x3e: Op(lambda: self.ld_reg_immediate('a'), 'ld a, n'),
@@ -298,25 +299,25 @@ class Processor:
 
     def init_ed_opcodes(self):
         return {
-            0x42: Op(lambda: self.sbc_hl_reg('bc'), 'sbc hl, bc'),
+            0x42: Op(lambda: sbc_hl_reg(self, 'bc'), 'sbc hl, bc'),
             0x43: Op(lambda: self.ld_ext_16reg('bc'), 'ld (nn), bc'),
             0x44: Op(self.neg, 'neg'),
-            0x4a: Op(lambda: self.adc_hl_reg('bc'), 'adc hl, bc'),
+            0x4a: Op(lambda: adc_hl_reg(self, 'bc'), 'adc hl, bc'),
             0x4b: Op(lambda: self.ld_16reg_ext('bc'), 'ld bc, (nn)'),
 
-            0x52: Op(lambda: self.sbc_hl_reg('de'), 'sbc hl, de'),
+            0x52: Op(lambda: sbc_hl_reg(self, 'de'), 'sbc hl, de'),
             0x53: Op(lambda: self.ld_ext_16reg('de'), 'ld (nn), de'),
-            0x5a: Op(lambda: self.adc_hl_reg('de'), 'adc hl, de'),
+            0x5a: Op(lambda: adc_hl_reg(self, 'de'), 'adc hl, de'),
             0x5b: Op(lambda: self.ld_16reg_ext('de'), 'ld de, (nn)'),
 
-            0x62: Op(lambda: self.sbc_hl_reg('hl'), 'sbc hl, hl'),
+            0x62: Op(lambda: sbc_hl_reg(self, 'hl'), 'sbc hl, hl'),
             0x63: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
-            0x6a: Op(lambda: self.adc_hl_reg('hl'), 'adc hl, hl'),
+            0x6a: Op(lambda: adc_hl_reg(self, 'hl'), 'adc hl, hl'),
             0x6b: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
 
-            0x72: Op(lambda: self.sbc_hl_reg('sp'), 'sbc hl, sp'),
+            0x72: Op(lambda: sbc_hl_reg(self, 'sp'), 'sbc hl, sp'),
             0x73: Op(lambda: self.ld_ext_sp(), 'ld (nn), sp'),
-            0x7a: Op(lambda: self.adc_hl_reg('sp'), 'adc hl, sp'),
+            0x7a: Op(lambda: adc_hl_reg(self, 'sp'), 'adc hl, sp'),
             0x7b: Op(lambda: self.ld_sp_ext(), 'ld sp, (nn)'),
 
             0x57: Op(self.ld_a_i, 'ld a, i'),
@@ -334,18 +335,18 @@ class Processor:
 
     def init_dd_opcodes(self):
         return {
-            0x09: Op(lambda: self.add_indexed_reg('ix', 'bc'), 'add ix, bc'),
-            0x19: Op(lambda: self.add_indexed_reg('ix', 'de'), 'add ix, de'),
+            0x09: Op(lambda: add_indexed_reg(self, 'ix', 'bc'), 'add ix, bc'),
+            0x19: Op(lambda: add_indexed_reg(self, 'ix', 'de'), 'add ix, de'),
             0x21: Op(lambda: self.ld_indexed_reg_immediate('ix'), 'ld ix, nn'),
             0x22: Op(lambda: self.ld_ext_indexed_16reg('ix'), 'ld (nn), ix'),
-            0x23: Op(lambda: self.inc_indexed_reg('ix'), 'inc ix'),
-            0x29: Op(lambda: self.add_indexed_reg('ix', 'ix'), 'add ix, ix'),
+            0x23: Op(lambda: inc_indexed_reg(self, 'ix'), 'inc ix'),
+            0x29: Op(lambda: add_indexed_reg(self, 'ix', 'ix'), 'add ix, ix'),
             0x2a: Op(lambda: self.ld_indexed_16reg_ext('ix'), 'ld ix, (nn)'),
-            0x2b: Op(lambda: self.dec_indexed_reg('ix'), 'dec ix'),
+            0x2b: Op(lambda: dec_indexed_reg(self, 'ix'), 'dec ix'),
             0x34: Op(lambda: self.inc_indexed_indirect('ix'), 'inc (ix + d)'),
             0x35: Op(lambda: self.dec_indexed_indirect('ix'), 'dec (ix + d)'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('ix'), 'ld (ix + d), n'),
-            0x39: Op(lambda: self.add_indexed_reg('ix', 'sp'), 'add ix, sp'),
+            0x39: Op(lambda: add_indexed_reg(self, 'ix', 'sp'), 'add ix, sp'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'ix'), 'ld b, (ix + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'ix'), 'ld c, (ix + d)'),
             0x56: Op(lambda: self.ld_reg_indexed_addr('d', 'ix'), 'ld d, (ix + d)'),
@@ -381,18 +382,18 @@ class Processor:
 
     def init_fd_opcodes(self):
         return {
-            0x09: Op(lambda: self.add_indexed_reg('iy', 'bc'), 'add iy, bc'),
-            0x19: Op(lambda: self.add_indexed_reg('iy', 'de'), 'add iy, de'),
+            0x09: Op(lambda: add_indexed_reg(self, 'iy', 'bc'), 'add iy, bc'),
+            0x19: Op(lambda: add_indexed_reg(self, 'iy', 'de'), 'add iy, de'),
             0x21: Op(lambda: self.ld_indexed_reg_immediate('iy'), 'ld iy, nn'),
             0x22: Op(lambda: self.ld_ext_indexed_16reg('iy'), 'ld (nn), iy'),
-            0x23: Op(lambda: self.inc_indexed_reg('iy'), 'inc iy'),
-            0x29: Op(lambda: self.add_indexed_reg('iy', 'iy'), 'add iy, iy'),
+            0x23: Op(lambda: inc_indexed_reg(self, 'iy'), 'inc iy'),
+            0x29: Op(lambda: add_indexed_reg(self, 'iy', 'iy'), 'add iy, iy'),
             0x2a: Op(lambda: self.ld_indexed_16reg_ext('iy'), 'ld iy, (nn)'),
-            0x2b: Op(lambda: self.dec_indexed_reg('iy'), 'dec iy'),
+            0x2b: Op(lambda: dec_indexed_reg(self, 'iy'), 'dec iy'),
             0x34: Op(lambda: self.inc_indexed_indirect('iy'), 'inc (iy + d)'),
             0x35: Op(lambda: self.dec_indexed_indirect('iy'), 'dec (iy + d)'),
             0x36: Op(lambda: self.ld_indexed_addr_immediate('iy'), 'ld (iy + d), n'),
-            0x39: Op(lambda: self.add_indexed_reg('iy', 'sp'), 'add iy, sp'),
+            0x39: Op(lambda: add_indexed_reg(self, 'iy', 'sp'), 'add iy, sp'),
             0x46: Op(lambda: self.ld_reg_indexed_addr('b', 'iy'), 'ld b, (iy + d)'),
             0x4e: Op(lambda: self.ld_reg_indexed_addr('c', 'iy'), 'ld c, (iy + d)'),
             0x56: Op(lambda: self.ld_reg_indexed_addr('d', 'iy'), 'ld d, (iy + d)'),
@@ -1038,67 +1039,6 @@ class Processor:
 
     def nop(self):
         pass
-
-    def add_hl_reg(self, reg_pair):
-        result, half_carry, full_carry = bitwise_add_16bit(self.get_16bit_reg('hl'), self.get_16bit_reg(reg_pair))
-        self.set_16bit_reg('hl', result)
-
-        self.set_condition('h', half_carry)
-        self.set_condition('n', False)
-        self.set_condition('c', full_carry)
-
-    def adc_hl_reg(self, reg_pair):
-        signed_hl = to_signed_16bit(self.get_16bit_reg('hl'))
-        to_add = (self.get_16bit_reg(reg_pair) + (1 if self.condition('c') else 0)) & 0xffff
-        result, half_carry, full_carry = bitwise_add_16bit(self.get_16bit_reg('hl'), to_add)
-        signed_result = to_signed_16bit(result)
-
-        self.set_16bit_reg('hl', result)
-        self.set_condition('s', result & 0x8000 > 0)
-        self.set_condition('z', result == 0)
-        self.set_condition('h', half_carry)
-        self.set_condition('p', (signed_hl < 0) != (signed_result < 0))
-        self.set_condition('n', False)
-        self.set_condition('c', full_carry)
-
-    def sbc_hl_reg(self, reg_pair):
-        signed_hl = to_signed_16bit(self.get_16bit_reg('hl'))
-        to_sub = (self.get_16bit_reg(reg_pair) + (1 if self.condition('c') else 0)) & 0xffff
-        result, half_borrow, full_borrow = bitwise_sub_16bit(self.get_16bit_reg('hl'), to_sub)
-        signed_result = to_signed_16bit(result)
-
-        self.set_16bit_reg('hl', result)
-        self.set_condition('s', result & 0x8000 > 0)
-        self.set_condition('z', result == 0)
-        self.set_condition('h', half_borrow)
-        self.set_condition('p', (signed_hl < 0) != (signed_result < 0))
-        self.set_condition('n', True)
-        self.set_condition('c', full_borrow)
-
-    def add_indexed_reg(self, indexed_reg, reg_pair):
-        result, half_carry, full_carry = bitwise_add_16bit(self.index_registers[indexed_reg],
-                                                           self.get_16bit_reg(reg_pair))
-
-        self.index_registers[indexed_reg] = result
-        self.set_condition('h', half_carry)
-        self.set_condition('n', False)
-        self.set_condition('c', full_carry)
-
-    def inc_16reg(self, reg_pair):
-        result = (self.get_16bit_reg(reg_pair) + 1) & 0xffff
-        self.set_16bit_reg(reg_pair, result)
-
-    def inc_indexed_reg(self, reg):
-        result = (self.index_registers[reg] + 1) & 0xffff
-        self.index_registers[reg] = result
-
-    def dec_16reg(self, reg_pair):
-        result = (self.get_16bit_reg(reg_pair) - 1) & 0xffff
-        self.set_16bit_reg(reg_pair, result)
-
-    def dec_indexed_reg(self, reg):
-        result = (self.index_registers[reg] - 1) & 0xffff
-        self.index_registers[reg] = result
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

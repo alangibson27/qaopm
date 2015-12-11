@@ -302,7 +302,7 @@ class Processor:
             0x0b: Op(lambda: rrc_reg(self, 'e'), 'rrc e'),
             0x0c: Op(lambda: rrc_reg(self, 'h'), 'rrc h'),
             0x0d: Op(lambda: rrc_reg(self, 'l'), 'rrc l'),
-            0x0e: Op(lambda: rrc_hl_indirect(self, self.memory), 'rlc (hl)'),
+            0x0e: Op(lambda: rrc_hl_indirect(self, self.memory), 'rrc (hl)'),
             0x0f: Op(lambda: rrc_reg(self, 'a'), 'rrc a'),
 
             0x10: Op(lambda: rl_reg(self, 'b'), 'rl b'),
@@ -311,8 +311,16 @@ class Processor:
             0x13: Op(lambda: rl_reg(self, 'e'), 'rl e'),
             0x14: Op(lambda: rl_reg(self, 'h'), 'rl h'),
             0x15: Op(lambda: rl_reg(self, 'l'), 'rl l'),
-            0x16: Op(lambda: rl_hl_indirect(self, self.memory), 'rlc (hl)'),
-            0x17: Op(lambda: rl_reg(self, 'a'), 'rl a')
+            0x16: Op(lambda: rl_hl_indirect(self, self.memory), 'rl (hl)'),
+            0x17: Op(lambda: rl_reg(self, 'a'), 'rl a'),
+            0x18: Op(lambda: rr_reg(self, 'b'), 'rr b'),
+            0x19: Op(lambda: rr_reg(self, 'c'), 'rr c'),
+            0x1a: Op(lambda: rr_reg(self, 'd'), 'rr d'),
+            0x1b: Op(lambda: rr_reg(self, 'e'), 'rr e'),
+            0x1c: Op(lambda: rr_reg(self, 'h'), 'rr h'),
+            0x1d: Op(lambda: rr_reg(self, 'l'), 'rr l'),
+            0x1e: Op(lambda: rr_hl_indirect(self, self.memory), 'rr (hl)'),
+            0x1f: Op(lambda: rr_reg(self, 'a'), 'rr a'),
         }
 
     def init_ed_opcodes(self):

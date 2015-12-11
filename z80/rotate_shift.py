@@ -55,6 +55,12 @@ def rl_reg(processor, reg):
     _set_sign_zero_parity_flags(processor, result)
 
 
+def rr_reg(processor, reg):
+    result = _rr_value(processor, processor.main_registers[reg])
+    processor.main_registers[reg] = result
+    _set_sign_zero_parity_flags(processor, result)
+
+
 def rlc_hl_indirect(processor, memory):
     address = processor.get_16bit_reg('hl')
     result = _rlc_value(processor, memory.peek(address))
@@ -69,6 +75,13 @@ def rl_hl_indirect(processor, memory):
     _set_sign_zero_parity_flags(processor, result)
 
 
+def rr_hl_indirect(processor, memory):
+    address = processor.get_16bit_reg('hl')
+    result = _rr_value(processor, memory.peek(address))
+    memory.poke(address, result)
+    _set_sign_zero_parity_flags(processor, result)
+
+
 def rotate_indexed(processor, memory, register):
     offset = to_signed(processor.get_value_at_pc())
     operation = processor.get_value_at_pc()
@@ -79,8 +92,10 @@ def rotate_indexed(processor, memory, register):
         _rl_indexed(processor, memory, register, offset)
     elif operation == 0x0e:
         _rrc_indexed(processor, memory, register, offset)
+    elif operation == 0x1e:
+        _rr_indexed(processor, memory, register, offset)
     else:
-        pass
+        raise NotImplementedError('Operation not implemented')
 
 
 def _rlc_indexed(processor, memory, register, offset):
@@ -107,6 +122,14 @@ def _rl_indexed(processor, memory, register, offset):
     _set_sign_zero_parity_flags(processor, result)
 
 
+def _rr_indexed(processor, memory, register, offset):
+    address = processor.index_registers[register] + offset
+    value = memory.peek(address)
+    result = _rr_value(processor, value)
+    memory.poke(address, result)
+    _set_sign_zero_parity_flags(processor, result)
+
+
 def _rlc_value(processor, value):
     high_bit = value >> 7
     rotated = (value << 1) & 0xff
@@ -124,16 +147,25 @@ def _rl_value(processor, value):
     return rotated
 
 
+def _rr_value(processor, value):
+    low_bit = value & 0b1
+    rotated = value >> 1
+    if processor.condition('c'):
+        rotated |= 0b10000000
+    _set_carry_and_negate_flags_after_right_rotate(processor, low_bit)
+    return rotated
+
+
 def _rrc_value(processor, value):
     low_bit = value & 0b1
     rotated = value >> 1
     if low_bit > 0:
         rotated |= 0b10000000
-    _set_carry_and_negate_flags_after_right_rotate(low_bit, processor)
+    _set_carry_and_negate_flags_after_right_rotate(processor, low_bit)
     return rotated
 
 
-def _set_carry_and_negate_flags_after_right_rotate(low_bit, processor):
+def _set_carry_and_negate_flags_after_right_rotate(processor, low_bit):
     processor.set_condition('c', low_bit == 1)
     processor.set_condition('h', False)
     processor.set_condition('n', False)

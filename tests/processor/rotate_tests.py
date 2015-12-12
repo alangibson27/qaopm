@@ -117,8 +117,6 @@ class TestRotate(TestHelper):
 
     def check_rlc_indexed_indirect(self, op_code, reg):
         # given
-        self.given_flags_are_unset()
-
         offset = random.randint(0, 255)
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
@@ -323,7 +321,33 @@ class TestRotate(TestHelper):
         self.assert_flag('n').is_reset()
         self.assert_flag('c').is_reset()
 
+    def test_rld(self):
+        values = [
+            (0xab, 0xcd, True, False, True, 0xac, 0xdb),
+            (0xff, 0xef, True, False, False, 0xfe, 0xff),
+            (0x00, 0x00, False, True, True, 0x00, 0x00)
+        ]
 
-    def given_flags_are_unset(self):
-        for flag in ['s', 'z', 'h', 'p', 'n', 'c']:
-            self.processor.set_condition(flag, None)
+        for a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value in values:
+            yield self.check_rld, a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value
+
+    def check_rld(self, a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value):
+        # given
+        self.given_register_contains_value('a', a_value)
+        self.given_register_pair_contains_value('hl', 0x4000)
+        self.memory.poke(0x4000, mem_value)
+
+        self.given_next_instruction_is(0xed, 0x6f)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(0x4000).contains(final_mem_value)
+        self.assert_register('a').equals(final_a_value)
+
+        self.assert_flag('s').equals(sign)
+        self.assert_flag('z').equals(zero)
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').equals(parity)
+        self.assert_flag('n').is_reset()

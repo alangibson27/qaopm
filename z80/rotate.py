@@ -114,6 +114,22 @@ def rr_indexed(processor, memory, register, offset):
     _set_sign_zero_parity_flags(processor, result)
 
 
+def rld(processor, memory):
+    address = processor.get_16bit_reg('hl')
+    mem_value = memory.peek(address)
+    mem_digits = [mem_value & 0xf0, mem_value & 0x0f]
+
+    reg_value = processor.main_registers['a']
+    reg_digits = [reg_value & 0xf0, reg_value & 0x0f]
+
+    memory.poke(address, (mem_digits[1] << 4) + reg_digits[1])
+    processor.main_registers['a'] = reg_digits[0] + (mem_digits[0] >> 4)
+
+    _set_sign_zero_parity_flags(processor, processor.main_registers['a'])
+    processor.set_condition('h', False)
+    processor.set_condition('n', False)
+
+
 def _rlc_value(processor, value):
     high_bit = value >> 7
     rotated = (value << 1) & 0xff

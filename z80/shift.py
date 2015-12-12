@@ -44,11 +44,36 @@ def sra_indexed(processor, memory, register, offset):
     memory.poke(address, result)
 
 
+def srl_reg(processor, register):
+    result = _srl_value(processor, processor.main_registers[register])
+    processor.main_registers[register] = result
+
+
+def srl_hl_indirect(processor, memory):
+    address = processor.get_16bit_reg('hl')
+    result = _srl_value(processor, memory.peek(address))
+    memory.poke(address, result)
+
+
+def srl_indexed(processor, memory, register, offset):
+    address = processor.index_registers[register] + offset
+    value = memory.peek(address)
+    result = _srl_value(processor, value)
+    memory.poke(address, result)
+
+
 def _sra_value(processor, value):
     carry = value & 0b1
     high_bit = value & 0b10000000
     rotated = value >> 1
     rotated |= high_bit
+    _set_flags(processor, rotated, carry)
+    return rotated
+
+
+def _srl_value(processor, value):
+    carry = value & 0b1
+    rotated = value >> 1
     _set_flags(processor, rotated, carry)
     return rotated
 

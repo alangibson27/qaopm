@@ -338,7 +338,16 @@ class Processor:
             0x2c: Op(lambda: sra_reg(self, 'h'), 'sra h'),
             0x2d: Op(lambda: sra_reg(self, 'l'), 'sra l'),
             0x2e: Op(lambda: sra_hl_indirect(self, self.memory), 'sra (hl)'),
-            0x2f: Op(lambda: sra_reg(self, 'a'), 'sra a')
+            0x2f: Op(lambda: sra_reg(self, 'a'), 'sra a'),
+
+            0x38: Op(lambda: srl_reg(self, 'b'), 'srl b'),
+            0x39: Op(lambda: srl_reg(self, 'c'), 'srl c'),
+            0x3a: Op(lambda: srl_reg(self, 'd'), 'srl d'),
+            0x3b: Op(lambda: srl_reg(self, 'e'), 'srl e'),
+            0x3c: Op(lambda: srl_reg(self, 'h'), 'srl h'),
+            0x3d: Op(lambda: srl_reg(self, 'l'), 'srl l'),
+            0x3e: Op(lambda: srl_hl_indirect(self, self.memory), 'srl (hl)'),
+            0x3f: Op(lambda: srl_reg(self, 'a'), 'srl a')
         }
 
     def init_ed_opcodes(self):
@@ -1104,6 +1113,8 @@ class Processor:
             sla_indexed(self, self.memory, register, offset)
         elif operation == 0x2e:
             sra_indexed(self, self.memory, register, offset)
+        elif operation == 0x3e:
+            srl_indexed(self, self.memory, register, offset)
         else:
             raise NotImplementedError('Operation not implemented')
 

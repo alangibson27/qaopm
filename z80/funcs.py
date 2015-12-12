@@ -12,6 +12,10 @@ def to_signed_16bit(val):
         return val
 
 
+def to_hex_digits(value):
+    return [value & 0xf0, value & 0x0f]
+
+
 def big_endian_value(little_endian_value):
     lsb = little_endian_value[0]
     msb = little_endian_value[1]

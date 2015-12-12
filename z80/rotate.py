@@ -1,4 +1,4 @@
-from funcs import has_parity, to_signed
+from funcs import has_parity, to_hex_digits
 
 
 def rlca(processor):
@@ -117,13 +117,29 @@ def rr_indexed(processor, memory, register, offset):
 def rld(processor, memory):
     address = processor.get_16bit_reg('hl')
     mem_value = memory.peek(address)
-    mem_digits = [mem_value & 0xf0, mem_value & 0x0f]
+    mem_digits = to_hex_digits(mem_value)
 
     reg_value = processor.main_registers['a']
-    reg_digits = [reg_value & 0xf0, reg_value & 0x0f]
+    reg_digits = to_hex_digits(reg_value)
 
     memory.poke(address, (mem_digits[1] << 4) + reg_digits[1])
     processor.main_registers['a'] = reg_digits[0] + (mem_digits[0] >> 4)
+
+    _set_sign_zero_parity_flags(processor, processor.main_registers['a'])
+    processor.set_condition('h', False)
+    processor.set_condition('n', False)
+
+
+def rrd(processor, memory):
+    address = processor.get_16bit_reg('hl')
+    mem_value = memory.peek(address)
+    mem_digits = to_hex_digits(mem_value)
+
+    reg_value = processor.main_registers['a']
+    reg_digits = to_hex_digits(reg_value)
+
+    memory.poke(address, (reg_digits[1] << 4) + (mem_digits[0] >> 4))
+    processor.main_registers['a'] = reg_digits[0] + mem_digits[1]
 
     _set_sign_zero_parity_flags(processor, processor.main_registers['a'])
     processor.set_condition('h', False)

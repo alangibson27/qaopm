@@ -30,6 +30,10 @@ class TestFuncs:
     def check_to_signed_16bit(self, unsigned_value, signed_value):
         assert_equals(to_signed_16bit(unsigned_value), signed_value)
 
+    def test_to_hex_digits(self):
+        result = to_hex_digits(0xfa)
+        assert_equals(result, [0xf0, 0xa])
+
     def test_bitwise_add_with_no_full_carry_or_half_carry(self):
         values = [(0b00, 0b00, 0b00),
                   (0b00, 0b01, 0b01),

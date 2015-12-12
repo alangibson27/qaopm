@@ -365,6 +365,7 @@ class Processor:
 
             0x62: Op(lambda: sbc_hl_reg(self, 'hl'), 'sbc hl, hl'),
             0x63: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
+            0x67: Op(lambda: rrd(self, self.memory), 'rrd'),
             0x6a: Op(lambda: adc_hl_reg(self, 'hl'), 'adc hl, hl'),
             0x6b: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
             0x6f: Op(lambda: rld(self, self.memory), 'rld'),

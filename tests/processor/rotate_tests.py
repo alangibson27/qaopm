@@ -329,15 +329,25 @@ class TestRotate(TestHelper):
         ]
 
         for a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value in values:
-            yield self.check_rld, a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value
+            yield self.check_rld_rrd, 0x6f, a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value
 
-    def check_rld(self, a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value):
+    def test_rrd(self):
+        values = [
+            (0xab, 0xcd, True, False, False, 0xad, 0xbc),
+            (0xff, 0xfe, True, False, False, 0xfe, 0xff),
+            (0x00, 0x00, False, True, True, 0x00, 0x00)
+        ]
+
+        for a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value in values:
+            yield self.check_rld_rrd, 0x67, a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value
+
+    def check_rld_rrd(self, op_code, a_value, mem_value, sign, zero, parity, final_a_value, final_mem_value):
         # given
         self.given_register_contains_value('a', a_value)
         self.given_register_pair_contains_value('hl', 0x4000)
         self.memory.poke(0x4000, mem_value)
 
-        self.given_next_instruction_is(0xed, 0x6f)
+        self.given_next_instruction_is(0xed, op_code)
 
         # when
         self.processor.execute()

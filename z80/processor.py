@@ -1,4 +1,5 @@
-from rotate_shift import *
+from rotate import *
+from shift import *
 from arithmetic_16 import *
 
 
@@ -321,6 +322,23 @@ class Processor:
             0x1d: Op(lambda: rr_reg(self, 'l'), 'rr l'),
             0x1e: Op(lambda: rr_hl_indirect(self, self.memory), 'rr (hl)'),
             0x1f: Op(lambda: rr_reg(self, 'a'), 'rr a'),
+
+            0x20: Op(lambda: sla_reg(self, 'b'), 'sla b'),
+            0x21: Op(lambda: sla_reg(self, 'c'), 'sla c'),
+            0x22: Op(lambda: sla_reg(self, 'd'), 'sla d'),
+            0x23: Op(lambda: sla_reg(self, 'e'), 'sla e'),
+            0x24: Op(lambda: sla_reg(self, 'h'), 'sla h'),
+            0x25: Op(lambda: sla_reg(self, 'l'), 'sla l'),
+            0x26: Op(lambda: sla_hl_indirect(self, self.memory), 'sla (hl)'),
+            0x27: Op(lambda: sla_reg(self, 'a'), 'sla a'),
+            0x28: Op(lambda: sra_reg(self, 'b'), 'sra b'),
+            0x29: Op(lambda: sra_reg(self, 'c'), 'sra c'),
+            0x2a: Op(lambda: sra_reg(self, 'd'), 'sra d'),
+            0x2b: Op(lambda: sra_reg(self, 'e'), 'sra e'),
+            0x2c: Op(lambda: sra_reg(self, 'h'), 'sra h'),
+            0x2d: Op(lambda: sra_reg(self, 'l'), 'sra l'),
+            0x2e: Op(lambda: sra_hl_indirect(self, self.memory), 'sra (hl)'),
+            0x2f: Op(lambda: sra_reg(self, 'a'), 'sra a')
         }
 
     def init_ed_opcodes(self):
@@ -399,7 +417,7 @@ class Processor:
             0xb6: Op(lambda: self.or_indexed_indirect('ix'), 'or (ix + d)'),
             0xbe: Op(lambda: self.cp_indexed_indirect('ix'), 'cp (ix + d)'),
 
-            0xcb: Op(lambda: rotate_indexed(self, self.memory, 'ix'), 'rlc (ix + d)'),
+            0xcb: Op(lambda: self.rotate_shift_indexed('ix'), 'rlc (ix + d)'),
 
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
@@ -448,7 +466,7 @@ class Processor:
             0xb6: Op(lambda: self.or_indexed_indirect('iy'), 'or (iy + d)'),
             0xbe: Op(lambda: self.cp_indexed_indirect('iy'), 'cp (iy + d)'),
 
-            0xcb: Op(lambda: rotate_indexed(self, self.memory, 'iy'), 'rlc (iy + d)'),
+            0xcb: Op(lambda: self.rotate_shift_indexed('iy'), ''),
 
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
@@ -1069,6 +1087,25 @@ class Processor:
 
     def nop(self):
         pass
+
+    def rotate_shift_indexed(self, register):
+        offset = to_signed(self.get_value_at_pc())
+        operation = self.get_value_at_pc()
+
+        if operation == 0x06:
+            rlc_indexed(self, self.memory, register, offset)
+        elif operation == 0x16:
+            rl_indexed(self, self.memory, register, offset)
+        elif operation == 0x0e:
+            rrc_indexed(self, self.memory, register, offset)
+        elif operation == 0x1e:
+            rr_indexed(self, self.memory, register, offset)
+        elif operation == 0x26:
+            sla_indexed(self, self.memory, register, offset)
+        elif operation == 0x2e:
+            sra_indexed(self, self.memory, register, offset)
+        else:
+            raise NotImplementedError('Operation not implemented')
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

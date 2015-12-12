@@ -82,23 +82,7 @@ def rr_hl_indirect(processor, memory):
     _set_sign_zero_parity_flags(processor, result)
 
 
-def rotate_indexed(processor, memory, register):
-    offset = to_signed(processor.get_value_at_pc())
-    operation = processor.get_value_at_pc()
-
-    if operation == 0x06:
-        _rlc_indexed(processor, memory, register, offset)
-    elif operation == 0x16:
-        _rl_indexed(processor, memory, register, offset)
-    elif operation == 0x0e:
-        _rrc_indexed(processor, memory, register, offset)
-    elif operation == 0x1e:
-        _rr_indexed(processor, memory, register, offset)
-    else:
-        raise NotImplementedError('Operation not implemented')
-
-
-def _rlc_indexed(processor, memory, register, offset):
+def rlc_indexed(processor, memory, register, offset):
     address = processor.index_registers[register] + offset
     value = memory.peek(address)
     result = _rlc_value(processor, value)
@@ -106,7 +90,7 @@ def _rlc_indexed(processor, memory, register, offset):
     _set_sign_zero_parity_flags(processor, result)
 
 
-def _rrc_indexed(processor, memory, register, offset):
+def rrc_indexed(processor, memory, register, offset):
     address = processor.index_registers[register] + offset
     value = memory.peek(address)
     result = _rrc_value(processor, value)
@@ -114,7 +98,7 @@ def _rrc_indexed(processor, memory, register, offset):
     _set_sign_zero_parity_flags(processor, result)
 
 
-def _rl_indexed(processor, memory, register, offset):
+def rl_indexed(processor, memory, register, offset):
     address = processor.index_registers[register] + offset
     value = memory.peek(address)
     result = _rl_value(processor, value)
@@ -122,7 +106,7 @@ def _rl_indexed(processor, memory, register, offset):
     _set_sign_zero_parity_flags(processor, result)
 
 
-def _rr_indexed(processor, memory, register, offset):
+def rr_indexed(processor, memory, register, offset):
     address = processor.index_registers[register] + offset
     value = memory.peek(address)
     result = _rr_value(processor, value)

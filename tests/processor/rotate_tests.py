@@ -4,7 +4,7 @@ from z80.funcs import to_signed
 from processor_tests import TestHelper
 
 
-class TestRotateShift(TestHelper):
+class TestRotate(TestHelper):
     def test_rlca(self):
         values = [(0b10101010, True,  0b01010101, True),
                   (0b10101010, False, 0b01010101, True),
@@ -117,6 +117,8 @@ class TestRotateShift(TestHelper):
 
     def check_rlc_indexed_indirect(self, op_code, reg):
         # given
+        self.given_flags_are_unset()
+
         offset = random.randint(0, 255)
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
@@ -320,3 +322,8 @@ class TestRotateShift(TestHelper):
         self.assert_flag('p').is_reset()
         self.assert_flag('n').is_reset()
         self.assert_flag('c').is_reset()
+
+
+    def given_flags_are_unset(self):
+        for flag in ['s', 'z', 'h', 'p', 'n', 'c']:
+            self.processor.set_condition(flag, None)

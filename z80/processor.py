@@ -1,4 +1,5 @@
 from bit import *
+from call import *
 from jump import *
 from rotate import *
 from shift import *
@@ -265,39 +266,65 @@ class Processor:
             0xbe: Op(self.cp_hl_indirect, 'cp (hl)'),
             0xbf: Op(lambda: self.cp_reg('a'), 'cp a'),
 
+            0xc0: Op(lambda: ret_nz(self), 'ret nz'),
             0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
             0xc2: Op(lambda: jp_nz(self), 'jp nz, nn'),
             0xc3: Op(lambda: jp(self), 'jp nn'),
+            0xc4: Op(lambda: call_nz(self), 'call nz, nn'),
             0xc5: Op(lambda: self.push('bc'), 'push bc'),
             0xc6: Op(self.add_a_immediate, 'add a, n'),
+            0xc7: Op(lambda: rst(self, 0x00), 'rst 00'),
+            0xc8: Op(lambda: ret_z(self), 'ret z'),
+            0xc9: Op(lambda: ret(self), 'ret'),
             0xca: Op(lambda: jp_z(self), 'jp z, nn'),
+            0xcc: Op(lambda: call_z(self), 'call z. nn'),
+            0xcd: Op(lambda: call(self), 'call nn'),
             0xce: Op(self.adc_a_immediate, 'adc a, n'),
+            0xcf: Op(lambda: rst(self, 0x08), 'rst 08'),
 
+            0xd0: Op(lambda: ret_nc(self), 'ret nc'),
             0xd1: Op(lambda: self.pop('de'), 'pop de'),
             0xd2: Op(lambda: jp_nc(self), 'jp nc, nn'),
+            0xd4: Op(lambda: call_nc(self), 'call nc, nn'),
             0xd5: Op(lambda: self.push('de'), 'push de'),
             0xd6: Op(self.sub_a_immediate, 'sub n'),
+            0xd7: Op(lambda: rst(self, 0x10), 'rst 10'),
+            0xd8: Op(lambda: ret_c(self), 'ret c'),
             0xd9: Op(self.exx, 'exx'),
             0xda: Op(lambda: jp_c(self), 'jp c, nn'),
+            0xdc: Op(lambda: call_c(self), 'call c. nn'),
             0xde: Op(self.sbc_a_immediate, 'sbc n'),
+            0xdf: Op(lambda: rst(self, 0x18), 'rst 18'),
 
+            0xe0: Op(lambda: ret_po(self), 'ret po'),
             0xe1: Op(lambda: self.pop('hl'), 'pop hl'),
             0xe2: Op(lambda: jp_po(self), 'jp po, nn'),
-            0xe5: Op(lambda: self.push('hl'), 'push hl'),
             0xe3: Op(self.ex_sp_indirect_hl, 'ex (sp), hl'),
+            0xe4: Op(lambda: call_po(self), 'call po, nn'),
+            0xe5: Op(lambda: self.push('hl'), 'push hl'),
             0xe6: Op(self.and_a_immediate, 'and a, n'),
+            0xe7: Op(lambda: rst(self, 0x20), 'rst 20'),
+            0xe8: Op(lambda: ret_pe(self), 'ret pe'),
+            0xe9: Op(lambda: jp_hl_indirect(self), 'jp (hl)'),
             0xea: Op(lambda: jp_pe(self), 'jp pe, nn'),
             0xeb: Op(self.ex_de_hl, 'ex de, hl'),
+            0xec: Op(lambda: call_pe(self), 'call pe, nn'),
             0xee: Op(self.xor_a_immediate, 'xor a, n'),
-            0xe9: Op(lambda: jp_hl_indirect(self), 'jp (hl)'),
+            0xef: Op(lambda: rst(self, 0x28), 'rst 28'),
 
+            0xf0: Op(lambda: ret_p(self), 'ret p'),
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf2: Op(lambda: jp_p(self), 'jp p, nn'),
+            0xf4: Op(lambda: call_p(self), 'call p, nn'),
             0xf5: Op(lambda: self.push('af'), 'push af'),
             0xf6: Op(self.or_a_immediate, 'or a, n'),
+            0xf7: Op(lambda: rst(self, 0x30), 'rst 30'),
+            0xf8: Op(lambda: ret_m(self), 'ret m'),
             0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
             0xfa: Op(lambda: jp_m(self), 'jp m, nn'),
+            0xfc: Op(lambda: call_m(self), 'call m, nn'),
             0xfe: Op(self.cp_immediate, 'cp n'),
+            0xff: Op(lambda: rst(self, 0x38), 'rst 38'),
 
             0xcb: self.init_cb_opcodes(),
             0xed: self.init_ed_opcodes(),
@@ -1376,28 +1403,6 @@ class Processor:
 
     def nop(self):
         pass
-
-    # def bitwise_indexed(self, register):
-    #     offset = to_signed(self.get_value_at_pc())
-    #     operation = self.get_value_at_pc()
-    #
-    #     if operation == 0x06:
-    #         rlc_indexed(self, self.memory, register, offset)
-    #     elif operation == 0x16:
-    #         rl_indexed(self, self.memory, register, offset)
-    #     elif operation == 0x0e:
-    #         rrc_indexed(self, self.memory, register, offset)
-    #     elif operation == 0x1e:
-    #         rr_indexed(self, self.memory, register, offset)
-    #     elif operation == 0x26:
-    #         sla_indexed(self, self.memory, register, offset)
-    #     elif operation == 0x2e:
-    #         sra_indexed(self, self.memory, register, offset)
-    #     elif operation == 0x3e:
-    #         srl_indexed(self, self.memory, register, offset)
-    #     else:
-    #         raise NotImplementedError('Operation not implemented')
-    #
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

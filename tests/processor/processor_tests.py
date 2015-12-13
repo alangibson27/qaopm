@@ -59,6 +59,9 @@ class TestHelper:
     def assert_pc_address(self):
         return EqualsBuilder('pc', self.processor.special_registers['pc'])
 
+    def assert_stack_pointer(self):
+        return EqualsBuilder('sp', self.processor.special_registers['sp'])
+
     def assert_register(self, reg):
         return EqualsBuilder('reg ' + reg, self.processor.main_registers[reg])
 

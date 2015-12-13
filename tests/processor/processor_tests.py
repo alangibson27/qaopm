@@ -36,6 +36,8 @@ class TestHelper:
     def given_register_pair_contains_value(self, register_pair, value):
         if register_pair == 'sp':
             self.processor.special_registers['sp'] = value
+        elif register_pair[0] == 'i':
+            self.processor.index_registers[register_pair] = value
         else:
             self.processor.main_registers[register_pair[0]] = value >> 8
             self.processor.main_registers[register_pair[1]] = value & 0xff

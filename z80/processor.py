@@ -72,6 +72,7 @@ class Processor:
             0x0e: Op(lambda: self.ld_reg_immediate('c'), 'ld c, n'),
             0x0f: Op(lambda: rrca(self), 'rrca'),
 
+            0x10: Op(lambda: djnz(self), 'djnz n'),
             0x11: Op(lambda: self.ld_16reg_immediate('de'), 'ld de, nn'),
             0x12: self.create_ld_reg_indirect_from_reg('de', 'a'),
             0x13: Op(lambda: inc_16reg(self, 'de'), 'inc de'),
@@ -79,6 +80,7 @@ class Processor:
             0x15: Op(lambda: self.dec_reg('d'), 'dec d'),
             0x16: Op(lambda: self.ld_reg_immediate('d'), 'ld d, n'),
             0x17: Op(lambda: rla(self), 'rla'),
+            0x18: Op(lambda: jr(self), 'jr n'),
             0x19: Op(lambda: add_hl_reg(self, 'de'), 'add hl, de'),
             0x1a: self.create_ld_reg_from_reg_indirect('a', 'de'),
             0x1b: Op(lambda: dec_16reg(self, 'de'), 'dec de'),
@@ -87,6 +89,7 @@ class Processor:
             0x1e: Op(lambda: self.ld_reg_immediate('e'), 'ld e, n'),
             0x1f: Op(lambda: rra(self), 'rra'),
 
+            0x20: Op(lambda: jr_nz(self), 'jr nz, n'),
             0x21: Op(lambda: self.ld_16reg_immediate('hl'), 'ld hl, nn'),
             0x22: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
             0x23: Op(lambda: inc_16reg(self, 'hl'), 'inc hl'),
@@ -94,6 +97,7 @@ class Processor:
             0x25: Op(lambda: self.dec_reg('h'), 'dec h'),
             0x26: Op(lambda: self.ld_reg_immediate('h'), 'ld h, n'),
             0x27: Op(self.daa, 'daa'),
+            0x28: Op(lambda: jr_z(self), 'jr z, n'),
             0x29: Op(lambda: add_hl_reg(self, 'hl'), 'add hl, hl'),
             0x2a: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
             0x2b: Op(lambda: dec_16reg(self, 'hl'), 'dec hl'),
@@ -102,6 +106,7 @@ class Processor:
             0x2e: Op(lambda: self.ld_reg_immediate('l'), 'ld l, n'),
             0x2f: Op(self.cpl, 'cpl'),
 
+            0x30: Op(lambda: jr_nc(self), 'jr nc, n'),
             0x31: Op(lambda: self.ld_sp_immediate(), 'ld sp, nn'),
             0x32: Op(self.ld_ext_addr_a, 'ld (nn), a'),
             0x33: Op(lambda: inc_16reg(self, 'sp'), 'inc sp'),
@@ -109,6 +114,7 @@ class Processor:
             0x35: Op(self.dec_hl_indirect, 'dec (hl)'),
             0x36: Op(lambda: self.ld_hl_indirect_immediate(), 'ld (hl), n'),
             0x37: Op(self.scf, 'scf'),
+            0x38: Op(lambda: jr_c(self), 'jr c, n'),
             0x39: Op(lambda: add_hl_reg(self, 'sp'), 'add hl, sp'),
             0x3a: Op(self.ld_a_ext_addr, 'ld a, (nn)'),
             0x3b: Op(lambda: dec_16reg(self, 'sp'), 'dec sp'),
@@ -283,6 +289,7 @@ class Processor:
             0xea: Op(lambda: jp_pe(self), 'jp pe, nn'),
             0xeb: Op(self.ex_de_hl, 'ex de, hl'),
             0xee: Op(self.xor_a_immediate, 'xor a, n'),
+            0xe9: Op(lambda: jp_hl_indirect(self), 'jp (hl)'),
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf2: Op(lambda: jp_p(self), 'jp p, nn'),
@@ -660,6 +667,7 @@ class Processor:
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
             0xe5: Op(lambda: self.push_indexed('ix'), 'push ix'),
+            0xe9: Op(lambda: jp_indexed_indirect(self, 'ix'), 'jp (ix)'),
 
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('ix'), 'ld sp, ix')
         }
@@ -709,6 +717,7 @@ class Processor:
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
             0xe5: Op(lambda: self.push_indexed('iy'), 'push iy'),
+            0xe9: Op(lambda: jp_indexed_indirect(self, 'iy'), 'jp (iy)'),
 
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('iy'), 'ld sp, iy')
         }

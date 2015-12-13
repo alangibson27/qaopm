@@ -1,3 +1,4 @@
+from bit import *
 from rotate import *
 from shift import *
 from arithmetic_16 import *
@@ -347,7 +348,79 @@ class Processor:
             0x3c: Op(lambda: srl_reg(self, 'h'), 'srl h'),
             0x3d: Op(lambda: srl_reg(self, 'l'), 'srl l'),
             0x3e: Op(lambda: srl_hl_indirect(self, self.memory), 'srl (hl)'),
-            0x3f: Op(lambda: srl_reg(self, 'a'), 'srl a')
+            0x3f: Op(lambda: srl_reg(self, 'a'), 'srl a'),
+
+            0x40: Op(lambda: bit_reg(self, 'b', 0), 'bit 0, b'),
+            0x41: Op(lambda: bit_reg(self, 'c', 0), 'bit 0, c'),
+            0x42: Op(lambda: bit_reg(self, 'd', 0), 'bit 0, d'),
+            0x43: Op(lambda: bit_reg(self, 'e', 0), 'bit 0, e'),
+            0x44: Op(lambda: bit_reg(self, 'h', 0), 'bit 0, h'),
+            0x45: Op(lambda: bit_reg(self, 'l', 0), 'bit 0, l'),
+            0x46: Op(lambda: bit_hl_indirect(self, self.memory, 0), 'bit 0, (hl)'),
+            0x47: Op(lambda: bit_reg(self, 'a', 0), 'bit 0, a'),
+
+            0x48: Op(lambda: bit_reg(self, 'b', 1), 'bit 1, b'),
+            0x49: Op(lambda: bit_reg(self, 'c', 1), 'bit 1, c'),
+            0x4a: Op(lambda: bit_reg(self, 'd', 1), 'bit 1, d'),
+            0x4b: Op(lambda: bit_reg(self, 'e', 1), 'bit 1, e'),
+            0x4c: Op(lambda: bit_reg(self, 'h', 1), 'bit 1, h'),
+            0x4d: Op(lambda: bit_reg(self, 'l', 1), 'bit 1, l'),
+            0x4e: Op(lambda: bit_hl_indirect(self, self.memory, 1), 'bit 1, (hl)'),
+            0x4f: Op(lambda: bit_reg(self, 'a', 1), 'bit 1, a'),
+
+            0x50: Op(lambda: bit_reg(self, 'b', 2), 'bit 2, b'),
+            0x51: Op(lambda: bit_reg(self, 'c', 2), 'bit 2, c'),
+            0x52: Op(lambda: bit_reg(self, 'd', 2), 'bit 2, d'),
+            0x53: Op(lambda: bit_reg(self, 'e', 2), 'bit 2, e'),
+            0x54: Op(lambda: bit_reg(self, 'h', 2), 'bit 2, h'),
+            0x55: Op(lambda: bit_reg(self, 'l', 2), 'bit 2, l'),
+            0x56: Op(lambda: bit_hl_indirect(self, self.memory, 2), 'bit 2, (hl)'),
+            0x57: Op(lambda: bit_reg(self, 'a', 2), 'bit 2, a'),
+
+            0x58: Op(lambda: bit_reg(self, 'b', 3), 'bit 3, b'),
+            0x59: Op(lambda: bit_reg(self, 'c', 3), 'bit 3, c'),
+            0x5a: Op(lambda: bit_reg(self, 'd', 3), 'bit 3, d'),
+            0x5b: Op(lambda: bit_reg(self, 'e', 3), 'bit 3, e'),
+            0x5c: Op(lambda: bit_reg(self, 'h', 3), 'bit 3, h'),
+            0x5d: Op(lambda: bit_reg(self, 'l', 3), 'bit 3, l'),
+            0x5e: Op(lambda: bit_hl_indirect(self, self.memory, 3), 'bit 3, (hl)'),
+            0x5f: Op(lambda: bit_reg(self, 'a', 3), 'bit 3, a'),
+
+            0x60: Op(lambda: bit_reg(self, 'b', 4), 'bit 4, b'),
+            0x61: Op(lambda: bit_reg(self, 'c', 4), 'bit 4, c'),
+            0x62: Op(lambda: bit_reg(self, 'd', 4), 'bit 4, d'),
+            0x63: Op(lambda: bit_reg(self, 'e', 4), 'bit 4, e'),
+            0x64: Op(lambda: bit_reg(self, 'h', 4), 'bit 4, h'),
+            0x65: Op(lambda: bit_reg(self, 'l', 4), 'bit 4, l'),
+            0x66: Op(lambda: bit_hl_indirect(self, self.memory, 4), 'bit 4, (hl)'),
+            0x67: Op(lambda: bit_reg(self, 'a', 4), 'bit 4, a'),
+
+            0x68: Op(lambda: bit_reg(self, 'b', 5), 'bit 5, b'),
+            0x69: Op(lambda: bit_reg(self, 'c', 5), 'bit 5, c'),
+            0x6a: Op(lambda: bit_reg(self, 'd', 5), 'bit 5, d'),
+            0x6b: Op(lambda: bit_reg(self, 'e', 5), 'bit 5, e'),
+            0x6c: Op(lambda: bit_reg(self, 'h', 5), 'bit 5, h'),
+            0x6d: Op(lambda: bit_reg(self, 'l', 5), 'bit 5, l'),
+            0x6e: Op(lambda: bit_hl_indirect(self, self.memory, 5), 'bit 5, (hl)'),
+            0x6f: Op(lambda: bit_reg(self, 'a', 5), 'bit 5, a'),
+
+            0x70: Op(lambda: bit_reg(self, 'b', 6), 'bit 6, b'),
+            0x71: Op(lambda: bit_reg(self, 'c', 6), 'bit 6, c'),
+            0x72: Op(lambda: bit_reg(self, 'd', 6), 'bit 6, d'),
+            0x73: Op(lambda: bit_reg(self, 'e', 6), 'bit 6, e'),
+            0x74: Op(lambda: bit_reg(self, 'h', 6), 'bit 6, h'),
+            0x75: Op(lambda: bit_reg(self, 'l', 6), 'bit 6, l'),
+            0x76: Op(lambda: bit_hl_indirect(self, self.memory, 6), 'bit 6, (hl)'),
+            0x77: Op(lambda: bit_reg(self, 'a', 6), 'bit 6, a'),
+
+            0x78: Op(lambda: bit_reg(self, 'b', 7), 'bit 7, b'),
+            0x79: Op(lambda: bit_reg(self, 'c', 7), 'bit 7, c'),
+            0x7a: Op(lambda: bit_reg(self, 'd', 7), 'bit 7, d'),
+            0x7b: Op(lambda: bit_reg(self, 'e', 7), 'bit 7, e'),
+            0x7c: Op(lambda: bit_reg(self, 'h', 7), 'bit 7, h'),
+            0x7d: Op(lambda: bit_reg(self, 'l', 7), 'bit 7, l'),
+            0x7e: Op(lambda: bit_hl_indirect(self, self.memory, 7), 'bit 7, (hl)'),
+            0x7f: Op(lambda: bit_reg(self, 'a', 7), 'bit 7, a')
         }
 
     def init_ed_opcodes(self):
@@ -428,7 +501,7 @@ class Processor:
             0xb6: Op(lambda: self.or_indexed_indirect('ix'), 'or (ix + d)'),
             0xbe: Op(lambda: self.cp_indexed_indirect('ix'), 'cp (ix + d)'),
 
-            0xcb: Op(lambda: self.rotate_shift_indexed('ix'), 'rlc (ix + d)'),
+            0xcb: self.init_indexed_cb_opcodes('ix'),
 
             0xe1: Op(lambda: self.pop_indexed('ix'), 'pop ix'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('ix'), 'ex (sp), ix'),
@@ -477,13 +550,33 @@ class Processor:
             0xb6: Op(lambda: self.or_indexed_indirect('iy'), 'or (iy + d)'),
             0xbe: Op(lambda: self.cp_indexed_indirect('iy'), 'cp (iy + d)'),
 
-            0xcb: Op(lambda: self.rotate_shift_indexed('iy'), ''),
+            0xcb: self.init_indexed_cb_opcodes('iy'),
 
             0xe1: Op(lambda: self.pop_indexed('iy'), 'pop iy'),
             0xe3: Op(lambda: self.ex_sp_indirect_index_reg('iy'), 'ex (sp), iy'),
             0xe5: Op(lambda: self.push_indexed('iy'), 'push iy'),
 
             0xf9: Op(lambda: self.ld_sp_indexed_16reg('iy'), 'ld sp, iy')
+        }
+
+    def init_indexed_cb_opcodes(self, reg):
+        return {
+            0x06: lambda offset: Op(lambda: rlc_indexed(self, self.memory, reg, offset), 'rlc ({} + d)'.format(reg)),
+            0x0e: lambda offset: Op(lambda: rrc_indexed(self, self.memory, reg, offset), 'rrc ({} + d)'.format(reg)),
+            0x16: lambda offset: Op(lambda: rl_indexed(self, self.memory, reg, offset), 'rl ({} + d)'.format(reg)),
+            0x1e: lambda offset: Op(lambda: rr_indexed(self, self.memory, reg, offset), 'rr ({} + d)'.format(reg)),
+            0x26: lambda offset: Op(lambda: sla_indexed(self, self.memory, reg, offset), 'sla ({} + d)'.format(reg)),
+            0x2e: lambda offset: Op(lambda: sra_indexed(self, self.memory, reg, offset), 'sra ({} + d)'.format(reg)),
+            0x3e: lambda offset: Op(lambda: srl_indexed(self, self.memory, reg, offset), 'srl ({} + d)'.format(reg)),
+
+            0x46: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 0), 'bit 0, ({} + d)'.format(reg)),
+            0x4e: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 1), 'bit 1, ({} + d)'.format(reg)),
+            0x56: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 2), 'bit 2, ({} + d)'.format(reg)),
+            0x5e: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 3), 'bit 3, ({} + d)'.format(reg)),
+            0x66: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 4), 'bit 4, ({} + d)'.format(reg)),
+            0x6e: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 5), 'bit 5, ({} + d)'.format(reg)),
+            0x76: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 6), 'bit 6, ({} + d)'.format(reg)),
+            0x7e: lambda offset: Op(lambda: bit_indexed_indirect(self, self.memory, reg, offset, 7), 'bit 7, ({} + d)'.format(reg))
         }
 
     def execute(self):
@@ -497,6 +590,10 @@ class Processor:
         if isinstance(operation, dict):
             op_code = self.get_value_at_pc()
             operation = operation[op_code]
+            if isinstance(operation, dict):
+                offset = to_signed(self.get_value_at_pc())
+                op_code = self.get_value_at_pc()
+                operation = operation[op_code](offset)
         return operation
 
     def get_address_at_pc(self):
@@ -1099,26 +1196,27 @@ class Processor:
     def nop(self):
         pass
 
-    def rotate_shift_indexed(self, register):
-        offset = to_signed(self.get_value_at_pc())
-        operation = self.get_value_at_pc()
-
-        if operation == 0x06:
-            rlc_indexed(self, self.memory, register, offset)
-        elif operation == 0x16:
-            rl_indexed(self, self.memory, register, offset)
-        elif operation == 0x0e:
-            rrc_indexed(self, self.memory, register, offset)
-        elif operation == 0x1e:
-            rr_indexed(self, self.memory, register, offset)
-        elif operation == 0x26:
-            sla_indexed(self, self.memory, register, offset)
-        elif operation == 0x2e:
-            sra_indexed(self, self.memory, register, offset)
-        elif operation == 0x3e:
-            srl_indexed(self, self.memory, register, offset)
-        else:
-            raise NotImplementedError('Operation not implemented')
+    # def bitwise_indexed(self, register):
+    #     offset = to_signed(self.get_value_at_pc())
+    #     operation = self.get_value_at_pc()
+    #
+    #     if operation == 0x06:
+    #         rlc_indexed(self, self.memory, register, offset)
+    #     elif operation == 0x16:
+    #         rl_indexed(self, self.memory, register, offset)
+    #     elif operation == 0x0e:
+    #         rrc_indexed(self, self.memory, register, offset)
+    #     elif operation == 0x1e:
+    #         rr_indexed(self, self.memory, register, offset)
+    #     elif operation == 0x26:
+    #         sla_indexed(self, self.memory, register, offset)
+    #     elif operation == 0x2e:
+    #         sra_indexed(self, self.memory, register, offset)
+    #     elif operation == 0x3e:
+    #         srl_indexed(self, self.memory, register, offset)
+    #     else:
+    #         raise NotImplementedError('Operation not implemented')
+    #
 
     def set_condition(self, flag, value):
         mask = self.condition_masks[flag]

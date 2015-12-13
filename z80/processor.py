@@ -1,4 +1,5 @@
 from bit import *
+from jump import *
 from rotate import *
 from shift import *
 from arithmetic_16 import *
@@ -259,27 +260,36 @@ class Processor:
             0xbf: Op(lambda: self.cp_reg('a'), 'cp a'),
 
             0xc1: Op(lambda: self.pop('bc'), 'pop bc'),
+            0xc2: Op(lambda: jp_nz(self), 'jp nz, nn'),
+            0xc3: Op(lambda: jp(self), 'jp nn'),
             0xc5: Op(lambda: self.push('bc'), 'push bc'),
             0xc6: Op(self.add_a_immediate, 'add a, n'),
+            0xca: Op(lambda: jp_z(self), 'jp z, nn'),
             0xce: Op(self.adc_a_immediate, 'adc a, n'),
 
             0xd1: Op(lambda: self.pop('de'), 'pop de'),
+            0xd2: Op(lambda: jp_nc(self), 'jp nc, nn'),
             0xd5: Op(lambda: self.push('de'), 'push de'),
             0xd6: Op(self.sub_a_immediate, 'sub n'),
             0xd9: Op(self.exx, 'exx'),
+            0xda: Op(lambda: jp_c(self), 'jp c, nn'),
             0xde: Op(self.sbc_a_immediate, 'sbc n'),
 
             0xe1: Op(lambda: self.pop('hl'), 'pop hl'),
+            0xe2: Op(lambda: jp_po(self), 'jp po, nn'),
             0xe5: Op(lambda: self.push('hl'), 'push hl'),
             0xe3: Op(self.ex_sp_indirect_hl, 'ex (sp), hl'),
             0xe6: Op(self.and_a_immediate, 'and a, n'),
+            0xea: Op(lambda: jp_pe(self), 'jp pe, nn'),
             0xeb: Op(self.ex_de_hl, 'ex de, hl'),
             0xee: Op(self.xor_a_immediate, 'xor a, n'),
 
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
+            0xf2: Op(lambda: jp_p(self), 'jp p, nn'),
             0xf5: Op(lambda: self.push('af'), 'push af'),
             0xf6: Op(self.or_a_immediate, 'or a, n'),
             0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
+            0xfa: Op(lambda: jp_m(self), 'jp m, nn'),
             0xfe: Op(self.cp_immediate, 'cp n'),
 
             0xcb: self.init_cb_opcodes(),
@@ -493,7 +503,7 @@ class Processor:
             0xbd: Op(lambda: res_reg(self, 'l', 7), 'res 7, l'),
             0xbe: Op(lambda: res_hl_indirect(self, self.memory, 7), 'res 7, (hl)'),
             0xbf: Op(lambda: res_reg(self, 'a', 7), 'res 7, a'),
-#
+
             0xc0: Op(lambda: set_reg(self, 'b', 0), 'set 0, b'),
             0xc1: Op(lambda: set_reg(self, 'c', 0), 'set 0, c'),
             0xc2: Op(lambda: set_reg(self, 'd', 0), 'set 0, d'),

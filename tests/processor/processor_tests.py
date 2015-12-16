@@ -31,6 +31,8 @@ class TestHelper:
     def given_register_contains_value(self, register, value):
         if register == 'ix' or register == 'iy':
             self.processor.index_registers[register] = value
+        elif register == 'i' or register == 'r':
+            self.processor.special_registers[register] = value
         else:
             self.processor.main_registers[register] = value
 

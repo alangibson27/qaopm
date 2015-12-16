@@ -834,7 +834,10 @@ class Processor:
             elif self.interrupt_mode == 1:
                 return Op(lambda: rst(self, 0x0038), 'im1 response')
             elif self.interrupt_mode == 2:
-                self.interrupt_data_queue = next_request.get_im2_data()
+                table_index = big_endian_value([self.special_registers['r'] & 0xfe, self.special_registers['i']])
+                jump_low_byte = self.memory.peek(table_index)
+                jump_high_byte = self.memory.peek(table_index + 1)
+                return Op(lambda: call_to(self, big_endian_value([jump_low_byte, jump_high_byte])), 'im2 response')
 
             if len(self.interrupt_data_queue) > 0:
                 self.push_pc()
@@ -1495,10 +1498,9 @@ class Processor:
 
 
 class InterruptRequest:
-    def __init__(self, acknowledge_cb, get_im0_data = None, get_im2_data = None):
+    def __init__(self, acknowledge_cb, get_im0_data = None):
         self.acknowledge_cb = acknowledge_cb
         self.get_im0_data = get_im0_data
-        self.get_im2_data = get_im2_data
         self.cancelled = False
 
     def acknowledge(self):

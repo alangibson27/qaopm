@@ -89,6 +89,58 @@ class TestInterrupts(TestHelper):
         self.assert_stack_pointer().equals(0xffff)
         self.assert_register('b').equals(0x01)
 
+    def test_im2_invoked_when_maskable_interrupts_enabled(self):
+        # given
+        self.maskable_interrupts_are_enabled()
+        self.given_stack_pointer_is(0xffff)
+
+        self.maskable_interrupt_mode_is(2)
+        self.given_next_instruction_is(0xcb, 0xc0)
+
+        self.memory.poke(0xb0e0, 0xef)
+        self.memory.poke(0xb0e1, 0xbe)
+
+        self.given_register_contains_value('i', 0xb0)
+        self.given_register_contains_value('r', 0xe1)
+
+        ack_receiver = self.an_im2_interrupt_is_generated()
+
+        # when
+        self.processor.execute()
+
+        # then
+        assert_true(ack_receiver.ack)
+        self.assert_pc_address().equals(0xbeef)
+        self.assert_stack_pointer().equals(0xfffd)
+        self.assert_memory(0xfffd).contains(0x03)
+        self.assert_memory(0xfffe).contains(0x00)
+        self.assert_register('b').equals(0x00)
+
+    def test_im2_not_invoked_when_maskable_interrupts_enabled(self):
+        # given
+        self.maskable_interrupts_are_disabled()
+        self.given_stack_pointer_is(0xffff)
+
+        self.maskable_interrupt_mode_is(2)
+        self.given_next_instruction_is(0xcb, 0xc0)
+
+        self.memory.poke(0xb0e0, 0xef)
+        self.memory.poke(0xb0e1, 0xbe)
+
+        self.given_register_contains_value('i', 0xb0)
+        self.given_register_contains_value('r', 0xe1)
+
+        ack_receiver = self.an_im2_interrupt_is_generated()
+
+        # when
+        self.processor.execute()
+
+        # then
+        assert_false(ack_receiver.ack)
+        self.assert_pc_address().equals(0x0005)
+        self.assert_stack_pointer().equals(0xffff)
+        self.assert_register('b').equals(0x01)
+
     def test_nmi_when_maskable_interrupts_disabled(self):
         # given
         self.maskable_interrupts_are_disabled()
@@ -158,11 +210,17 @@ class TestInterrupts(TestHelper):
 
     def an_im0_interrupt_is_generated(self, im0_data=[0xc3, 0xef, 0xbe]):
         ack_receiver = AckReceiver()
-        request = InterruptRequest(ack_receiver.acknowledge, get_im0_data=lambda: im0_data)
+        request = InterruptRequest(ack_receiver.acknowledge, lambda: im0_data)
         self.processor.interrupt(request)
         return ack_receiver
 
     def an_im1_interrupt_is_generated(self):
+        ack_receiver = AckReceiver()
+        request = InterruptRequest(ack_receiver.acknowledge)
+        self.processor.interrupt(request)
+        return ack_receiver
+
+    def an_im2_interrupt_is_generated(self):
         ack_receiver = AckReceiver()
         request = InterruptRequest(ack_receiver.acknowledge)
         self.processor.interrupt(request)

@@ -3,6 +3,10 @@ from z80.funcs import to_signed, big_endian_value
 
 def jp(processor):
     address = _abs_jp_address(processor)
+    jp_to(processor, address)
+
+
+def jp_to(processor, address):
     processor.special_registers['pc'] = address
 
 

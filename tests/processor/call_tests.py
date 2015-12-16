@@ -364,12 +364,6 @@ class TestCallReturn(TestHelper):
         self.assert_pc_address().equals(0xbabe if s_flag else 0x5679)
         self.assert_stack_pointer().equals(0xffff if s_flag else 0xfffd)
 
-    def test_reti(self):
-        assert_true(False)
-
-    def test_retn(self):
-        assert_true(False)
-
     def test_rst(self):
         values = [(0xc7, 0x00), (0xcf, 0x08),
                   (0xd7, 0x10), (0xdf, 0x18),

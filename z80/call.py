@@ -1,4 +1,4 @@
-from funcs import big_endian_value
+from funcs import big_endian_value, high_low_pair
 
 
 def call(processor):
@@ -58,16 +58,15 @@ def call_m(processor):
 
 
 def _call(processor, destination):
-    sp_high = processor.special_registers['pc'] >> 8
-    sp_low = processor.special_registers['pc'] & 0xff
+    sp_high, sp_low = high_low_pair(processor.special_registers['pc'])
     processor.push_byte(sp_high)
     processor.push_byte(sp_low)
     processor.special_registers['pc'] = destination
 
 
 def _get_destination_from_pc(processor):
-    next_pc_low = processor.get_value_at_pc()
-    next_pc_high = processor.get_value_at_pc()
+    next_pc_low = processor.get_next_byte()
+    next_pc_high = processor.get_next_byte()
     return big_endian_value([next_pc_low, next_pc_high])
 
 

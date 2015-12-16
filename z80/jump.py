@@ -53,11 +53,11 @@ def _cond_jp(processor, flag, jump_value):
 
 
 def _abs_jp_address(processor):
-    return big_endian_value([processor.get_value_at_pc(), processor.get_value_at_pc()])
+    return big_endian_value([processor.get_next_byte(), processor.get_next_byte()])
 
 
 def jr(processor):
-    _jr_offset(processor, to_signed(processor.get_value_at_pc()))
+    _jr_offset(processor, to_signed(processor.get_next_byte()))
 
 
 def jr_c(processor):
@@ -77,7 +77,7 @@ def jr_nz(processor):
 
 
 def _cond_jr(processor, flag, jump_value):
-    offset = to_signed(processor.get_value_at_pc())
+    offset = to_signed(processor.get_next_byte())
     if processor.condition(flag) == jump_value:
         _jr_offset(processor, offset)
 
@@ -87,7 +87,7 @@ def _jr_offset(processor, offset):
 
 
 def djnz(processor):
-    offset = to_signed(processor.get_value_at_pc())
+    offset = to_signed(processor.get_next_byte())
     processor.main_registers['b'] = (processor.main_registers['b'] - 1)
     if processor.main_registers['b'] != 0:
         _jr_offset(processor, offset)

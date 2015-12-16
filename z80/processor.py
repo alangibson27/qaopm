@@ -4,6 +4,7 @@ from jump import *
 from rotate import *
 from shift import *
 from arithmetic_16 import *
+from funcs import *
 
 
 class Op:
@@ -21,6 +22,10 @@ class Processor:
         self.index_registers = self.build_index_register_set()
         self.operations_by_opcode = self.init_opcode_map()
         self.cycles = 0
+        self.iff = [False, False]
+        self.interrupt_data_queue = []
+        self.interrupt_mode = 0
+        self.interrupt_requests = []
         self.condition_masks = {
             'c': 0b00000001,
             'n': 0b00000010,
@@ -315,6 +320,7 @@ class Processor:
             0xf0: Op(lambda: ret_p(self), 'ret p'),
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf2: Op(lambda: jp_p(self), 'jp p, nn'),
+            0xf3: Op(lambda: None, 'di'),
             0xf4: Op(lambda: call_p(self), 'call p, nn'),
             0xf5: Op(lambda: self.push('af'), 'push af'),
             0xf6: Op(self.or_a_immediate, 'or a, n'),
@@ -322,6 +328,7 @@ class Processor:
             0xf8: Op(lambda: ret_m(self), 'ret m'),
             0xf9: Op(self.ld_sp_hl, 'ld sp, hl'),
             0xfa: Op(lambda: jp_m(self), 'jp m, nn'),
+            0xfb: Op(self.ei, 'ei'),
             0xfc: Op(lambda: call_m(self), 'call m, nn'),
             0xfe: Op(self.cp_immediate, 'cp n'),
             0xff: Op(lambda: rst(self, 0x38), 'rst 38'),
@@ -616,16 +623,20 @@ class Processor:
             0x42: Op(lambda: sbc_hl_reg(self, 'bc'), 'sbc hl, bc'),
             0x43: Op(lambda: self.ld_ext_16reg('bc'), 'ld (nn), bc'),
             0x44: Op(self.neg, 'neg'),
+            0x46: Op(lambda: self.set_interrupt_mode(0), 'im 0'),
             0x4a: Op(lambda: adc_hl_reg(self, 'bc'), 'adc hl, bc'),
             0x4b: Op(lambda: self.ld_16reg_ext('bc'), 'ld bc, (nn)'),
 
             0x52: Op(lambda: sbc_hl_reg(self, 'de'), 'sbc hl, de'),
             0x53: Op(lambda: self.ld_ext_16reg('de'), 'ld (nn), de'),
+            0x56: Op(lambda: self.set_interrupt_mode(1), 'im 1'),
             0x5a: Op(lambda: adc_hl_reg(self, 'de'), 'adc hl, de'),
             0x5b: Op(lambda: self.ld_16reg_ext('de'), 'ld de, (nn)'),
+            0x5e: Op(lambda: self.set_interrupt_mode(2), 'im 2'),
 
             0x62: Op(lambda: sbc_hl_reg(self, 'hl'), 'sbc hl, hl'),
             0x63: Op(lambda: self.ld_ext_16reg('hl'), 'ld (nn), hl'),
+            0x66: Op(lambda: self.set_interrupt_mode(0), 'im 0'),
             0x67: Op(lambda: rrd(self, self.memory), 'rrd'),
             0x6a: Op(lambda: adc_hl_reg(self, 'hl'), 'adc hl, hl'),
             0x6b: Op(lambda: self.ld_16reg_ext('hl'), 'ld hl, (nn)'),
@@ -633,8 +644,10 @@ class Processor:
 
             0x72: Op(lambda: sbc_hl_reg(self, 'sp'), 'sbc hl, sp'),
             0x73: Op(lambda: self.ld_ext_sp(), 'ld (nn), sp'),
+            0x76: Op(lambda: self.set_interrupt_mode(1), 'im 1'),
             0x7a: Op(lambda: adc_hl_reg(self, 'sp'), 'adc hl, sp'),
             0x7b: Op(lambda: self.ld_sp_ext(), 'ld sp, (nn)'),
+            0x7e: Op(lambda: self.set_interrupt_mode(2), 'im 2'),
 
             0x57: Op(self.ld_a_i, 'ld a, i'),
 
@@ -787,30 +800,67 @@ class Processor:
             0xfe: lambda offset: Op(lambda: set_indexed_indirect(self, self.memory, reg, offset, 7), 'set 7, ({} + d)'.format(reg))
         }
 
+    def ei(self):
+        self.iff[0] = True
+        self.iff[1] = True
+
+    def nmi(self):
+        self.iff[0] = False
+        self.push_pc()
+        self.special_registers['pc'] = 0x0066
+
+    def set_interrupt_mode(self, interrupt_mode):
+        self.interrupt_mode = interrupt_mode
+
+    def interrupt(self, interrupt_request):
+        self.interrupt_requests.append(interrupt_request)
+
+    def push_pc(self):
+        high_byte, low_byte = high_low_pair(self.special_registers['pc'])
+        self.push_byte(high_byte)
+        self.push_byte(low_byte)
+
     def execute(self):
         operation = self.get_operation()
         operation.function()
         self.cycles += 1
 
     def get_operation(self):
-        op_code = self.get_value_at_pc()
+        if self.iff[0] and len(self.interrupt_requests) > 0:
+            next_request = self.interrupt_requests.pop(0)
+            next_request.acknowledge()
+            if self.interrupt_mode == 0:
+                self.interrupt_data_queue = next_request.get_im0_data()
+            elif self.interrupt_mode == 1:
+                return Op(lambda: rst(self, 0x0038), 'im1 response')
+            elif self.interrupt_mode == 2:
+                self.interrupt_data_queue = next_request.get_im2_data()
+
+            if len(self.interrupt_data_queue) > 0:
+                self.push_pc()
+
+        op_code = self.get_next_byte()
         operation = self.operations_by_opcode[op_code]
         if isinstance(operation, dict):
-            op_code = self.get_value_at_pc()
+            op_code = self.get_next_byte()
             operation = operation[op_code]
             if isinstance(operation, dict):
-                offset = to_signed(self.get_value_at_pc())
-                op_code = self.get_value_at_pc()
+                offset = to_signed(self.get_next_byte())
+                op_code = self.get_next_byte()
                 operation = operation[op_code](offset)
+
         return operation
 
     def get_address_at_pc(self):
-        return [self.get_value_at_pc(), self.get_value_at_pc()]
+        return [self.get_next_byte(), self.get_next_byte()]
 
-    def get_value_at_pc(self):
-        op_code = self.memory.peek(self.special_registers['pc'])
-        self.increment('pc')
-        return op_code
+    def get_next_byte(self):
+        if len(self.interrupt_data_queue) > 0:
+            return self.interrupt_data_queue.pop(0)
+        else:
+            op_code = self.memory.peek(self.special_registers['pc'])
+            self.increment('pc')
+            return op_code
 
     def increment(self, register_name):
         self.special_registers[register_name] += 1
@@ -830,22 +880,22 @@ class Processor:
         self.main_registers['a'] = self.special_registers['i']
 
     def ld_reg_immediate(self, destination_register):
-        operand = self.get_value_at_pc()
+        operand = self.get_next_byte()
         self.main_registers[destination_register] = operand
 
     def ld_reg_indexed_addr(self, destination_register, index_register):
-        operand = self.get_value_at_pc()
+        operand = self.get_next_byte()
         offset = to_signed(operand)
         self.main_registers[destination_register] = self.memory.peek(self.index_registers[index_register] + offset)
 
     def ld_indexed_reg_from_reg(self, destination_index_register, source_register):
-        operand = self.get_value_at_pc()
+        operand = self.get_next_byte()
         offset = to_signed(operand)
         self.memory.poke(self.index_registers[destination_index_register] + offset,
                          self.main_registers[source_register])
 
     def ld_hl_indirect_immediate(self):
-        operand = self.get_value_at_pc()
+        operand = self.get_next_byte()
         self.memory.poke(self.get_16bit_reg('hl'), operand)
 
     def ld_a_ext_addr(self):
@@ -857,15 +907,15 @@ class Processor:
         self.memory.poke(big_endian_value(little_endian_address), self.main_registers['a'])
 
     def ld_indexed_addr_immediate(self, index_register):
-        operand = self.get_value_at_pc()
-        immediate_value = self.get_value_at_pc()
+        operand = self.get_next_byte()
+        immediate_value = self.get_next_byte()
 
         offset = to_signed(operand)
         self.memory.poke(self.index_registers[index_register] + offset, immediate_value)
 
     def ld_16reg_immediate(self, register_pair):
-        lsb = self.get_value_at_pc()
-        msb = self.get_value_at_pc()
+        lsb = self.get_next_byte()
+        msb = self.get_next_byte()
         self.main_registers[register_pair[0]] = msb
         self.main_registers[register_pair[1]] = lsb
 
@@ -885,13 +935,15 @@ class Processor:
 
     def ld_ext_indexed_16reg(self, source_register_pair):
         dest_address = big_endian_value(self.get_address_at_pc())
-        self.memory.poke(dest_address, self.index_registers[source_register_pair] & 0xff)
-        self.memory.poke(dest_address + 1, self.index_registers[source_register_pair] >> 8)
+        high_byte, low_byte = high_low_pair(self.index_registers[source_register_pair])
+        self.memory.poke(dest_address, low_byte)
+        self.memory.poke(dest_address + 1, high_byte)
 
     def ld_ext_sp(self):
         dest_address = big_endian_value(self.get_address_at_pc())
-        self.memory.poke(dest_address, self.special_registers['sp'] & 0xff)
-        self.memory.poke(dest_address + 1, self.special_registers['sp'] >> 8)
+        high_byte, low_byte = high_low_pair(self.special_registers['sp'])
+        self.memory.poke(dest_address, low_byte)
+        self.memory.poke(dest_address + 1, high_byte)
 
     def ld_ext_16reg(self, source_register_pair):
         dest_address = big_endian_value(self.get_address_at_pc())
@@ -918,8 +970,9 @@ class Processor:
         self.main_registers[dest_register_pair[1]] = low_byte
 
     def push_indexed(self, register_pair):
-        self.push_byte(self.index_registers[register_pair] >> 8)
-        self.push_byte(self.index_registers[register_pair] & 0xff)
+        high_byte, low_byte = high_low_pair(self.index_registers[register_pair])
+        self.push_byte(high_byte)
+        self.push_byte(low_byte)
 
     def push(self, register_pair):
         self.push_byte(self.main_registers[register_pair[0]])
@@ -988,8 +1041,10 @@ class Processor:
         old_index = self.index_registers[register]
         self.index_registers[register] = big_endian_value([self.memory.peek(self.special_registers['sp']),
                                                            self.memory.peek(self.special_registers['sp'] + 1)])
-        self.memory.poke(self.special_registers['sp'], old_index & 0xff)
-        self.memory.poke(self.special_registers['sp'] + 1, old_index >> 8)
+
+        high_byte, low_byte = high_low_pair(old_index)
+        self.memory.poke(self.special_registers['sp'], low_byte)
+        self.memory.poke(self.special_registers['sp'] + 1, high_byte)
 
     def block_transfer(self, increment):
         src_addr = self.get_16bit_reg('hl')
@@ -1074,11 +1129,11 @@ class Processor:
         self.add_a(self.main_registers[other_reg], self.condition('c'))
 
     def add_a_immediate(self):
-        value = self.get_value_at_pc()
+        value = self.get_next_byte()
         self.add_a(value, False)
 
     def adc_a_immediate(self):
-        value = self.get_value_at_pc()
+        value = self.get_next_byte()
         self.add_a(value, self.condition('c'))
 
     def add_a_hl_indirect(self):
@@ -1090,12 +1145,12 @@ class Processor:
         self.add_a(value, self.condition('c'))
 
     def add_a_indexed_indirect(self, index_reg):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         value = self.memory.peek(self.index_registers[index_reg] + offset)
         self.add_a(value, False)
 
     def adc_a_indexed_indirect(self, index_reg):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         value = self.memory.peek(self.index_registers[index_reg] + offset)
         self.add_a(value, self.condition('c'))
 
@@ -1120,11 +1175,11 @@ class Processor:
         self.sub_a(self.main_registers[other_reg], self.condition('c'))
 
     def sub_a_immediate(self):
-        value = self.get_value_at_pc()
+        value = self.get_next_byte()
         self.sub_a(value, False)
 
     def sbc_a_immediate(self):
-        value = self.get_value_at_pc()
+        value = self.get_next_byte()
         self.sub_a(value, self.condition('c'))
 
     def sub_a_hl_indirect(self):
@@ -1136,12 +1191,12 @@ class Processor:
         self.sub_a(value, self.condition('c'))
 
     def sub_a_indexed_indirect(self, index_reg):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         value = self.memory.peek(self.index_registers[index_reg] + offset)
         self.sub_a(value, False)
 
     def sbc_a_indexed_indirect(self, index_reg):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         value = self.memory.peek(self.index_registers[index_reg] + offset)
         self.sub_a(value, self.condition('c'))
 
@@ -1163,13 +1218,13 @@ class Processor:
         self.and_a_value(self.main_registers[other_reg])
 
     def and_a_immediate(self):
-        self.and_a_value(self.get_value_at_pc())
+        self.and_a_value(self.get_next_byte())
 
     def and_hl_indirect(self):
         self.and_a_value(self.memory.peek(self.get_16bit_reg('hl')))
 
     def and_indexed_indirect(self, register):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         self.and_a_value(self.memory.peek(self.index_registers[register] + offset))
 
     def and_a_value(self, value):
@@ -1186,13 +1241,13 @@ class Processor:
         self.or_a_value(self.main_registers[other_reg])
 
     def or_a_immediate(self):
-        self.or_a_value(self.get_value_at_pc())
+        self.or_a_value(self.get_next_byte())
 
     def or_hl_indirect(self):
         self.or_a_value(self.memory.peek(self.get_16bit_reg('hl')))
 
     def or_indexed_indirect(self, register):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         self.or_a_value(self.memory.peek(self.index_registers[register] + offset))
 
     def or_a_value(self, value):
@@ -1209,13 +1264,13 @@ class Processor:
         self.xor_a_value(self.main_registers[other_reg])
 
     def xor_a_immediate(self):
-        self.xor_a_value(self.get_value_at_pc())
+        self.xor_a_value(self.get_next_byte())
 
     def xor_hl_indirect(self):
         self.xor_a_value(self.memory.peek(self.get_16bit_reg('hl')))
 
     def xor_indexed_indirect(self, register):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         self.xor_a_value(self.memory.peek(self.index_registers[register] + offset))
 
     def xor_a_value(self, value):
@@ -1232,7 +1287,7 @@ class Processor:
         self.cp(self.main_registers[other_reg], False)
 
     def cp_immediate(self):
-        value = self.get_value_at_pc()
+        value = self.get_next_byte()
         self.cp(value, False)
 
     def cp_hl_indirect(self):
@@ -1240,7 +1295,7 @@ class Processor:
         self.cp(value, False)
 
     def cp_indexed_indirect(self, index_reg):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         value = self.memory.peek(self.index_registers[index_reg] + offset)
         self.cp(value, False)
 
@@ -1266,7 +1321,7 @@ class Processor:
         self.memory.poke(address, result)
 
     def inc_indexed_indirect(self, register):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         address = self.index_registers[register] + offset
         result = self.inc_value(self.memory.peek(address))
         self.memory.poke(address, result)
@@ -1290,7 +1345,7 @@ class Processor:
         self.memory.poke(address, result)
 
     def dec_indexed_indirect(self, register):
-        offset = to_signed(self.get_value_at_pc())
+        offset = to_signed(self.get_next_byte())
         address = self.index_registers[register] + offset
         result = self.dec_value(self.memory.peek(address))
         self.memory.poke(address, result)
@@ -1429,10 +1484,25 @@ class Processor:
         if register_pair == 'sp':
             self.special_registers['sp'] = val_16bit
         else:
-            self.main_registers[register_pair[0]] = val_16bit >> 8
-            self.main_registers[register_pair[1]] = val_16bit & 0xff
+            high_byte, low_byte = high_low_pair(val_16bit)
+            self.main_registers[register_pair[0]] = high_byte
+            self.main_registers[register_pair[1]] = low_byte
 
     def get_16bit_alt_reg(self, register_pair):
         msb = self.alternate_registers[register_pair[0]]
         lsb = self.alternate_registers[register_pair[1]]
         return big_endian_value([lsb, msb])
+
+
+class InterruptRequest:
+    def __init__(self, acknowledge_cb, get_im0_data = None, get_im2_data = None):
+        self.acknowledge_cb = acknowledge_cb
+        self.get_im0_data = get_im0_data
+        self.get_im2_data = get_im2_data
+        self.cancelled = False
+
+    def acknowledge(self):
+        self.acknowledge_cb()
+
+    def cancel(self):
+        self.cancelled = True

@@ -282,24 +282,6 @@ class TestBcdAdjustment(TestHelper):
         # then
         self.assert_pc_address().equals(0x0001)
 
-    def test_halt(self):
-        assert_true(False)
-
-    def test_di(self):
-        assert_true(False)
-
-    def test_ei(self):
-        assert_true(False)
-
-    def test_im0(self):
-        assert_true(False)
-
-    def test_im1(self):
-        assert_true(False)
-
-    def test_im2(self):
-        assert_true(False)
-
     def _add_(self, v1, v2):
         self.given_next_instruction_is(0x3e, v1)
         self.processor.execute()

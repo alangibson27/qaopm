@@ -68,3 +68,7 @@ def bitwise_sub_16bit(v1, v2):
 
 def has_parity(v):
     return bin(v).count('1') % 2 == 0
+
+
+def high_low_pair(v):
+    return v >> 8, v & 0xff

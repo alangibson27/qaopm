@@ -3,6 +3,7 @@ from random import randint
 
 from z80.memory import Memory
 from z80.processor import Processor
+from z80.funcs import high_low_pair
 
 
 def random_byte():
@@ -39,12 +40,14 @@ class TestHelper:
         elif register_pair[0] == 'i':
             self.processor.index_registers[register_pair] = value
         else:
-            self.processor.main_registers[register_pair[0]] = value >> 8
-            self.processor.main_registers[register_pair[1]] = value & 0xff
+            high_byte, low_byte = high_low_pair(value)
+            self.processor.main_registers[register_pair[0]] = high_byte
+            self.processor.main_registers[register_pair[1]] = low_byte
 
     def given_alt_register_pair_contains_value(self, register_pair, value):
-        self.processor.alternate_registers[register_pair[0]] = value >> 8
-        self.processor.alternate_registers[register_pair[1]] = value & 0xff
+        high_byte, low_byte = high_low_pair(value)
+        self.processor.alternate_registers[register_pair[0]] = high_byte
+        self.processor.alternate_registers[register_pair[1]] = low_byte
 
     def given_stack_pointer_is(self, address):
         self.processor.special_registers['sp'] = address

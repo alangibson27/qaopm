@@ -157,3 +157,6 @@ class TestFuncs:
         assert_equals(result, 0xef11)
         assert_true(half_borrow)
         assert_true(full_borrow)
+
+    def test_high_low_pair(self):
+        assert_equals((0xbe, 0xef), high_low_pair(0xbeef))

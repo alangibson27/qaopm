@@ -1,4 +1,4 @@
-from nose.tools import assert_false, assert_true
+from nose.tools import assert_equals, assert_false, assert_true
 from processor_tests import TestHelper
 from z80.processor import InterruptRequest
 
@@ -12,6 +12,51 @@ class AckReceiver:
 
 
 class TestInterrupts(TestHelper):
+    def test_ei_enables_interrupts_after_following_instruction(self):
+        # given
+        self.maskable_interrupts_are_disabled()
+        self.maskable_interrupt_mode_is(0)
+        ack_receiver = self.an_im0_interrupt_is_generated()
+
+        self.given_next_instruction_is(0x3c)
+        self.given_next_instruction_is(0xfb)
+        self.given_next_instruction_is(0x3c)
+        self.given_next_instruction_is(0x3c)
+
+        # when
+        self.processor.execute()
+        self.processor.execute()
+        self.processor.execute()
+        self.processor.execute()
+
+        # then
+        assert_true(ack_receiver.ack)
+        self.assert_register('a').equals(0x02)
+        self.assert_pc_address().equals(0xbeef)
+
+    def test_reti_returns_to_pc(self):
+        # given
+        self.routine_at(0x0000).does([0xfb,         # ei
+                                      0xed, 0x46,   # im 0
+                                      0x3c,         # inc a
+                                      0x04])        # inc b
+
+        self.routine_at(0xbeef).does([0x3c,         # inc a
+                                      0xed, 0x4d])  # reti
+
+        ack = self.an_im0_interrupt_is_generated()
+
+        # when
+        self.execute_until_nop()
+
+        # then
+        assert_true(ack.ack)
+        self.assert_register('a').equals(2)
+        self.assert_register('b').equals(1)
+
+    def test_reti_notifies_devices_of_interrupt_completion(self):
+        assert_true(False)
+
     def test_im0_invoked_when_maskable_interrupts_enabled(self):
         # given
         self.maskable_interrupts_are_enabled()
@@ -27,7 +72,7 @@ class TestInterrupts(TestHelper):
         assert_true(ack_receiver.ack)
         self.assert_pc_address().equals(0xbeef)
         self.assert_stack_pointer().equals(0xfffd)
-        self.assert_memory(0xfffd).contains(0x03)
+        self.assert_memory(0xfffd).contains(0x04)
         self.assert_memory(0xfffe).contains(0x00)
 
     def test_im0_not_invoked_when_maskable_interrupts_disabled(self):
@@ -66,7 +111,7 @@ class TestInterrupts(TestHelper):
         assert_true(ack_receiver.ack)
         self.assert_pc_address().equals(0x0038)
         self.assert_stack_pointer().equals(0xfffd)
-        self.assert_memory(0xfffd).contains(0x03)
+        self.assert_memory(0xfffd).contains(0x04)
         self.assert_memory(0xfffe).contains(0x00)
         self.assert_register('b').equals(0)
 
@@ -112,7 +157,7 @@ class TestInterrupts(TestHelper):
         assert_true(ack_receiver.ack)
         self.assert_pc_address().equals(0xbeef)
         self.assert_stack_pointer().equals(0xfffd)
-        self.assert_memory(0xfffd).contains(0x03)
+        self.assert_memory(0xfffd).contains(0x04)
         self.assert_memory(0xfffe).contains(0x00)
         self.assert_register('b').equals(0x00)
 
@@ -182,20 +227,101 @@ class TestInterrupts(TestHelper):
         self.assert_register('a').equals(0x01)
 
         self.assert_stack_pointer().equals(0xfffd)
-        self.assert_memory(0xfffd).contains(0x01)
+        self.assert_memory(0xfffd).contains(0x02)
         self.assert_memory(0xfffe).contains(0x00)
 
-    def test_halt(self):
-        assert_true(False)
+    def test_halt_executes_nops_until_non_maskable_interrupt(self):
+        # given
+        self.given_next_instruction_is(0x76)
 
-    def test_reti(self):
-        assert_true(False)
+        self.routine_at(0x0066).does([0x3c,         # inc a
+                                      0xed, 0x45])  # retn
 
-    def test_retn(self):
-        assert_true(False)
+        # when
+        self.processor.execute()
+
+        last_op = self.processor.execute()
+        assert_equals(last_op.mnemonic, 'nop')
+
+        self.processor.nmi()
+        last_op = self.processor.execute()
+
+        # then
+        assert_equals(last_op.mnemonic, 'inc a')
+        self.assert_register('a').equals(0x01)
+
+    def test_halt_executes_nops_until_maskable_interrupt_when_maskable_interrupts_enabled(self):
+        # given
+        self.routine_at(0x0038).does([0x3c,         # inc a
+                                      0xed, 0x4d])  # retn
+        self.maskable_interrupt_mode_is(1)
+        self.maskable_interrupts_are_enabled()
+
+        self.given_next_instruction_is(0x76)
+
+        # when
+        self.processor.execute()
+
+        last_op = self.processor.execute()
+        assert_equals(last_op.mnemonic, 'nop')
+
+        self.an_im1_interrupt_is_generated()
+        self.processor.execute()
+        last_op = self.processor.execute()
+
+        # then
+        assert_equals(last_op.mnemonic, 'inc a')
+        self.assert_register('a').equals(0x01)
+
+    def test_halt_executes_nops_despite_maskable_interrupt_when_maskable_interrupts_disabled(self):
+        # given
+        self.routine_at(0x0038).does([0x3c,         # inc a
+                                      0xed, 0x4d])  # retn
+        self.maskable_interrupt_mode_is(1)
+        self.maskable_interrupts_are_disabled()
+
+        self.given_next_instruction_is(0x76)
+
+        # when
+        self.processor.execute()
+
+        last_op = self.processor.execute()
+        assert_equals(last_op.mnemonic, 'nop')
+
+        self.an_im1_interrupt_is_generated()
+        last_op = self.processor.execute()
+
+        # then
+        assert_equals(last_op.mnemonic, 'nop')
+
+    def test_retn_reenables_maskable_interrupts(self):
+        # given
+        self.routine_at(0x0000).does([0xfb,         # ei
+                                      0xed, 0x46,   # im 0
+                                      0x3c,         # inc a
+                                      0x04])        # inc b
+
+        self.routine_at(0x0066).does([0x3c,         # inc a
+                                      0xed, 0x45])  # retn
+
+        self.routine_at(0xbeef).does([0x3c,         # inc a
+                                      0xed, 0x4d])  # reti
+
+        # when
+        self.execute_range(0x0000, 0x0003)
+        ack = self.an_im0_interrupt_is_generated()
+        self.processor.nmi()
+        self.execute_until_nop()
+
+        # then
+        assert_true(ack.ack)
+        self.assert_register('a').equals(3)
+        self.assert_register('b').equals(1)
 
     def maskable_interrupts_are_enabled(self):
         self.given_next_instruction_is(0xfb)
+        self.processor.execute()
+        self.given_next_instruction_is(0x00)
         self.processor.execute()
 
     def maskable_interrupts_are_disabled(self):
@@ -210,7 +336,7 @@ class TestInterrupts(TestHelper):
 
     def an_im0_interrupt_is_generated(self, im0_data=[0xc3, 0xef, 0xbe]):
         ack_receiver = AckReceiver()
-        request = InterruptRequest(ack_receiver.acknowledge, lambda: im0_data)
+        request = InterruptRequest(ack_receiver.acknowledge, lambda: im0_data[:])
         self.processor.interrupt(request)
         return ack_receiver
 
@@ -225,3 +351,27 @@ class TestInterrupts(TestHelper):
         request = InterruptRequest(ack_receiver.acknowledge)
         self.processor.interrupt(request)
         return ack_receiver
+
+    def routine_at(self, address):
+        return RoutineBuilder(self.memory, address)
+
+    def execute_until_nop(self):
+        op = self.processor.execute()
+        while op.mnemonic != 'nop':
+            op = self.processor.execute()
+
+    def execute_range(self, from_addr, to_addr):
+        self.processor.special_registers['pc'] = from_addr
+        while self.processor.special_registers['pc'] <= to_addr:
+            self.processor.execute()
+
+
+class RoutineBuilder:
+    def __init__(self, memory, address):
+        self.memory = memory
+        self.address = address
+
+    def does(self, op_codes):
+        for op_code in op_codes:
+            self.memory.poke(self.address, op_code)
+            self.address += 1

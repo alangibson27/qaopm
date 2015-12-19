@@ -22,10 +22,12 @@ class Processor:
         self.index_registers = self.build_index_register_set()
         self.operations_by_opcode = self.init_opcode_map()
         self.cycles = 0
+        self.enable_iff = False
         self.iff = [False, False]
         self.interrupt_data_queue = []
         self.interrupt_mode = 0
         self.interrupt_requests = []
+        self.halting = False
         self.condition_masks = {
             'c': 0b00000001,
             'n': 0b00000010,
@@ -189,6 +191,7 @@ class Processor:
             0x73: self.create_ld_reg_indirect_from_reg('hl', 'e'),
             0x74: self.create_ld_reg_indirect_from_reg('hl', 'h'),
             0x75: self.create_ld_reg_indirect_from_reg('hl', 'l'),
+            0x76: Op(self.halt, 'halt'),
             0x77: self.create_ld_reg_indirect_from_reg('hl', 'a'),
 
             0x78: self.create_ld_reg_from_reg('a', 'b'),
@@ -320,7 +323,7 @@ class Processor:
             0xf0: Op(lambda: ret_p(self), 'ret p'),
             0xf1: Op(lambda: self.pop('af'), 'pop af'),
             0xf2: Op(lambda: jp_p(self), 'jp p, nn'),
-            0xf3: Op(lambda: None, 'di'),
+            0xf3: Op(self.di, 'di'),
             0xf4: Op(lambda: call_p(self), 'call p, nn'),
             0xf5: Op(lambda: self.push('af'), 'push af'),
             0xf6: Op(self.or_a_immediate, 'or a, n'),
@@ -623,9 +626,11 @@ class Processor:
             0x42: Op(lambda: sbc_hl_reg(self, 'bc'), 'sbc hl, bc'),
             0x43: Op(lambda: self.ld_ext_16reg('bc'), 'ld (nn), bc'),
             0x44: Op(self.neg, 'neg'),
+            0x45: Op(self.retn, 'retn'),
             0x46: Op(lambda: self.set_interrupt_mode(0), 'im 0'),
             0x4a: Op(lambda: adc_hl_reg(self, 'bc'), 'adc hl, bc'),
             0x4b: Op(lambda: self.ld_16reg_ext('bc'), 'ld bc, (nn)'),
+            0x4d: Op(self.reti, 'reti'),
 
             0x52: Op(lambda: sbc_hl_reg(self, 'de'), 'sbc hl, de'),
             0x53: Op(lambda: self.ld_ext_16reg('de'), 'ld (nn), de'),
@@ -801,13 +806,31 @@ class Processor:
         }
 
     def ei(self):
+        self.enable_iff = True
+
+    def set_iff(self):
         self.iff[0] = True
         self.iff[1] = True
 
+    def di(self):
+        self.iff[0] = False
+        self.iff[1] = False
+
     def nmi(self):
+        self.halting = False
         self.iff[0] = False
         self.push_pc()
         self.special_registers['pc'] = 0x0066
+
+    def reti(self):
+        ret(self)
+
+    def retn(self):
+        self.iff[0] = self.iff[1]
+        ret(self)
+
+    def halt(self):
+        self.halting = True
 
     def set_interrupt_mode(self, interrupt_mode):
         self.interrupt_mode = interrupt_mode
@@ -821,12 +844,18 @@ class Processor:
         self.push_byte(low_byte)
 
     def execute(self):
+        enable_iff_after_op = self.enable_iff
         operation = self.get_operation()
         operation.function()
+        if enable_iff_after_op:
+            self.set_iff()
+            self.enable_iff = False
         self.cycles += 1
+        return operation
 
     def get_operation(self):
         if self.iff[0] and len(self.interrupt_requests) > 0:
+            self.halting = False
             next_request = self.interrupt_requests.pop(0)
             next_request.acknowledge()
             if self.interrupt_mode == 0:
@@ -842,7 +871,11 @@ class Processor:
             if len(self.interrupt_data_queue) > 0:
                 self.push_pc()
 
-        op_code = self.get_next_byte()
+        if self.halting:
+            op_code = 0x00
+        else:
+            op_code = self.get_next_byte()
+
         operation = self.operations_by_opcode[op_code]
         if isinstance(operation, dict):
             op_code = self.get_next_byte()

@@ -247,7 +247,7 @@ class TestInterrupts(TestHelper):
         last_op = self.processor.execute()
 
         # then
-        assert_equals(last_op.mnemonic, 'inc a')
+        assert_equals(str(last_op), 'inc a')
         self.assert_register('a').equals(0x01)
 
     def test_halt_executes_nops_until_maskable_interrupt_when_maskable_interrupts_enabled(self):
@@ -270,7 +270,7 @@ class TestInterrupts(TestHelper):
         last_op = self.processor.execute()
 
         # then
-        assert_equals(last_op.mnemonic, 'inc a')
+        assert_equals(str(last_op), 'inc a')
         self.assert_register('a').equals(0x01)
 
     def test_halt_executes_nops_despite_maskable_interrupt_when_maskable_interrupts_disabled(self):

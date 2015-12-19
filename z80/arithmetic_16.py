@@ -1,13 +1,26 @@
+from baseop import BaseOp
 from funcs import *
 
 
-def add_hl_reg(processor, reg_pair):
-    result, half_carry, full_carry = bitwise_add_16bit(processor.get_16bit_reg('hl'), processor.get_16bit_reg(reg_pair))
-    processor.set_16bit_reg('hl', result)
+class OpAddHl16Reg(BaseOp):
+    def __init__(self, processor, source_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.source_reg = source_reg
 
-    processor.set_condition('h', half_carry)
-    processor.set_condition('n', False)
-    processor.set_condition('c', full_carry)
+    def execute(self):
+        result, half_carry, full_carry = bitwise_add_16bit(self.processor.get_16bit_reg('hl'),
+                                                           self.processor.get_16bit_reg(self.source_reg))
+        self.processor.set_16bit_reg('hl', result)
+        self.processor.set_condition('h', half_carry)
+        self.processor.set_condition('n', False)
+        self.processor.set_condition('c', full_carry)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'add hl, {}'.format(self.source_reg)
 
 
 def adc_hl_reg(processor, reg_pair):

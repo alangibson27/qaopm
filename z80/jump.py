@@ -1,3 +1,4 @@
+from z80.baseop import BaseOp
 from z80.funcs import to_signed, big_endian_value
 
 
@@ -60,24 +61,97 @@ def _abs_jp_address(processor):
     return big_endian_value([processor.get_next_byte(), processor.get_next_byte()])
 
 
-def jr(processor):
-    _jr_offset(processor, to_signed(processor.get_next_byte()))
+class OpJr(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _jr_offset(self.processor, to_signed(self.processor.get_next_byte()))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jr n'
 
 
-def jr_c(processor):
-    _cond_jr(processor, 'c', True)
+class OpJrC(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jr(self.processor, 'c', True)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jr c, n'
 
 
-def jr_nc(processor):
-    _cond_jr(processor, 'c', False)
+class OpJrNc(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jr(self.processor, 'c', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jr nc, n'
 
 
-def jr_z(processor):
-    _cond_jr(processor, 'z', True)
+class OpJrZ(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jr(self.processor, 'z', True)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jr z, n'
 
 
-def jr_nz(processor):
-    _cond_jr(processor, 'z', False)
+class OpJrNz(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jr(self.processor, 'z', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jr nz, n'
+
+
+class OpDjnz(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        self.processor.main_registers['b'] = (self.processor.main_registers['b'] - 1)
+        if self.processor.main_registers['b'] != 0:
+            _jr_offset(self.processor, offset)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'djnz n'
 
 
 def _cond_jr(processor, flag, jump_value):
@@ -90,8 +164,3 @@ def _jr_offset(processor, offset):
     processor.special_registers['pc'] = (processor.special_registers['pc'] + offset) & 0xffff
 
 
-def djnz(processor):
-    offset = to_signed(processor.get_next_byte())
-    processor.main_registers['b'] = (processor.main_registers['b'] - 1)
-    if processor.main_registers['b'] != 0:
-        _jr_offset(processor, offset)

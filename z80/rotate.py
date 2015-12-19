@@ -1,33 +1,78 @@
+from baseop import BaseOp
 from funcs import has_parity, to_hex_digits
 
 
-def rlca(processor):
-    result = _rlc_value(processor, processor.main_registers['a'])
-    processor.main_registers['a'] = result
+class OpRlca(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        result = _rlc_value(self.processor, self.processor.main_registers['a'])
+        self.processor.main_registers['a'] = result
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rlca'
 
 
-def rla(processor):
-    value = processor.main_registers['a']
-    rotated = _rl_value(processor, value)
-    processor.main_registers['a'] = rotated
+class OpRla(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        value = self.processor.main_registers['a']
+        rotated = _rl_value(self.processor, value)
+        self.processor.main_registers['a'] = rotated
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rla'
 
 
-def rrca(processor):
-    value = processor.main_registers['a']
-    rotated = _rrc_value(processor, value)
-    processor.main_registers['a'] = rotated
+class OpRrca(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        value = self.processor.main_registers['a']
+        rotated = _rrc_value(self.processor, value)
+        self.processor.main_registers['a'] = rotated
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rrca'
 
 
-def rra(processor):
-    low_bit = processor.main_registers['a'] & 0b1
-    rotated = processor.main_registers['a'] >> 1
-    if processor.condition('c'):
-        rotated |= 0b10000000
+class OpRra(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
 
-    processor.main_registers['a'] = rotated
-    processor.set_condition('c', low_bit == 1)
-    processor.set_condition('h', False)
-    processor.set_condition('n', False)
+    def execute(self):
+        low_bit = self.processor.main_registers['a'] & 0b1
+        rotated = self.processor.main_registers['a'] >> 1
+        if self.processor.condition('c'):
+            rotated |= 0b10000000
+
+        self.processor.main_registers['a'] = rotated
+        self.processor.set_condition('c', low_bit == 1)
+        self.processor.set_condition('h', False)
+        self.processor.set_condition('n', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rra'
 
 
 def rlc_reg(processor, reg):

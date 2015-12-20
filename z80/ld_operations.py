@@ -184,6 +184,22 @@ class OpLdSpImmediate(BaseOp):
         return 'ld sp, nn'
 
 
+class OpLdSpHl(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        self.processor.special_registers['sp'] = big_endian_value([self.processor.main_registers['l'],
+                                                                   self.processor.main_registers['h']])
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ld sp, hl'
+
+
 class OpLdHlIndirectImmediate(BaseOp):
     def __init__(self, processor, memory):
         BaseOp.__init__(self)

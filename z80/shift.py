@@ -1,15 +1,40 @@
+from baseop import BaseOp
 from funcs import has_parity, to_signed
 
 
-def sla_reg(processor, register):
-    result = _sla_value(processor, processor.main_registers[register])
-    processor.main_registers[register] = result
+class OpSlaReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _sla_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sla {}'.format(self.reg)
 
 
-def sla_hl_indirect(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    result = _sla_value(processor, memory.peek(address))
-    memory.poke(address, result)
+class OpSlaHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _sla_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sla (hl)'
 
 
 def sla_indexed(processor, memory, register, offset):
@@ -26,15 +51,39 @@ def _sla_value(processor, value):
     return rotated
 
 
-def sra_reg(processor, register):
-    result = _sra_value(processor, processor.main_registers[register])
-    processor.main_registers[register] = result
+class OpSraReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _sra_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sra {}'.format(self.reg)
 
 
-def sra_hl_indirect(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    result = _sra_value(processor, memory.peek(address))
-    memory.poke(address, result)
+class OpSraHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _sra_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sra (hl)'
 
 
 def sra_indexed(processor, memory, register, offset):
@@ -44,15 +93,39 @@ def sra_indexed(processor, memory, register, offset):
     memory.poke(address, result)
 
 
-def srl_reg(processor, register):
-    result = _srl_value(processor, processor.main_registers[register])
-    processor.main_registers[register] = result
+class OpSrlReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _srl_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'srl {}'.format(self.reg)
 
 
-def srl_hl_indirect(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    result = _srl_value(processor, memory.peek(address))
-    memory.poke(address, result)
+class OpSrlHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _srl_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'srl (hl)'
 
 
 def srl_indexed(processor, memory, register, offset):

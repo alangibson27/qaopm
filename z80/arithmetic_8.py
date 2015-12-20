@@ -118,6 +118,22 @@ class OpSubA8Reg(BaseOp):
         return 'sub a, {}'.format(self.reg)
 
 
+class OpSbcA8Reg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        _sub_a(self.processor, self.processor.main_registers[self.reg], self.processor.condition('c'))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sbc a, {}'.format(self.reg)
+
+
 class OpSubAHlIndirect(BaseOp):
     def __init__(self, processor, memory):
         BaseOp.__init__(self)
@@ -133,6 +149,246 @@ class OpSubAHlIndirect(BaseOp):
 
     def __str__(self):
         return 'sub a, (hl)'
+
+
+class OpSbcAHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        _sub_a(self.processor, value, self.processor.condition('c'))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sbc a, (hl)'
+
+
+class OpSubAImmediate(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        value = self.processor.get_next_byte()
+        _sub_a(self.processor, value, False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sub a, n'
+
+
+class OpSbcAImmediate(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        value = self.processor.get_next_byte()
+        _sub_a(self.processor, value, self.processor.condition('c'))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sbc a, n'
+
+
+class OpAndA8Reg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        _and_a_value(self.processor, self.processor.main_registers[self.reg])
+
+    def __str__(self):
+        return 'and {}'.format(self.reg)
+
+
+class OpAndAHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        _and_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+
+    def __str__(self):
+        return 'and (hl)'
+
+
+class OpAndAImmediate(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _and_a_value(self.processor, self.processor.get_next_byte())
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'and a, n'
+
+
+class OpXorA8Reg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        _xor_a_value(self.processor, self.processor.main_registers[self.reg])
+
+    def __str__(self):
+        return 'xor {}'.format(self.reg)
+
+
+class OpXorAHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        _xor_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+
+    def __str__(self):
+        return 'xor (hl)'
+
+
+class OpXorAImmediate(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _xor_a_value(self.processor, self.processor.get_next_byte())
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'xor a, n'
+
+
+class OpOrA8Reg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        _or_a_value(self.processor, self.processor.main_registers[self.reg])
+
+    def __str__(self):
+        return 'or {}'.format(self.reg)
+
+
+class OpOrAHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        _or_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+
+    def __str__(self):
+        return 'or (hl)'
+
+
+class OpOrAImmediate(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _or_a_value(self.processor, self.processor.get_next_byte())
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'or a, n'
+
+
+class OpCpA8Reg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        _cp_value(self.processor, self.processor.main_registers[self.reg], False)
+
+    def __str__(self):
+        return 'cp {}'.format(self.reg)
+
+
+class OpCpAHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def t_states(self):
+        pass
+
+    def execute(self):
+        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        _cp_value(self.processor, value, False)
+
+    def __str__(self):
+        return 'cp (hl)'
+
+
+class OpCpImmediate(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cp_value(self.processor, self.processor.get_next_byte())
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'cp n'
 
 
 class OpCpl(BaseOp):
@@ -296,3 +552,51 @@ def _sub_a(processor, value, carry):
     processor.set_condition('p', (signed_a < 0) != (signed_result < 0))
     processor.set_condition('n', True)
     processor.set_condition('c', full_carry)
+
+
+def _and_a_value(processor, value):
+    result = processor.main_registers['a'] & value
+    processor.main_registers['a'] = result
+    processor.set_condition('s', result & 0b10000000 > 0)
+    processor.set_condition('z', result == 0)
+    processor.set_condition('h', True)
+    processor.set_condition('p', has_parity(result))
+    processor.set_condition('n', False)
+    processor.set_condition('c', False)
+
+
+def _xor_a_value(processor, value):
+    result = processor.main_registers['a'] ^ value
+    processor.main_registers['a'] = result
+    processor.set_condition('s', result & 0b10000000 > 0)
+    processor.set_condition('z', result == 0)
+    processor.set_condition('h', False)
+    processor.set_condition('p', has_parity(result))
+    processor.set_condition('n', False)
+    processor.set_condition('c', False)
+
+
+def _or_a_value(processor, value):
+    result = processor.main_registers['a'] | value
+    processor.main_registers['a'] = result
+    processor.set_condition('s', result & 0b10000000 > 0)
+    processor.set_condition('z', result == 0)
+    processor.set_condition('h', False)
+    processor.set_condition('p', has_parity(result))
+    processor.set_condition('n', False)
+    processor.set_condition('c', False)
+
+
+def _cp_value(processor, value, carry):
+    signed_a = to_signed(processor.main_registers['a'])
+    if carry:
+        value = (value + 1) & 0xff
+    result, half_carry, full_carry = bitwise_sub(processor.main_registers['a'], value)
+    signed_result = to_signed(result)
+    processor.set_condition('s', signed_result < 0)
+    processor.set_condition('z', result == 0)
+    processor.set_condition('h', half_carry)
+    processor.set_condition('p', (signed_a < 0) != (signed_result < 0))
+    processor.set_condition('n', True)
+    processor.set_condition('c', full_carry)
+

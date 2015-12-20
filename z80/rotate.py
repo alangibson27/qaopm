@@ -75,56 +75,150 @@ class OpRra(BaseOp):
         return 'rra'
 
 
-def rlc_reg(processor, reg):
-    result = _rlc_value(processor, processor.main_registers[reg])
-    processor.main_registers[reg] = result
-    _set_sign_zero_parity_flags(processor, result)
+class OpRlcReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _rlc_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rlc {}'.format(self.reg)
 
 
-def rrc_reg(processor, reg):
-    result = _rrc_value(processor, processor.main_registers[reg])
-    processor.main_registers[reg] = result
-    _set_sign_zero_parity_flags(processor, result)
+class OpRrcReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _rrc_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rrc {}'.format(self.reg)
 
 
-def rrc_hl_indirect(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    result = _rrc_value(processor, memory.peek(address))
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRrcHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _rrc_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rrc (hl)'
 
 
-def rl_reg(processor, reg):
-    result = _rl_value(processor, processor.main_registers[reg])
-    processor.main_registers[reg] = result
-    _set_sign_zero_parity_flags(processor, result)
+class OpRlReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _rl_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rl {}'.format(self.reg)
 
 
-def rr_reg(processor, reg):
-    result = _rr_value(processor, processor.main_registers[reg])
-    processor.main_registers[reg] = result
-    _set_sign_zero_parity_flags(processor, result)
+class OpRrReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _rr_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return BaseOp.__str__(self)
 
 
-def rlc_hl_indirect(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    result = _rlc_value(processor, memory.peek(address))
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRlcHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _rlc_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rlc (hl)'
 
 
-def rl_hl_indirect(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    result = _rl_value(processor, memory.peek(address))
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRlHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _rl_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rl (hl)'
 
 
-def rr_hl_indirect(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    result = _rr_value(processor, memory.peek(address))
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRrHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _rr_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rl (hl)'
 
 
 def rlc_indexed(processor, memory, register, offset):

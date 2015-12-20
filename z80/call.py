@@ -1,60 +1,315 @@
 from funcs import big_endian_value, high_low_pair
+from z80.baseop import BaseOp
 
 
-def call(processor):
-    call_to(processor, _get_destination_from_pc(processor))
+class OpCall(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        call_to(self.processor, _get_destination_from_pc(self.processor))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call nn'
 
 
-def rst(processor, jump_address):
-    call_to(processor, jump_address)
+class OpRst(BaseOp):
+    def __init__(self, processor, jump_address):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.jump_address = jump_address
+
+    def execute(self):
+        call_to(self.processor, self.jump_address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rst {}'.format(hex(self.jump_address))
 
 
-def call_nz(processor):
-    address = _get_destination_from_pc(processor)
-    if not processor.condition('z'):
-        call_to(processor, address)
+class OpCallNz(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if not self.processor.condition('z'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call nz, nn'
 
 
-def call_z(processor):
-    address = _get_destination_from_pc(processor)
-    if processor.condition('z'):
-        call_to(processor, address)
+class OpCallZ(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if self.processor.condition('z'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call z, nn'
 
 
-def call_nc(processor):
-    address = _get_destination_from_pc(processor)
-    if not processor.condition('c'):
-        call_to(processor, address)
+class OpCallNc(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if not self.processor.condition('c'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call nc, nn'
 
 
-def call_c(processor):
-    address = _get_destination_from_pc(processor)
-    if processor.condition('c'):
-        call_to(processor, address)
+class OpCallC(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if self.processor.condition('c'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call c, nn'
 
 
-def call_po(processor):
-    address = _get_destination_from_pc(processor)
-    if not processor.condition('p'):
-        call_to(processor, address)
+class OpCallPo(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if not self.processor.condition('p'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call po, nn'
 
 
-def call_pe(processor):
-    address = _get_destination_from_pc(processor)
-    if processor.condition('p'):
-        call_to(processor, address)
+class OpCallPe(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if self.processor.condition('p'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call pe, nn'
 
 
-def call_p(processor):
-    address = _get_destination_from_pc(processor)
-    if not processor.condition('s'):
-        call_to(processor, address)
+class OpCallP(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if not self.processor.condition('s'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call p, nn'
 
 
-def call_m(processor):
-    address = _get_destination_from_pc(processor)
-    if processor.condition('s'):
-        call_to(processor, address)
+class OpCallM(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _get_destination_from_pc(self.processor)
+        if self.processor.condition('s'):
+            call_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'call m, nn'
+
+
+class OpRet(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret'
+
+
+class OpRetNz(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if not self.processor.condition('z'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret nz'
+
+
+class OpRetZ(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if self.processor.condition('z'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret z'
+
+
+class OpRetNc(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if not self.processor.condition('c'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret nc'
+
+
+class OpRetC(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if self.processor.condition('c'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret c'
+
+
+class OpRetPo(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if not self.processor.condition('p'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret po'
+
+
+class OpRetPe(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if self.processor.condition('p'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret pe'
+
+
+class OpRetP(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if not self.processor.condition('s'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret p'
+
+
+class OpRetM(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        if self.processor.condition('s'):
+            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'ret m'
 
 
 def call_to(processor, destination):
@@ -68,50 +323,6 @@ def _get_destination_from_pc(processor):
     next_pc_low = processor.get_next_byte()
     next_pc_high = processor.get_next_byte()
     return big_endian_value([next_pc_low, next_pc_high])
-
-
-def ret(processor):
-    processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_nz(processor):
-    if not processor.condition('z'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_z(processor):
-    if processor.condition('z'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_nc(processor):
-    if not processor.condition('c'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_c(processor):
-    if processor.condition('c'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_po(processor):
-    if not processor.condition('p'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_pe(processor):
-    if processor.condition('p'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_p(processor):
-    if not processor.condition('s'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
-
-
-def ret_m(processor):
-    if processor.condition('s'):
-        processor.special_registers['pc'] = _get_destination_from_stack(processor)
 
 
 def _get_destination_from_stack(processor):

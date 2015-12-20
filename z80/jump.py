@@ -2,53 +2,171 @@ from z80.baseop import BaseOp
 from z80.funcs import to_signed, big_endian_value
 
 
-def jp(processor):
-    address = _abs_jp_address(processor)
-    jp_to(processor, address)
+class OpJp(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        address = _abs_jp_address(self.processor)
+        jp_to(self.processor, address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp nn'
 
 
-def jp_to(processor, address):
-    processor.special_registers['pc'] = address
+class OpJpHlIndirect(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        self.processor.special_registers['pc'] = self.processor.get_16bit_reg('hl')
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp (hl)'
 
 
-def jp_hl_indirect(processor):
-    processor.special_registers['pc'] = processor.get_16bit_reg('hl')
+class OpJpIndexedIndirect(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        self.processor.special_registers['pc'] = self.processor.index_registers[self.reg]
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp ({})'.format(self.reg)
 
 
-def jp_indexed_indirect(processor, reg):
-    processor.special_registers['pc'] = processor.index_registers[reg]
+class OpJpNz(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jp(self.processor, 'z', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp nz, nn'
 
 
-def jp_nz(processor):
-    _cond_jp(processor, 'z', False)
+class OpJpZ(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jp(self.processor, 'z', True)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp z, nn'
 
 
-def jp_z(processor):
-    _cond_jp(processor, 'z', True)
+class OpJpNc(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jp(self.processor, 'c', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp nc, nn'
 
 
-def jp_nc(processor):
-    _cond_jp(processor, 'c', False)
+class OpJpC(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jp(self.processor, 'c', True)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp c, nn'
 
 
-def jp_c(processor):
-    _cond_jp(processor, 'c', True)
+class OpJpPo(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jp(self.processor, 'p', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp po, nn'
 
 
-def jp_po(processor):
-    _cond_jp(processor, 'p', False)
+class OpJpPe(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jp(self.processor, 'p', True)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp pe, nn'
 
 
-def jp_pe(processor):
-    _cond_jp(processor, 'p', True)
+class OpJpP(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        _cond_jp(self.processor, 's', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp p, nn'
 
 
-def jp_p(processor):
-    _cond_jp(processor, 's', False)
+class OpJpM(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
 
+    def execute(self):
+        _cond_jp(self.processor, 's', True)
 
-def jp_m(processor):
-    _cond_jp(processor, 's', True)
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'jp m, nn'
 
 
 def _cond_jp(processor, flag, jump_value):
@@ -152,6 +270,10 @@ class OpDjnz(BaseOp):
 
     def __str__(self):
         return 'djnz n'
+
+
+def jp_to(processor, address):
+    processor.special_registers['pc'] = address
 
 
 def _cond_jr(processor, flag, jump_value):

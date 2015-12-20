@@ -114,6 +114,8 @@ class OpRrcReg(BaseOp):
 class OpRrcHlIndirect(BaseOp):
     def __init__(self, processor, memory):
         BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
@@ -221,68 +223,148 @@ class OpRrHlIndirect(BaseOp):
         return 'rl (hl)'
 
 
-def rlc_indexed(processor, memory, register, offset):
-    address = processor.index_registers[register] + offset
-    value = memory.peek(address)
-    result = _rlc_value(processor, value)
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRld(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        mem_value = self.memory.peek(address)
+        mem_digits = to_hex_digits(mem_value)
+
+        reg_value = self.processor.main_registers['a']
+        reg_digits = to_hex_digits(reg_value)
+
+        self.memory.poke(address, (mem_digits[1] << 4) + reg_digits[1])
+        self.processor.main_registers['a'] = reg_digits[0] + (mem_digits[0] >> 4)
+
+        _set_sign_zero_parity_flags(self.processor, self.processor.main_registers['a'])
+        self.processor.set_condition('h', False)
+        self.processor.set_condition('n', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rld'
 
 
-def rrc_indexed(processor, memory, register, offset):
-    address = processor.index_registers[register] + offset
-    value = memory.peek(address)
-    result = _rrc_value(processor, value)
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRrd(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        mem_value = self.memory.peek(address)
+        mem_digits = to_hex_digits(mem_value)
+
+        reg_value = self.processor.main_registers['a']
+        reg_digits = to_hex_digits(reg_value)
+
+        self.memory.poke(address, (reg_digits[1] << 4) + (mem_digits[0] >> 4))
+        self.processor.main_registers['a'] = reg_digits[0] + mem_digits[1]
+
+        _set_sign_zero_parity_flags(self.processor, self.processor.main_registers['a'])
+        self.processor.set_condition('h', False)
+        self.processor.set_condition('n', False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rrd'
 
 
-def rl_indexed(processor, memory, register, offset):
-    address = processor.index_registers[register] + offset
-    value = memory.peek(address)
-    result = _rl_value(processor, value)
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRlcIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = self.processor.get_signed_offset_byte()
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        value = self.memory.peek(address)
+        result = _rlc_value(self.processor, value)
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rlc ({} + d)'.format(self.indexed_reg)
 
 
-def rr_indexed(processor, memory, register, offset):
-    address = processor.index_registers[register] + offset
-    value = memory.peek(address)
-    result = _rr_value(processor, value)
-    memory.poke(address, result)
-    _set_sign_zero_parity_flags(processor, result)
+class OpRrcIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = self.processor.get_signed_offset_byte()
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        value = self.memory.peek(address)
+        result = _rrc_value(self.processor, value)
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'rrc ({} + d)'.format(self.indexed_reg)
 
 
-def rld(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    mem_value = memory.peek(address)
-    mem_digits = to_hex_digits(mem_value)
+class OpRlIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
 
-    reg_value = processor.main_registers['a']
-    reg_digits = to_hex_digits(reg_value)
+    def execute(self):
+        offset = self.processor.get_signed_offset_byte()
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        value = self.memory.peek(address)
+        result = _rl_value(self.processor, value)
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
 
-    memory.poke(address, (mem_digits[1] << 4) + reg_digits[1])
-    processor.main_registers['a'] = reg_digits[0] + (mem_digits[0] >> 4)
+    def t_states(self):
+        pass
 
-    _set_sign_zero_parity_flags(processor, processor.main_registers['a'])
-    processor.set_condition('h', False)
-    processor.set_condition('n', False)
+    def __str__(self):
+        return 'rl ({} + d)'.format(self.indexed_reg)
 
 
-def rrd(processor, memory):
-    address = processor.get_16bit_reg('hl')
-    mem_value = memory.peek(address)
-    mem_digits = to_hex_digits(mem_value)
+class OpRrIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
 
-    reg_value = processor.main_registers['a']
-    reg_digits = to_hex_digits(reg_value)
+    def execute(self):
+        offset = self.processor.get_signed_offset_byte()
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        value = self.memory.peek(address)
+        result = _rr_value(self.processor, value)
+        self.memory.poke(address, result)
+        _set_sign_zero_parity_flags(self.processor, result)
 
-    memory.poke(address, (reg_digits[1] << 4) + (mem_digits[0] >> 4))
-    processor.main_registers['a'] = reg_digits[0] + mem_digits[1]
+    def t_states(self):
+        pass
 
-    _set_sign_zero_parity_flags(processor, processor.main_registers['a'])
-    processor.set_condition('h', False)
-    processor.set_condition('n', False)
+    def __str__(self):
+        return 'rr ({} + d)'.format(self.indexed_reg)
 
 
 def _rlc_value(processor, value):

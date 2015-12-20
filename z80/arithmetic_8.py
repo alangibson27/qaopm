@@ -202,6 +202,82 @@ class OpSbcAImmediate(BaseOp):
         return 'sbc a, n'
 
 
+class OpAddAIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        _add_a(self.processor, value, False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'add a, ({} + d)'.format(self.indexed_reg)
+
+
+class OpAdcAIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        _add_a(self.processor, value, self.processor.condition('c'))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'adc a, ({} + d)'.format(self.indexed_reg)
+
+
+class OpSubAIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        _sub_a(self.processor, value, False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sub a, ({} + d)'.format(self.indexed_reg)
+
+
+class OpSbcAIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        _sub_a(self.processor, value, self.processor.condition('c'))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sbc a, ({} + d)'.format(self.indexed_reg)
+
+
 class OpAndA8Reg(BaseOp):
     def __init__(self, processor, reg):
         BaseOp.__init__(self)
@@ -247,6 +323,24 @@ class OpAndAImmediate(BaseOp):
 
     def __str__(self):
         return 'and a, n'
+
+
+class OpAndIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        _and_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'and ({} + d)'.format(self.indexed_reg)
 
 
 class OpXorA8Reg(BaseOp):
@@ -296,6 +390,24 @@ class OpXorAImmediate(BaseOp):
         return 'xor a, n'
 
 
+class OpXorIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        _xor_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'xor ({} + d)'.format(self.indexed_reg)
+
+
 class OpOrA8Reg(BaseOp):
     def __init__(self, processor, reg):
         BaseOp.__init__(self)
@@ -343,6 +455,24 @@ class OpOrAImmediate(BaseOp):
         return 'or a, n'
 
 
+class OpOrIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        _or_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'or ({} + d)'.format(self.indexed_reg)
+
+
 class OpCpA8Reg(BaseOp):
     def __init__(self, processor, reg):
         BaseOp.__init__(self)
@@ -382,13 +512,54 @@ class OpCpImmediate(BaseOp):
         self.processor = processor
 
     def execute(self):
-        _cp_value(self.processor, self.processor.get_next_byte())
+        _cp_value(self.processor, self.processor.get_next_byte(), False)
 
     def t_states(self):
         pass
 
     def __str__(self):
         return 'cp n'
+
+
+class OpCpIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        _cp_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset), False)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'cp ({} + d)'.format(self.indexed_reg)
+
+
+class OpNeg(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        result, half_carry, _ = bitwise_sub(0, self.processor.main_registers['a'])
+
+        self.processor.set_condition('s', to_signed(result) < 0)
+        self.processor.set_condition('z', result == 0)
+        self.processor.set_condition('h', half_carry)
+        self.processor.set_condition('p', self.processor.main_registers['a'] == 0x80)
+        self.processor.set_condition('n', True)
+        self.processor.set_condition('c', self.processor.main_registers['a'] != 0x00)
+        self.processor.main_registers['a'] = result
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'neg'
 
 
 class OpCpl(BaseOp):

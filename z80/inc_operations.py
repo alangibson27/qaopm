@@ -104,6 +104,80 @@ class OpDecHlIndirect(BaseOp):
         return 'dec (hl)'
 
 
+class OpIncIndexed(BaseOp):
+    def __init__(self, processor, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        result = (self.processor.index_registers[self.indexed_reg] + 1) & 0xffff
+        self.processor.index_registers[self.indexed_reg] = result
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'inc {}'.format(self.indexed_reg)
+
+
+class OpDecIndexed(BaseOp):
+    def __init__(self, processor, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        result = (self.processor.index_registers[self.indexed_reg] - 1) & 0xffff
+        self.processor.index_registers[self.indexed_reg] = result
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'dec {}'.format(self.indexed_reg)
+
+
+class OpIncIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        result = _inc_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'inc ({} + d)'.format(self.indexed_reg)
+
+
+class OpDecIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = to_signed(self.processor.get_next_byte())
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        result = _dec_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'inc ({} + d)'.format(self.indexed_reg)
+
+
 def _inc_value(processor, value):
     processor.set_condition('p', value == 0x7f)
     result, half_carry, _ = bitwise_add(value, 1)

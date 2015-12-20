@@ -1,4 +1,5 @@
 from baseop import BaseOp
+from z80.funcs import big_endian_value, high_low_pair
 
 
 class OpPop16Reg(BaseOp):
@@ -20,6 +21,24 @@ class OpPop16Reg(BaseOp):
         return 'pop {}'.format(self.reg)
 
 
+class OpPopIndexed(BaseOp):
+    def __init__(self, processor, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        lsb = self.processor.pop_byte()
+        msb = self.processor.pop_byte()
+        self.processor.index_registers[self.indexed_reg] = big_endian_value([lsb, msb])
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'pop {}'.format(self.indexed_reg)
+
+
 class OpPush16Reg(BaseOp):
     def __init__(self, processor, reg):
         BaseOp.__init__(self)
@@ -35,3 +54,21 @@ class OpPush16Reg(BaseOp):
 
     def __str__(self):
         return 'push {}'.format(self.reg)
+
+
+class OpPushIndexed(BaseOp):
+    def __init__(self, processor, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        high_byte, low_byte = high_low_pair(self.processor.index_registers[self.indexed_reg])
+        self.processor.push_byte(high_byte)
+        self.processor.push_byte(low_byte)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'pop {}'.format(self.indexed_reg)

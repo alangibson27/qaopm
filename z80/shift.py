@@ -37,20 +37,6 @@ class OpSlaHlIndirect(BaseOp):
         return 'sla (hl)'
 
 
-def sla_indexed(processor, memory, register, offset):
-    address = processor.index_registers[register] + offset
-    value = memory.peek(address)
-    result = _sla_value(processor, value)
-    memory.poke(address, result)
-
-
-def _sla_value(processor, value):
-    carry = value >> 7
-    rotated = (value << 1) & 0xff
-    _set_flags(processor, rotated, carry)
-    return rotated
-
-
 class OpSraReg(BaseOp):
     def __init__(self, processor, reg):
         BaseOp.__init__(self)
@@ -84,13 +70,6 @@ class OpSraHlIndirect(BaseOp):
 
     def __str__(self):
         return 'sra (hl)'
-
-
-def sra_indexed(processor, memory, register, offset):
-    address = processor.index_registers[register] + offset
-    value = memory.peek(address)
-    result = _sra_value(processor, value)
-    memory.poke(address, result)
 
 
 class OpSrlReg(BaseOp):
@@ -128,11 +107,74 @@ class OpSrlHlIndirect(BaseOp):
         return 'srl (hl)'
 
 
-def srl_indexed(processor, memory, register, offset):
-    address = processor.index_registers[register] + offset
-    value = memory.peek(address)
-    result = _srl_value(processor, value)
-    memory.poke(address, result)
+class OpSlaIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = self.processor.get_signed_offset_byte()
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        value = self.memory.peek(address)
+        result = _sla_value(self.processor, value)
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sla ({} + d)'.format(self.indexed_reg)
+
+
+class OpSraIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = self.processor.get_signed_offset_byte()
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        value = self.memory.peek(address)
+        result = _sra_value(self.processor, value)
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'sra ({} + d)'.format(self.indexed_reg)
+
+
+class OpSrlIndexedIndirect(BaseOp):
+    def __init__(self, processor, memory, indexed_reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+        self.indexed_reg = indexed_reg
+
+    def execute(self):
+        offset = self.processor.get_signed_offset_byte()
+        address = self.processor.index_registers[self.indexed_reg] + offset
+        value = self.memory.peek(address)
+        result = _srl_value(self.processor, value)
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'srl ({} + d)'.format(self.indexed_reg)
+
+
+def _sla_value(processor, value):
+    carry = value >> 7
+    rotated = (value << 1) & 0xff
+    _set_flags(processor, rotated, carry)
+    return rotated
 
 
 def _sra_value(processor, value):

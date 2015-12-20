@@ -11,4 +11,4 @@ class TestCycles(TestHelper):
         tstates = self.processor.execute()
 
         # then
-        assert_equals(op_code, [0x03])
+        assert_equals(tstates, [0x03])

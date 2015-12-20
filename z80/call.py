@@ -17,6 +17,22 @@ class OpCall(BaseOp):
         return 'call nn'
 
 
+class OpCallDirect(BaseOp):
+    def __init__(self, processor, address):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.address = address
+
+    def execute(self):
+        call_to(self.processor, self.address)
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'im2 response'
+
+
 class OpRst(BaseOp):
     def __init__(self, processor, jump_address):
         BaseOp.__init__(self)
@@ -175,7 +191,7 @@ class OpRet(BaseOp):
         self.processor = processor
 
     def execute(self):
-        self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+        self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -191,7 +207,7 @@ class OpRetNz(BaseOp):
 
     def execute(self):
         if not self.processor.condition('z'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -207,7 +223,7 @@ class OpRetZ(BaseOp):
 
     def execute(self):
         if self.processor.condition('z'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -223,7 +239,7 @@ class OpRetNc(BaseOp):
 
     def execute(self):
         if not self.processor.condition('c'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -239,7 +255,7 @@ class OpRetC(BaseOp):
 
     def execute(self):
         if self.processor.condition('c'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -255,7 +271,7 @@ class OpRetPo(BaseOp):
 
     def execute(self):
         if not self.processor.condition('p'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -271,7 +287,7 @@ class OpRetPe(BaseOp):
 
     def execute(self):
         if self.processor.condition('p'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -287,7 +303,7 @@ class OpRetP(BaseOp):
 
     def execute(self):
         if not self.processor.condition('s'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -303,7 +319,7 @@ class OpRetM(BaseOp):
 
     def execute(self):
         if self.processor.condition('s'):
-            self.processor.special_registers['pc'] = _get_destination_from_stack(self.processor)
+            self.processor.restore_pc_from_stack()
 
     def t_states(self):
         pass
@@ -323,7 +339,3 @@ def _get_destination_from_pc(processor):
     next_pc_low = processor.get_next_byte()
     next_pc_high = processor.get_next_byte()
     return big_endian_value([next_pc_low, next_pc_high])
-
-
-def _get_destination_from_stack(processor):
-    return big_endian_value([processor.pop_byte(), processor.pop_byte()])

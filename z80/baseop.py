@@ -10,3 +10,18 @@ class BaseOp:
 
     def __str__(self):
         return 'unimplemented operation'
+
+
+class Nop(BaseOp):
+    def __init__(self):
+        BaseOp.__init__(self)
+
+    def execute(self):
+        pass
+
+    def t_states(self):
+        pass
+
+    def __str__(self):
+        return 'nop'
+

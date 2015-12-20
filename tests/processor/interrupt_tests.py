@@ -241,7 +241,7 @@ class TestInterrupts(TestHelper):
         self.processor.execute()
 
         last_op = self.processor.execute()
-        assert_equals(last_op.mnemonic, 'nop')
+        assert_equals(str(last_op), 'nop')
 
         self.processor.nmi()
         last_op = self.processor.execute()
@@ -263,7 +263,7 @@ class TestInterrupts(TestHelper):
         self.processor.execute()
 
         last_op = self.processor.execute()
-        assert_equals(last_op.mnemonic, 'nop')
+        assert_equals(str(last_op), 'nop')
 
         self.an_im1_interrupt_is_generated()
         self.processor.execute()
@@ -286,13 +286,13 @@ class TestInterrupts(TestHelper):
         self.processor.execute()
 
         last_op = self.processor.execute()
-        assert_equals(last_op.mnemonic, 'nop')
+        assert_equals(str(last_op), 'nop')
 
         self.an_im1_interrupt_is_generated()
         last_op = self.processor.execute()
 
         # then
-        assert_equals(last_op.mnemonic, 'nop')
+        assert_equals(str(last_op), 'nop')
 
     def test_retn_reenables_maskable_interrupts(self):
         # given
@@ -357,7 +357,7 @@ class TestInterrupts(TestHelper):
 
     def execute_until_nop(self):
         op = self.processor.execute()
-        while op.mnemonic != 'nop':
+        while str(op) != 'nop':
             op = self.processor.execute()
 
     def execute_range(self, from_addr, to_addr):

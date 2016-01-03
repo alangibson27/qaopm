@@ -1,16 +1,16 @@
-from interrupt_operations import *
-from bit import *
-from call import *
-from jump import *
-from rotate import *
-from shift import *
 from arithmetic_16 import *
 from baseop import Nop
-from ld_operations import *
-from inc_operations import *
+from bit import *
+from call import *
 from exchange_operations import *
-from z80.arithmetic_8 import *
+from inc_operations import *
+from interrupt_operations import *
+from jump import *
+from ld_operations import *
+from rotate import *
+from shift import *
 from stack import *
+from z80.arithmetic_8 import *
 from z80.block_operations import *
 
 

@@ -12,7 +12,7 @@ class OpRlca(BaseOp):
         self.processor.main_registers['a'] = result
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'rlca'
@@ -29,7 +29,7 @@ class OpRla(BaseOp):
         self.processor.main_registers['a'] = rotated
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'rla'
@@ -46,7 +46,7 @@ class OpRrca(BaseOp):
         self.processor.main_registers['a'] = rotated
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'rrca'
@@ -69,7 +69,7 @@ class OpRra(BaseOp):
         self.processor.set_condition('n', False)
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'rra'
@@ -87,7 +87,7 @@ class OpRlcReg(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'rlc {}'.format(self.reg)
@@ -105,7 +105,7 @@ class OpRrcReg(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'rrc {}'.format(self.reg)
@@ -124,7 +124,7 @@ class OpRrcHlIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'rrc (hl)'
@@ -142,7 +142,7 @@ class OpRlReg(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'rl {}'.format(self.reg)
@@ -160,7 +160,7 @@ class OpRrReg(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return BaseOp.__str__(self)
@@ -179,7 +179,7 @@ class OpRlcHlIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'rlc (hl)'
@@ -198,7 +198,7 @@ class OpRlHlIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'rl (hl)'
@@ -217,7 +217,7 @@ class OpRrHlIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'rl (hl)'
@@ -245,7 +245,7 @@ class OpRld(BaseOp):
         self.processor.set_condition('n', False)
 
     def t_states(self):
-        pass
+        return 18
 
     def __str__(self):
         return 'rld'
@@ -273,7 +273,7 @@ class OpRrd(BaseOp):
         self.processor.set_condition('n', False)
 
     def t_states(self):
-        pass
+        return 18
 
     def __str__(self):
         return 'rrd'
@@ -295,7 +295,7 @@ class OpRlcIndexedIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'rlc ({} + d)'.format(self.indexed_reg)
@@ -317,7 +317,7 @@ class OpRrcIndexedIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'rrc ({} + d)'.format(self.indexed_reg)
@@ -339,7 +339,7 @@ class OpRlIndexedIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'rl ({} + d)'.format(self.indexed_reg)
@@ -361,7 +361,7 @@ class OpRrIndexedIndirect(BaseOp):
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'rr ({} + d)'.format(self.indexed_reg)

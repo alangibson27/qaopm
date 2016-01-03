@@ -52,7 +52,7 @@ class OpLd8RegImmediate(BaseOp):
         self.processor.main_registers[self.reg] = operand
 
     def t_states(self):
-        pass
+        return 7
 
     def __str__(self):
         return 'ld {}, n'.format(self.reg)
@@ -71,7 +71,7 @@ class OpLd8RegFrom16RegIndirect(BaseOp):
         self.processor.main_registers[self.destination_reg] = self.memory.peek(address)
 
     def t_states(self):
-        pass
+        return 7
 
     def __str__(self):
         return 'ld {}, ({})'.format(self.source_reg, self.destination_reg)
@@ -88,7 +88,7 @@ class OpLd8RegFrom8Reg(BaseOp):
         self.processor.main_registers[self.destination_reg] = self.processor.main_registers[self.source_reg]
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'ld {}, {}'.format(self.destination_reg, self.source_reg)

@@ -45,7 +45,7 @@ class OpInc16Reg(BaseOp):
         self.processor.set_16bit_reg(self.reg, result)
 
     def t_states(self):
-        pass
+        return 6
 
     def __str__(self):
         return 'inc {}'.format(self.reg)

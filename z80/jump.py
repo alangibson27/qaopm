@@ -12,7 +12,7 @@ class OpJp(BaseOp):
         jp_to(self.processor, address)
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'jp nn'
@@ -27,7 +27,7 @@ class OpJpHlIndirect(BaseOp):
         self.processor.special_registers['pc'] = self.processor.get_16bit_reg('hl')
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'jp (hl)'
@@ -43,127 +43,110 @@ class OpJpIndexedIndirect(BaseOp):
         self.processor.special_registers['pc'] = self.processor.index_registers[self.reg]
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'jp ({})'.format(self.reg)
 
 
-class OpJpNz(BaseOp):
-    def __init__(self, processor):
+class OpCondJump(BaseOp):
+    def __init__(self):
         BaseOp.__init__(self)
+
+    def t_states(self):
+        return 10
+
+class OpJpNz(OpCondJump):
+    def __init__(self, processor):
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 'z', False)
 
-    def t_states(self):
-        pass
-
     def __str__(self):
         return 'jp nz, nn'
 
 
-class OpJpZ(BaseOp):
+class OpJpZ(OpCondJump):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 'z', True)
 
-    def t_states(self):
-        pass
-
     def __str__(self):
         return 'jp z, nn'
 
 
-class OpJpNc(BaseOp):
+class OpJpNc(OpCondJump):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 'c', False)
 
-    def t_states(self):
-        pass
-
     def __str__(self):
         return 'jp nc, nn'
 
 
-class OpJpC(BaseOp):
+class OpJpC(OpCondJump):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 'c', True)
 
-    def t_states(self):
-        pass
-
     def __str__(self):
         return 'jp c, nn'
 
 
-class OpJpPo(BaseOp):
+class OpJpPo(OpCondJump):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 'p', False)
 
-    def t_states(self):
-        pass
-
     def __str__(self):
         return 'jp po, nn'
 
 
-class OpJpPe(BaseOp):
+class OpJpPe(OpCondJump):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 'p', True)
 
-    def t_states(self):
-        pass
-
     def __str__(self):
         return 'jp pe, nn'
 
 
-class OpJpP(BaseOp):
+class OpJpP(OpCondJump):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 's', False)
 
-    def t_states(self):
-        pass
-
     def __str__(self):
         return 'jp p, nn'
 
 
-class OpJpM(BaseOp):
+class OpJpM(OpCondJump):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        OpCondJump.__init__(self)
         self.processor = processor
 
     def execute(self):
         _cond_jp(self.processor, 's', True)
-
-    def t_states(self):
-        pass
 
     def __str__(self):
         return 'jp m, nn'
@@ -188,7 +171,7 @@ class OpJr(BaseOp):
         _jr_offset(self.processor, to_signed(self.processor.get_next_byte()))
 
     def t_states(self):
-        pass
+        return 12
 
     def __str__(self):
         return 'jr n'

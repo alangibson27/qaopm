@@ -12,7 +12,7 @@ class OpBitReg(BaseOp):
         _bit(self.processor, self.processor.main_registers[self.reg], self.bit_pos)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'bit {}, {}'.format(self.bit_pos, self.reg)
@@ -29,7 +29,7 @@ class OpBitHlIndirect(BaseOp):
         _bit(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')), self.bit_pos)
 
     def t_states(self):
-        pass
+        return 12
 
     def __str__(self):
         return 'bit {}, (hl)'.format(self.bit_pos)
@@ -49,7 +49,7 @@ class OpBitIndexedIndirect(BaseOp):
         _bit(self.processor, self.memory.peek(address), self.bit_pos)
 
     def t_states(self):
-        pass
+        return 20
 
     def __str__(self):
         return 'bit {}, ({} + d)'.format(self.bit_pos, self.indexed_reg)
@@ -72,7 +72,7 @@ class OpResReg(BaseOp):
         self.processor.main_registers[self.reg] = _res(self.processor.main_registers[self.reg], self.bit_pos)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'res {}, {}'.format(self.bit_pos, self.reg)
@@ -90,7 +90,7 @@ class OpResHlIndirect(BaseOp):
         self.memory.poke(address, _res(self.memory.peek(address), self.bit_pos))
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'res {}, (hl)'.format(self.bit_pos)
@@ -110,7 +110,7 @@ class OpResIndexedIndirect(BaseOp):
         self.memory.poke(address, _res(self.memory.peek(address), self.bit_pos))
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'res {}, ({} + d)'.format(self.bit_pos, self.indexed_reg)
@@ -131,7 +131,7 @@ class OpSetReg(BaseOp):
         self.processor.main_registers[self.reg] = _set(self.processor.main_registers[self.reg], self.bit_pos)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'set {}, {}'.format(self.bit_pos, self.reg)
@@ -149,7 +149,7 @@ class OpSetHlIndirect(BaseOp):
         self.memory.poke(address, _set(self.memory.peek(address), self.bit_pos))
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'set {}, (hl)'.format(self.bit_pos)
@@ -169,7 +169,7 @@ class OpSetIndexedIndirect(BaseOp):
         self.memory.poke(address, _set(self.memory.peek(address), self.bit_pos))
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'set {}, ({} + d)'.format(self.bit_pos, self.indexed_reg)

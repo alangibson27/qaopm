@@ -13,7 +13,7 @@ class OpSlaReg(BaseOp):
         self.processor.main_registers[self.reg] = result
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'sla {}'.format(self.reg)
@@ -31,7 +31,7 @@ class OpSlaHlIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'sla (hl)'
@@ -48,7 +48,7 @@ class OpSraReg(BaseOp):
         self.processor.main_registers[self.reg] = result
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'sra {}'.format(self.reg)
@@ -66,7 +66,7 @@ class OpSraHlIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'sra (hl)'
@@ -83,7 +83,7 @@ class OpSrlReg(BaseOp):
         self.processor.main_registers[self.reg] = result
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'srl {}'.format(self.reg)
@@ -101,7 +101,7 @@ class OpSrlHlIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'srl (hl)'
@@ -122,7 +122,7 @@ class OpSlaIndexedIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'sla ({} + d)'.format(self.indexed_reg)
@@ -143,7 +143,7 @@ class OpSraIndexedIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'sra ({} + d)'.format(self.indexed_reg)
@@ -164,7 +164,7 @@ class OpSrlIndexedIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'srl ({} + d)'.format(self.indexed_reg)

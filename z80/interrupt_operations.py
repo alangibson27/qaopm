@@ -42,7 +42,7 @@ class OpRetn(BaseOp):
         self.processor.restore_pc_from_stack()
 
     def t_states(self):
-        pass
+        return 14
 
     def __str__(self):
         return 'retn'
@@ -57,7 +57,7 @@ class OpReti(BaseOp):
         self.processor.restore_pc_from_stack()
 
     def t_states(self):
-        pass
+        return 14
 
     def __str__(self):
         return 'reti'

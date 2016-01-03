@@ -11,7 +11,7 @@ class OpCall(BaseOp):
         call_to(self.processor, _get_destination_from_pc(self.processor))
 
     def t_states(self):
-        pass
+        return 17
 
     def __str__(self):
         return 'call nn'
@@ -43,7 +43,7 @@ class OpRst(BaseOp):
         call_to(self.processor, self.jump_address)
 
     def t_states(self):
-        pass
+        return 11
 
     def __str__(self):
         return 'rst {}'.format(hex(self.jump_address))
@@ -194,7 +194,7 @@ class OpRet(BaseOp):
         self.processor.restore_pc_from_stack()
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'ret'

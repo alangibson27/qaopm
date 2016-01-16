@@ -11,7 +11,7 @@ class OpDi(BaseOp):
         self.processor.iff[1] = False
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'di'
@@ -26,7 +26,7 @@ class OpEi(BaseOp):
         self.processor.enable_iff = True
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'ei'
@@ -72,7 +72,7 @@ class OpHalt(BaseOp):
         self.processor.halting = True
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'halt'
@@ -88,7 +88,7 @@ class OpIm(BaseOp):
         self.processor.set_interrupt_mode(self.interrupt_mode)
 
     def t_states(self):
-        pass
+        return 8
 
     def __str__(self):
         return 'im {}'.format(self.interrupt_mode)

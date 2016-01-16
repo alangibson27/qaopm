@@ -16,7 +16,7 @@ class OpLd16RegImmediate(BaseOp):
         self.processor.main_registers[self.reg[1]] = lsb
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'ld {}, nn'.format(self.reg)
@@ -35,7 +35,7 @@ class OpLd16RegIndirectFrom8Reg(BaseOp):
         self.memory.poke(address, self.processor.main_registers[self.source_reg])
 
     def t_states(self):
-        pass
+        return 7
 
     def __str__(self):
         return 'ld ({}), {}'.format(self.destination_reg, self.source_reg)
@@ -105,7 +105,7 @@ class OpLdAddressA(BaseOp):
         self.memory.poke(big_endian_value(little_endian_address), self.processor.main_registers['a'])
 
     def t_states(self):
-        pass
+        return 13
 
     def __str__(self):
         return 'ld (nn), a'
@@ -122,7 +122,7 @@ class OpLdAAddress(BaseOp):
         self.processor.main_registers['a'] = self.memory.peek(big_endian_value(little_endian_address))
 
     def t_states(self):
-        pass
+        return 13
 
     def __str__(self):
         return 'ld a, (nn)'
@@ -141,10 +141,28 @@ class OpLdAddress16Reg(BaseOp):
         self.memory.poke(dest_address + 1, self.processor.main_registers[self.source_reg[0]])
 
     def t_states(self):
-        pass
+        return 20
 
     def __str__(self):
         return 'ld (nn), {}'.format(self.source_reg)
+
+
+class OpLdAddressHl(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        dest_address = big_endian_value(self.processor.get_address_at_pc())
+        self.memory.poke(dest_address, self.processor.main_registers['l'])
+        self.memory.poke(dest_address + 1, self.processor.main_registers['h'])
+
+    def t_states(self):
+        return 16
+
+    def __str__(self):
+        return 'ld (nn), hl'
 
 
 class OpLd16RegAddress(BaseOp):
@@ -162,10 +180,30 @@ class OpLd16RegAddress(BaseOp):
         self.processor.main_registers[self.destination_reg[1]] = low_byte
 
     def t_states(self):
-        pass
+        return 20
 
     def __str__(self):
         return 'ld {}, (nn)'.format(self.destination_reg)
+
+
+class OpLdHlAddress(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        src_address = big_endian_value(self.processor.get_address_at_pc())
+        low_byte = self.memory.peek(src_address)
+        high_byte = self.memory.peek(src_address + 1)
+        self.processor.main_registers['h'] = high_byte
+        self.processor.main_registers['l'] = low_byte
+
+    def t_states(self):
+        return 16
+
+    def __str__(self):
+        return 'ld hl, (nn)'
 
 
 class OpLdSpImmediate(BaseOp):
@@ -194,7 +232,7 @@ class OpLdSpHl(BaseOp):
                                                                    self.processor.main_registers['h']])
 
     def t_states(self):
-        pass
+        return 6
 
     def __str__(self):
         return 'ld sp, hl'
@@ -211,7 +249,7 @@ class OpLdHlIndirectImmediate(BaseOp):
         self.memory.poke(self.processor.get_16bit_reg('hl'), operand)
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'ld (hl), n'
@@ -230,7 +268,7 @@ class OpLdExtSp(BaseOp):
         self.memory.poke(dest_address + 1, high_byte)
 
     def t_states(self):
-        pass
+        return 20
 
     def __str__(self):
         return 'ld (nn), sp'
@@ -264,7 +302,7 @@ class OpLdAI(BaseOp):
         self.processor.main_registers['a'] = self.processor.special_registers['i']
 
     def t_states(self):
-        pass
+        return 9
 
     def __str__(self):
         return 'ld a, i'
@@ -281,7 +319,7 @@ class OpLdIndexedImmediate(BaseOp):
         self.processor.index_registers[self.indexed_reg] = big_endian_value(little_endian_address)
 
     def t_states(self):
-        pass
+        return 14
 
     def __str__(self):
         return 'ld {}, nn'.format(self.indexed_reg)
@@ -301,7 +339,7 @@ class OpLdExtIndexed(BaseOp):
         self.memory.poke(dest_address + 1, high_byte)
 
     def t_states(self):
-        pass
+        return 20
 
     def __str__(self):
         return 'ld (nn), {}'.format(self.indexed_reg)
@@ -321,7 +359,7 @@ class OpLdIndexedExt(BaseOp):
         self.processor.index_registers[self.indexed_reg] = big_endian_value([low_byte, high_byte])
 
     def t_states(self):
-        pass
+        return 20
 
     def __str__(self):
         return 'ld {}, (nn)'.format(self.indexed_reg)
@@ -342,7 +380,7 @@ class OpLdIndexedIndirectImmediate(BaseOp):
         self.memory.poke(self.processor.index_registers[self.indexed_reg] + offset, immediate_value)
 
     def t_states(self):
-        pass
+        return 19
 
     def __str__(self):
         return 'ld ({} + d), n'
@@ -363,7 +401,7 @@ class OpLd8RegIndexedIndirect(BaseOp):
             self.processor.index_registers[self.indexed_reg] + offset)
 
     def t_states(self):
-        pass
+        return 19
 
     def __str__(self):
         return 'ld {}, ({} + d)'.format(self.destination_reg, self.indexed_reg)
@@ -384,7 +422,7 @@ class OpLdIndexedIndirect8Reg(BaseOp):
                          self.processor.main_registers[self.source_reg])
 
     def t_states(self):
-        pass
+        return 19
 
     def __str__(self):
         return 'ld ({} + d), {}'.format(self.indexed_reg, self.source_reg)
@@ -400,7 +438,7 @@ class OpLdSpIndexed(BaseOp):
         self.processor.special_registers['sp'] = self.processor.index_registers[self.indexed_reg]
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'ld sp, {}'.format(self.indexed_reg)

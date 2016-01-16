@@ -17,7 +17,7 @@ class OpAddHl16Reg(BaseOp):
         self.processor.set_condition('c', full_carry)
 
     def t_states(self):
-        pass
+        return 11
 
     def __str__(self):
         return 'add hl, {}'.format(self.source_reg)
@@ -44,7 +44,7 @@ class OpAdcHl16Reg(BaseOp):
         self.processor.set_condition('c', full_carry)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'adc hl, {}'.format(self.reg)
@@ -71,7 +71,7 @@ class OpSbcHl16Reg(BaseOp):
         self.processor.set_condition('c', full_borrow)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'sbc hl, {}'.format(self.reg)
@@ -94,7 +94,7 @@ class OpAddIndexedReg(BaseOp):
         self.processor.set_condition('c', full_carry)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'add {}, {}'.format(self.indexed_reg, self.source_reg)

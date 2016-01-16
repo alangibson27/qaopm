@@ -12,7 +12,7 @@ class OpLdi(BaseOp):
         _block_transfer(self.processor, self.memory, 1)
 
     def t_states(self):
-        pass
+        return 16
 
     def __str__(self):
         return 'ldi'
@@ -28,7 +28,7 @@ class OpLdd(BaseOp):
         _block_transfer(self.processor, self.memory, -1)
 
     def t_states(self):
-        pass
+        return 16
 
     def __str__(self):
         return 'ldd'
@@ -44,7 +44,7 @@ class OpCpi(BaseOp):
         _block_compare(self.processor, self.memory, 1)
 
     def t_states(self):
-        pass
+        return 16
 
     def __str__(self):
         return 'cpi'
@@ -60,7 +60,7 @@ class OpCpd(BaseOp):
         _block_compare(self.processor, self.memory, -1)
 
     def t_states(self):
-        pass
+        return 16
 
     def __str__(self):
         return 'cpd'

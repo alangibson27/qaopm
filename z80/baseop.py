@@ -20,7 +20,7 @@ class Nop(BaseOp):
         pass
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'nop'

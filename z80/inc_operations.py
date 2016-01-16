@@ -12,7 +12,7 @@ class OpInc8Reg(BaseOp):
         self.processor.main_registers[self.reg] = _inc_value(self.processor, self.processor.main_registers[self.reg])
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'inc {}'.format(self.reg)
@@ -28,7 +28,7 @@ class OpDec8Reg(BaseOp):
         self.processor.main_registers[self.reg] = _dec_value(self.processor, self.processor.main_registers[self.reg])
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'dec {}'.format(self.reg)
@@ -62,7 +62,7 @@ class OpDec16Reg(BaseOp):
         self.processor.set_16bit_reg(self.reg, result)
 
     def t_states(self):
-        pass
+        return 6
 
     def __str__(self):
         return 'dec {}'.format(self.reg)
@@ -80,7 +80,7 @@ class OpIncHlIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 11
 
     def __str__(self):
         return 'inc (hl)'
@@ -98,7 +98,7 @@ class OpDecHlIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 11
 
     def __str__(self):
         return 'dec (hl)'
@@ -115,7 +115,7 @@ class OpIncIndexed(BaseOp):
         self.processor.index_registers[self.indexed_reg] = result
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'inc {}'.format(self.indexed_reg)
@@ -132,7 +132,7 @@ class OpDecIndexed(BaseOp):
         self.processor.index_registers[self.indexed_reg] = result
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'dec {}'.format(self.indexed_reg)
@@ -152,7 +152,7 @@ class OpIncIndexedIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'inc ({} + d)'.format(self.indexed_reg)
@@ -172,7 +172,7 @@ class OpDecIndexedIndirect(BaseOp):
         self.memory.poke(address, result)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'inc ({} + d)'.format(self.indexed_reg)

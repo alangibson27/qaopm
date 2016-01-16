@@ -15,7 +15,7 @@ class OpPop16Reg(BaseOp):
         self.processor.main_registers[self.reg[1]] = lsb
 
     def t_states(self):
-        pass
+        return 10
 
     def __str__(self):
         return 'pop {}'.format(self.reg)
@@ -33,7 +33,7 @@ class OpPopIndexed(BaseOp):
         self.processor.index_registers[self.indexed_reg] = big_endian_value([lsb, msb])
 
     def t_states(self):
-        pass
+        return 14
 
     def __str__(self):
         return 'pop {}'.format(self.indexed_reg)
@@ -50,7 +50,7 @@ class OpPush16Reg(BaseOp):
         self.processor.push_byte(self.processor.main_registers[self.reg[1]])
 
     def t_states(self):
-        pass
+        return 11
 
     def __str__(self):
         return 'push {}'.format(self.reg)
@@ -68,7 +68,7 @@ class OpPushIndexed(BaseOp):
         self.processor.push_byte(low_byte)
 
     def t_states(self):
-        pass
+        return 15
 
     def __str__(self):
         return 'pop {}'.format(self.indexed_reg)

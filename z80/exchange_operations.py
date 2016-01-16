@@ -11,7 +11,7 @@ class OpExAfAfPrime(BaseOp):
         _ex_with_alternate(self.processor, 'af')
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return "ex af, af'"
@@ -28,7 +28,7 @@ class OpExx(BaseOp):
         _ex_with_alternate(self.processor, 'hl')
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'exx'
@@ -51,7 +51,7 @@ class OpExSpIndirectHl(BaseOp):
         self.memory.poke(self.processor.special_registers['sp'] + 1, old_h)
 
     def t_states(self):
-        pass
+        return 19
 
     def __str__(self):
         return 'ex (sp), hl'
@@ -71,7 +71,7 @@ class OpExDeHl(BaseOp):
         self.processor.main_registers['e'] = old_l
 
     def t_states(self):
-        pass
+        return 4
 
     def __str__(self):
         return 'ex de, hl'
@@ -95,7 +95,7 @@ class OpExSpIndirectIndexed(BaseOp):
         self.memory.poke(self.processor.special_registers['sp'] + 1, high_byte)
 
     def t_states(self):
-        pass
+        return 23
 
     def __str__(self):
         return 'ex (sp), {}'.format(self.indexed_reg)

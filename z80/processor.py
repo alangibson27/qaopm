@@ -96,7 +96,7 @@ class Processor:
 
             0x20: OpJrNz(self),
             0x21: OpLd16RegImmediate(self, self.memory, 'hl'),
-            0x22: OpLdAddress16Reg(self, self.memory, 'hl'),
+            0x22: OpLdAddressHl(self, self.memory),
             0x23: OpInc16Reg(self, 'hl'),
             0x24: OpInc8Reg(self, 'h'),
             0x25: OpDec8Reg(self, 'h'),
@@ -104,7 +104,7 @@ class Processor:
             0x27: OpDaa(self),
             0x28: OpJrZ(self),
             0x29: OpAddHl16Reg(self, 'hl'),
-            0x2a: OpLd16RegAddress(self, self.memory, 'hl'),
+            0x2a: OpLdHlAddress(self, self.memory),
             0x2b: OpDec16Reg(self, 'hl'),
             0x2c: OpInc8Reg(self, 'l'),
             0x2d: OpDec8Reg(self, 'l'),

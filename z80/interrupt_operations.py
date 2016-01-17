@@ -1,6 +1,72 @@
 from baseop import BaseOp
 
 
+class OpLdAR(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        r_value = self.processor.special_registers['r']
+        self.processor.main_registers['a'] = r_value
+        self.processor.set_condition('s', r_value & 0b10000000 != 0)
+        self.processor.set_condition('z', r_value == 0)
+        self.processor.set_condition('h', False)
+        self.processor.set_condition('p', self.processor.iff[1])
+        self.processor.set_condition('n', False)
+
+    def t_states(self):
+        return 9
+
+    def __str__(self):
+        return 'ld a, r'
+
+
+class OpLdAI(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        self.processor.main_registers['a'] = self.processor.special_registers['i']
+
+    def t_states(self):
+        return 9
+
+    def __str__(self):
+        return 'ld a, i'
+
+
+class OpLdIA(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        self.processor.special_registers['i'] = self.processor.main_registers['a']
+
+    def t_states(self):
+        return 9
+
+    def __str__(self):
+        return 'ld i, a'
+
+
+class OpLdRA(BaseOp):
+    def __init__(self, processor):
+        BaseOp.__init__(self)
+        self.processor = processor
+
+    def execute(self):
+        self.processor.special_registers['r'] = self.processor.main_registers['a']
+
+    def t_states(self):
+        return 9
+
+    def __str__(self):
+        return 'ld r, a'
+
+
 class OpDi(BaseOp):
     def __init__(self, processor):
         BaseOp.__init__(self)

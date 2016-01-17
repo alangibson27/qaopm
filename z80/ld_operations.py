@@ -293,21 +293,6 @@ class OpLdSpExt(BaseOp):
         return 'ld sp, (nn)'
 
 
-class OpLdAI(BaseOp):
-    def __init__(self, processor):
-        BaseOp.__init__(self)
-        self.processor = processor
-
-    def execute(self):
-        self.processor.main_registers['a'] = self.processor.special_registers['i']
-
-    def t_states(self):
-        return 9
-
-    def __str__(self):
-        return 'ld a, i'
-
-
 class OpLdIndexedImmediate(BaseOp):
     def __init__(self, processor, indexed_reg):
         BaseOp.__init__(self)

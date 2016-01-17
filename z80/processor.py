@@ -28,7 +28,6 @@ class Processor:
         self.special_registers = self.build_special_register_set()
         self.index_registers = self.build_index_register_set()
         self.operations_by_opcode = self.init_opcode_map()
-        self.cycles = 0
         self.enable_iff = False
         self.iff = [False, False]
         self.interrupt_data_queue = []
@@ -625,9 +624,11 @@ class Processor:
             0x44: OpNeg(self),
             0x45: OpRetn(self),
             0x46: OpIm(self, 0),
+            0x47: OpLdIA(self),
             0x4a: OpAdcHl16Reg(self, 'bc'),
             0x4b: OpLd16RegAddress(self, self.memory, 'bc'),
             0x4d: OpReti(self),
+            0x4f: OpLdRA(self),
 
             0x52: OpSbcHl16Reg(self, 'de'),
             0x53: OpLdAddress16Reg(self, self.memory, 'de'),
@@ -635,6 +636,7 @@ class Processor:
             0x5a: OpAdcHl16Reg(self, 'de'),
             0x5b: OpLd16RegAddress(self, self.memory, 'de'),
             0x5e: OpIm(self, 2),
+            0x5f: OpLdAR(self),
 
             0x62: OpSbcHl16Reg(self, 'hl'),
             0x63: OpLdAddress16Reg(self, self.memory, 'hl'),
@@ -826,6 +828,7 @@ class Processor:
     def execute(self):
         enable_iff_after_op = self.enable_iff
         operation = self.get_operation()
+        self.increment_r()
         if not isinstance(operation, Op):
             operation.execute()
         else:
@@ -833,8 +836,13 @@ class Processor:
         if enable_iff_after_op:
             self.set_iff()
             self.enable_iff = False
-        self.cycles += 1
         return operation
+
+    def increment_r(self):
+        high_bit = self.special_registers['r'] & 0b10000000
+        low_bits = self.special_registers['r'] & 0b01111111
+        low_bits = low_bits + 1
+        self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
 
     def get_operation(self):
         if self.iff[0] and len(self.interrupt_requests) > 0:

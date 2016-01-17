@@ -12,6 +12,77 @@ class AckReceiver:
 
 
 class TestInterrupts(TestHelper):
+    def test_memory_refresh_increments_after_operation(self):
+        values = [(0b11111111, 0b10000000), (0b10000001, 0b10000010), (0b01111111, 0b00000001)]
+        for initial_value, final_value in values:
+            yield self.check_memory_refresh_increments_after_operation, initial_value, final_value
+
+    def check_memory_refresh_increments_after_operation(self, initial_value, final_value):
+        # given
+        self.given_register_contains_value('r', 0b11111111)
+        self.given_next_instruction_is(0x00)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_special_register('r').equals(0b10000000)
+
+    def test_ld_i_a(self):
+        # given
+        self.given_register_contains_value('a', 0xbe)
+        self.given_next_instruction_is(0xed, 0x47)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_special_register('i').equals(0xbe)
+
+    def test_ld_a_i(self):
+        # given
+        self.given_register_contains_value('i', 0xff)
+        self.given_next_instruction_is(0xed, 0x57)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register('a').equals(0xff)
+        self.assert_pc_address().equals(0x0002)
+
+    def test_ld_r_a(self):
+        # given
+        self.given_register_contains_value('a', 0xbe)
+        self.given_next_instruction_is(0xed, 0x4f)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_special_register('r').equals(0xbe)
+
+    def test_ld_a_r_preserves_iff2_value(self):
+        for iff2_value in [True, False]:
+            yield self.check_ld_a_r_preserves_iff2_value, iff2_value
+
+    def check_ld_a_r_preserves_iff2_value(self, iff2_value):
+        # given
+        self.processor.iff[1] = iff2_value
+        self.given_register_contains_value('r', 0xbe)
+        self.given_next_instruction_is(0xed, 0x5f)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_register('a').equals(0xbf)
+        self.assert_flag('s').equals(True)
+        self.assert_flag('z').equals(False)
+        self.assert_flag('h').equals(False)
+        self.assert_flag('p').equals(iff2_value)
+        self.assert_flag('n').equals(False)
+
     def test_ei_enables_interrupts_after_following_instruction(self):
         # given
         self.maskable_interrupts_are_disabled()

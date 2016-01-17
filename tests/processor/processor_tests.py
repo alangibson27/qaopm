@@ -61,9 +61,6 @@ class TestHelper:
     def given_flag(self, flag):
         return GivenFlagBuilder(self.processor, flag)
 
-    def assert_cycles_taken(self, cycles):
-        assert_equals(self.processor.cycles, cycles)
-
     def assert_pc_address(self):
         return EqualsBuilder('pc', self.processor.special_registers['pc'])
 
@@ -72,6 +69,9 @@ class TestHelper:
 
     def assert_register(self, reg):
         return EqualsBuilder('reg ' + reg, self.processor.main_registers[reg])
+
+    def assert_special_register(self, reg):
+        return EqualsBuilder('reg ' + reg, self.processor.special_registers[reg])
 
     def assert_register_pair(self, reg_pair):
         value = self.processor.special_registers['sp'] if reg_pair == 'sp' else self.processor.get_16bit_reg(reg_pair)

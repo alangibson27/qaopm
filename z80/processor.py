@@ -1,5 +1,5 @@
 from arithmetic_16 import *
-from baseop import Nop
+from baseop import *
 from bit import *
 from call import *
 from exchange_operations import *
@@ -137,7 +137,6 @@ class Processor:
             0x45: OpLd8RegFrom8Reg(self, 'b', 'l'),
             0x46: OpLd8RegFrom16RegIndirect(self, self.memory, 'b', 'hl'),
             0x47: OpLd8RegFrom8Reg(self, 'b', 'a'),
-
             0x48: OpLd8RegFrom8Reg(self, 'c', 'b'),
             0x49: OpLd8RegFrom8Reg(self, 'c', 'c'),
             0x4a: OpLd8RegFrom8Reg(self, 'c', 'd'),
@@ -155,7 +154,6 @@ class Processor:
             0x55: OpLd8RegFrom8Reg(self, 'd', 'l'),
             0x56: OpLd8RegFrom16RegIndirect(self, self.memory, 'd', 'hl'),
             0x57: OpLd8RegFrom8Reg(self, 'd', 'a'),
-
             0x58: OpLd8RegFrom8Reg(self, 'e', 'b'),
             0x59: OpLd8RegFrom8Reg(self, 'e', 'c'),
             0x5a: OpLd8RegFrom8Reg(self, 'e', 'd'),
@@ -173,7 +171,6 @@ class Processor:
             0x65: OpLd8RegFrom8Reg(self, 'h', 'l'),
             0x66: OpLd8RegFrom16RegIndirect(self, self.memory, 'h', 'hl'),
             0x67: OpLd8RegFrom8Reg(self, 'h', 'a'),
-
             0x68: OpLd8RegFrom8Reg(self, 'l', 'b'),
             0x69: OpLd8RegFrom8Reg(self, 'l', 'c'),
             0x6a: OpLd8RegFrom8Reg(self, 'l', 'd'),
@@ -191,7 +188,6 @@ class Processor:
             0x75: OpLd16RegIndirectFrom8Reg(self, self.memory, 'hl', 'l'),
             0x76: OpHalt(self),
             0x77: OpLd16RegIndirectFrom8Reg(self, self.memory, 'hl', 'a'),
-
             0x78: OpLd8RegFrom8Reg(self, 'a', 'b'),
             0x79: OpLd8RegFrom8Reg(self, 'a', 'c'),
             0x7a: OpLd8RegFrom8Reg(self, 'a', 'd'),
@@ -226,7 +222,6 @@ class Processor:
             0x95: OpSubA8Reg(self, 'l'),
             0x96: OpSubAHlIndirect(self, self.memory),
             0x97: OpSubA8Reg(self, 'a'),
-
             0x98: OpSbcA8Reg(self, 'b'),
             0x99: OpSbcA8Reg(self, 'c'),
             0x9a: OpSbcA8Reg(self, 'd'),
@@ -244,7 +239,6 @@ class Processor:
             0xa5: OpAndA8Reg(self, 'l'),
             0xa6: OpAndAHlIndirect(self, self.memory),
             0xa7: OpAndA8Reg(self, 'a'),
-
             0xa8: OpXorA8Reg(self, 'b'),
             0xa9: OpXorA8Reg(self, 'c'),
             0xaa: OpXorA8Reg(self, 'd'),
@@ -262,7 +256,6 @@ class Processor:
             0xb5: OpOrA8Reg(self, 'l'),
             0xb6: OpOrAHlIndirect(self, self.memory),
             0xb7: OpOrA8Reg(self, 'a'),
-
             0xb8: OpCpA8Reg(self, 'b'),
             0xb9: OpCpA8Reg(self, 'c'),
             0xba: OpCpA8Reg(self, 'd'),
@@ -395,6 +388,14 @@ class Processor:
             0x2e: OpSraHlIndirect(self, self.memory),
             0x2f: OpSraReg(self, 'a'),
 
+            0x30: OpSllReg(self, 'b'),
+            0x31: OpSllReg(self, 'c'),
+            0x32: OpSllReg(self, 'd'),
+            0x33: OpSllReg(self, 'e'),
+            0x34: OpSllReg(self, 'h'),
+            0x35: OpSllReg(self, 'l'),
+            0x36: OpSllHlIndirect(self, self.memory),
+            0x37: OpSllReg(self, 'a'),
             0x38: OpSrlReg(self, 'b'),
             0x39: OpSrlReg(self, 'c'),
             0x3a: OpSrlReg(self, 'd'),
@@ -412,7 +413,6 @@ class Processor:
             0x45: OpBitReg(self, 'l', 0),
             0x46: OpBitHlIndirect(self, self.memory, 0),
             0x47: OpBitReg(self, 'a', 0),
-
             0x48: OpBitReg(self, 'b', 1),
             0x49: OpBitReg(self, 'c', 1),
             0x4a: OpBitReg(self, 'd', 1),
@@ -430,7 +430,6 @@ class Processor:
             0x55: OpBitReg(self, 'l', 2),
             0x56: OpBitHlIndirect(self, self.memory, 2),
             0x57: OpBitReg(self, 'a', 2),
-
             0x58: OpBitReg(self, 'b', 3),
             0x59: OpBitReg(self, 'c', 3),
             0x5a: OpBitReg(self, 'd', 3),
@@ -448,7 +447,6 @@ class Processor:
             0x65: OpBitReg(self, 'l', 4),
             0x66: OpBitHlIndirect(self, self.memory, 4),
             0x67: OpBitReg(self, 'a', 4),
-
             0x68: OpBitReg(self, 'b', 5),
             0x69: OpBitReg(self, 'c', 5),
             0x6a: OpBitReg(self, 'd', 5),
@@ -466,7 +464,6 @@ class Processor:
             0x75: OpBitReg(self, 'l', 6),
             0x76: OpBitHlIndirect(self, self.memory, 6),
             0x77: OpBitReg(self, 'a', 6),
-
             0x78: OpBitReg(self, 'b', 7),
             0x79: OpBitReg(self, 'c', 7),
             0x7a: OpBitReg(self, 'd', 7),
@@ -484,7 +481,6 @@ class Processor:
             0x85: OpResReg(self, 'l', 0),
             0x86: OpResHlIndirect(self, self.memory, 0),
             0x87: OpResReg(self, 'a', 0),
-
             0x88: OpResReg(self, 'b', 1),
             0x89: OpResReg(self, 'c', 1),
             0x8a: OpResReg(self, 'd', 1),
@@ -502,7 +498,6 @@ class Processor:
             0x95: OpResReg(self, 'l', 2),
             0x96: OpResHlIndirect(self, self.memory, 2),
             0x97: OpResReg(self, 'a', 2),
-
             0x98: OpResReg(self, 'b', 3),
             0x99: OpResReg(self, 'c', 3),
             0x9a: OpResReg(self, 'd', 3),
@@ -520,7 +515,6 @@ class Processor:
             0xa5: OpResReg(self, 'l', 4),
             0xa6: OpResHlIndirect(self, self.memory, 4),
             0xa7: OpResReg(self, 'a', 4),
-
             0xa8: OpResReg(self, 'b', 5),
             0xa9: OpResReg(self, 'c', 5),
             0xaa: OpResReg(self, 'd', 5),
@@ -538,7 +532,6 @@ class Processor:
             0xb5: OpResReg(self, 'l', 6),
             0xb6: OpResHlIndirect(self, self.memory, 6),
             0xb7: OpResReg(self, 'a', 6),
-
             0xb8: OpResReg(self, 'b', 7),
             0xb9: OpResReg(self, 'c', 7),
             0xba: OpResReg(self, 'd', 7),
@@ -556,7 +549,6 @@ class Processor:
             0xc5: OpSetReg(self, 'l', 0),
             0xc6: OpSetHlIndirect(self, self.memory, 0),
             0xc7: OpSetReg(self, 'a', 0),
-
             0xc8: OpSetReg(self, 'b', 1),
             0xc9: OpSetReg(self, 'c', 1),
             0xca: OpSetReg(self, 'd', 1),
@@ -574,7 +566,6 @@ class Processor:
             0xd5: OpSetReg(self, 'l', 2),
             0xd6: OpSetHlIndirect(self, self.memory, 2),
             0xd7: OpSetReg(self, 'a', 2),
-
             0xd8: OpSetReg(self, 'b', 3),
             0xd9: OpSetReg(self, 'c', 3),
             0xda: OpSetReg(self, 'd', 3),
@@ -592,7 +583,6 @@ class Processor:
             0xe5: OpSetReg(self, 'l', 4),
             0xe6: OpSetHlIndirect(self, self.memory, 4),
             0xe7: OpSetReg(self, 'a', 4),
-
             0xe8: OpSetReg(self, 'b', 5),
             0xe9: OpSetReg(self, 'c', 5),
             0xea: OpSetReg(self, 'd', 5),
@@ -610,7 +600,6 @@ class Processor:
             0xf5: OpSetReg(self, 'l', 6),
             0xf6: OpSetHlIndirect(self, self.memory, 6),
             0xf7: OpSetReg(self, 'a', 6),
-
             0xf8: OpSetReg(self, 'b', 7),
             0xf9: OpSetReg(self, 'c', 7),
             0xfa: OpSetReg(self, 'd', 7),
@@ -622,55 +611,76 @@ class Processor:
         }
 
     def init_ed_opcodes(self):
+        op_neg = OpNeg(self)
+        op_im0 = OpIm(self, 0)
+        op_in_a_c = OpIn8RegC(self, self.io, 'a')
+        op_retn = OpRetn(self)
         return {
             0x40: OpIn8RegC(self, self.io, 'b'),
-            0x41: OpOut8RegC(self, self.io, 'b'),
+            0x41: OpOutC8Reg(self, self.io, 'b'),
             0x42: OpSbcHl16Reg(self, 'bc'),
             0x43: OpLdAddress16Reg(self, self.memory, 'bc'),
-            0x44: OpNeg(self),
-            0x45: OpRetn(self),
-            0x46: OpIm(self, 0),
+            0x44: op_neg,
+            0x45: op_retn,
+            0x46: op_im0,
             0x47: OpLdIA(self),
             0x48: OpIn8RegC(self, self.io, 'c'),
-            0x49: OpOut8RegC(self, self.io, 'c'),
+            0x49: OpOutC8Reg(self, self.io, 'c'),
             0x4a: OpAdcHl16Reg(self, 'bc'),
             0x4b: OpLd16RegAddress(self, self.memory, 'bc'),
+            0x4c: op_neg,
             0x4d: OpReti(self),
+            0x4e: op_im0,
             0x4f: OpLdRA(self),
 
             0x50: OpIn8RegC(self, self.io, 'd'),
-            0x51: OpOut8RegC(self, self.io, 'd'),
+            0x51: OpOutC8Reg(self, self.io, 'd'),
             0x52: OpSbcHl16Reg(self, 'de'),
             0x53: OpLdAddress16Reg(self, self.memory, 'de'),
+            0x54: op_neg,
+            0x55: op_retn,
             0x56: OpIm(self, 1),
             0x57: OpLdAI(self),
             0x58: OpIn8RegC(self, self.io, 'e'),
-            0x59: OpOut8RegC(self, self.io, 'e'),
+            0x59: OpOutC8Reg(self, self.io, 'e'),
             0x5a: OpAdcHl16Reg(self, 'de'),
             0x5b: OpLd16RegAddress(self, self.memory, 'de'),
+            0x5c: op_neg,
+            0x5d: op_retn,
             0x5e: OpIm(self, 2),
             0x5f: OpLdAR(self),
 
             0x60: OpIn8RegC(self, self.io, 'h'),
-            0x61: OpOut8RegC(self, self.io, 'h'),
+            0x61: OpOutC8Reg(self, self.io, 'h'),
             0x62: OpSbcHl16Reg(self, 'hl'),
             0x63: OpLdAddress16Reg(self, self.memory, 'hl'),
+            0x64: op_neg,
+            0x65: op_retn,
             0x66: OpIm(self, 0),
             0x67: OpRrd(self, self.memory),
             0x68: OpIn8RegC(self, self.io, 'l'),
-            0x69: OpOut8RegC(self, self.io, 'l'),
+            0x69: OpOutC8Reg(self, self.io, 'l'),
             0x6a: OpAdcHl16Reg(self, 'hl'),
             0x6b: OpLd16RegAddress(self, self.memory, 'hl'),
+            0x6c: op_neg,
+            0x6d: op_retn,
+            0x6e: op_im0,
             0x6f: OpRld(self, self.memory),
 
+            0x70: op_in_a_c,
+            0x71: OpOutCZero(self, self.io),
             0x72: OpSbcHl16Reg(self, 'sp'),
             0x73: OpLdExtSp(self, self.memory),
-            0x76: Op(lambda: self.set_interrupt_mode(1), 'im 1'),
-            0x78: OpIn8RegC(self, self.io, 'a'),
-            0x79: OpOut8RegC(self, self.io, 'a'),
+            0x74: op_neg,
+            0x75: op_retn,
+            0x76: OpIm(self, 1),
+            0x78: op_in_a_c,
+            0x79: OpOutC8Reg(self, self.io, 'a'),
             0x7a: OpAdcHl16Reg(self, 'sp'),
             0x7b: OpLdSpExt(self, self.memory),
-            0x7e: Op(lambda: self.set_interrupt_mode(2), 'im 2'),
+            0x7c: op_neg,
+            0x7d: op_retn,
+            0x7e: OpIm(self, 2),
 
             0xa0: OpLdi(self, self.memory),
             0xa1: OpCpi(self, self.memory),
@@ -694,23 +704,58 @@ class Processor:
     def init_dd_opcodes(self):
         return {
             0x09: OpAddIndexedReg(self, 'ix', 'bc'),
+
             0x19: OpAddIndexedReg(self, 'ix', 'de'),
+
             0x21: OpLdIndexedImmediate(self, 'ix'),
             0x22: OpLdExtIndexed(self, self.memory, 'ix'),
             0x23: OpIncIndexed(self, 'ix'),
+            0x24: Undocumented('inc ixh'),
+            0x25: Undocumented('dec ixh'),
+            0x26: Undocumented('ld ixh, n'),
             0x29: OpAddIndexedReg(self, 'ix', 'ix'),
             0x2a: OpLdIndexedExt(self, self.memory, 'ix'),
             0x2b: OpDecIndexed(self, 'ix'),
+            0x2c: Undocumented('inc ixl'),
+            0x2d: Undocumented('dec ixl'),
+            0x2e: Undocumented('ld ixl, n'),
+
             0x34: OpIncIndexedIndirect(self, self.memory, 'ix'),
             0x35: OpDecIndexedIndirect(self, self.memory, 'ix'),
             0x36: OpLdIndexedIndirectImmediate(self, self.memory, 'ix'),
             0x39: OpAddIndexedReg(self, 'ix', 'sp'),
+
+            0x44: Undocumented('ld b, ixh'),
+            0x45: Undocumented('ld b, ixl'),
             0x46: OpLd8RegIndexedIndirect(self, self.memory, 'b', 'ix'),
+            0x4c: Undocumented('ld c, ixh'),
+            0x4d: Undocumented('ld c, ixl'),
             0x4e: OpLd8RegIndexedIndirect(self, self.memory, 'c', 'ix'),
+
+            0x54: Undocumented('ld d, ixh'),
+            0x55: Undocumented('ld d, ixl'),
             0x56: OpLd8RegIndexedIndirect(self, self.memory, 'd', 'ix'),
+            0x5c: Undocumented('ld e, ixh'),
+            0x5d: Undocumented('ld e, ixl'),
             0x5e: OpLd8RegIndexedIndirect(self, self.memory, 'e', 'ix'),
+
+            0x60: Undocumented('ld ixh, b'),
+            0x61: Undocumented('ld ixh, c'),
+            0x62: Undocumented('ld ixh, d'),
+            0x63: Undocumented('ld ixh, e'),
+            0x64: Undocumented('ld ixh, h'),
+            0x65: Undocumented('ld ixh, l'),
             0x66: OpLd8RegIndexedIndirect(self, self.memory, 'h', 'ix'),
+            0x67: Undocumented('ld ixl, a'),
+            0x68: Undocumented('ld ixl, b'),
+            0x69: Undocumented('ld ixl, c'),
+            0x6a: Undocumented('ld ixl, d'),
+            0x6b: Undocumented('ld ixl, e'),
+            0x6c: Undocumented('ld ixl, h'),
+            0x6d: Undocumented('ld ixl, l'),
             0x6e: OpLd8RegIndexedIndirect(self, self.memory, 'l', 'ix'),
+            0x6f: Undocumented('ld ixl, a'),
+
             0x70: OpLdIndexedIndirect8Reg(self, self.memory, 'ix', 'b'),
             0x71: OpLdIndexedIndirect8Reg(self, self.memory, 'ix', 'c'),
             0x72: OpLdIndexedIndirect8Reg(self, self.memory, 'ix', 'd'),
@@ -718,17 +763,36 @@ class Processor:
             0x74: OpLdIndexedIndirect8Reg(self, self.memory, 'ix', 'h'),
             0x75: OpLdIndexedIndirect8Reg(self, self.memory, 'ix', 'l'),
             0x77: OpLdIndexedIndirect8Reg(self, self.memory, 'ix', 'a'),
+            0x7c: Undocumented('ld a, ixh'),
+            0x7d: Undocumented('ld a, ixl'),
             0x7e: OpLd8RegIndexedIndirect(self, self.memory, 'a', 'ix'),
 
+            0x84: Undocumented('add a, ixh'),
+            0x85: Undocumented('add a, ixl'),
             0x86: OpAddAIndexedIndirect(self, self.memory, 'ix'),
+            0x8c: Undocumented('adc a, ixh'),
+            0x8d: Undocumented('adc a, ixl'),
             0x8e: OpAdcAIndexedIndirect(self, self.memory, 'ix'),
 
+            0x94: Undocumented('sub ixh'),
+            0x95: Undocumented('sub ixl'),
             0x96: OpSubAIndexedIndirect(self, self.memory, 'ix'),
+            0x9c: Undocumented('sbc a, ixh'),
+            0x9d: Undocumented('sbc a, ixl'),
             0x9e: OpSbcAIndexedIndirect(self, self.memory, 'ix'),
 
+            0xa4: Undocumented('and ixh'),
+            0xa5: Undocumented('and ixl'),
             0xa6: OpAndIndexedIndirect(self, self.memory, 'ix'),
+            0xac: Undocumented('xor a, ixh'),
+            0xad: Undocumented('xor a, ixl'),
             0xae: OpXorIndexedIndirect(self, self.memory, 'ix'),
+
+            0xb4: Undocumented('or ixh'),
+            0xb5: Undocumented('or ixl'),
             0xb6: OpOrIndexedIndirect(self, self.memory, 'ix'),
+            0xbc: Undocumented('cp ixh'),
+            0xbd: Undocumented('cp ixl'),
             0xbe: OpCpIndexedIndirect(self, self.memory, 'ix'),
 
             0xcb: self.init_indexed_cb_opcodes('ix'),
@@ -744,23 +808,58 @@ class Processor:
     def init_fd_opcodes(self):
         return {
             0x09: OpAddIndexedReg(self, 'iy', 'bc'),
+
             0x19: OpAddIndexedReg(self, 'iy', 'de'),
+
             0x21: OpLdIndexedImmediate(self, 'iy'),
             0x22: OpLdExtIndexed(self, self.memory, 'iy'),
             0x23: OpIncIndexed(self, 'iy'),
+            0x24: Undocumented('inc iyh'),
+            0x25: Undocumented('dec iyh'),
+            0x26: Undocumented('ld iyh, n'),
             0x29: OpAddIndexedReg(self, 'iy', 'iy'),
             0x2a: OpLdIndexedExt(self, self.memory, 'iy'),
             0x2b: OpDecIndexed(self, 'iy'),
+            0x2c: Undocumented('inc iyl'),
+            0x2d: Undocumented('dec iyl'),
+            0x2e: Undocumented('ld iyl, n'),
+
             0x34: OpIncIndexedIndirect(self, self.memory, 'iy'),
             0x35: OpDecIndexedIndirect(self, self.memory, 'iy'),
             0x36: OpLdIndexedIndirectImmediate(self, self.memory, 'iy'),
             0x39: OpAddIndexedReg(self, 'iy', 'sp'),
+
+            0x44: Undocumented('ld b, iyh'),
+            0x45: Undocumented('ld b, iyl'),
             0x46: OpLd8RegIndexedIndirect(self, self.memory, 'b', 'iy'),
+            0x4c: Undocumented('ld c, iyh'),
+            0x4d: Undocumented('ld c, iyl'),
             0x4e: OpLd8RegIndexedIndirect(self, self.memory, 'c', 'iy'),
+
+            0x54: Undocumented('ld d, iyh'),
+            0x55: Undocumented('ld d, iyl'),
             0x56: OpLd8RegIndexedIndirect(self, self.memory, 'd', 'iy'),
+            0x5c: Undocumented('ld e, iyh'),
+            0x5d: Undocumented('ld e, iyl'),
             0x5e: OpLd8RegIndexedIndirect(self, self.memory, 'e', 'iy'),
+
+            0x60: Undocumented('ld iyh, b'),
+            0x61: Undocumented('ld iyh, c'),
+            0x62: Undocumented('ld iyh, d'),
+            0x63: Undocumented('ld iyh, e'),
+            0x64: Undocumented('ld iyh, h'),
+            0x65: Undocumented('ld iyh, l'),
             0x66: OpLd8RegIndexedIndirect(self, self.memory, 'h', 'iy'),
+            0x67: Undocumented('ld iyl, a'),
+            0x68: Undocumented('ld iyl, b'),
+            0x69: Undocumented('ld iyl, c'),
+            0x6a: Undocumented('ld iyl, d'),
+            0x6b: Undocumented('ld iyl, e'),
+            0x6c: Undocumented('ld iyl, h'),
+            0x6d: Undocumented('ld iyl, l'),
             0x6e: OpLd8RegIndexedIndirect(self, self.memory, 'l', 'iy'),
+            0x6f: Undocumented('ld iyl, a'),
+
             0x70: OpLdIndexedIndirect8Reg(self, self.memory, 'iy', 'b'),
             0x71: OpLdIndexedIndirect8Reg(self, self.memory, 'iy', 'c'),
             0x72: OpLdIndexedIndirect8Reg(self, self.memory, 'iy', 'd'),
@@ -768,17 +867,36 @@ class Processor:
             0x74: OpLdIndexedIndirect8Reg(self, self.memory, 'iy', 'h'),
             0x75: OpLdIndexedIndirect8Reg(self, self.memory, 'iy', 'l'),
             0x77: OpLdIndexedIndirect8Reg(self, self.memory, 'iy', 'a'),
+            0x7c: Undocumented('ld a, iyh'),
+            0x7d: Undocumented('ld a, iyl'),
             0x7e: OpLd8RegIndexedIndirect(self, self.memory, 'a', 'iy'),
 
+            0x84: Undocumented('add a, iyh'),
+            0x85: Undocumented('add a, iyl'),
             0x86: OpAddAIndexedIndirect(self, self.memory, 'iy'),
+            0x8c: Undocumented('adc a, iyh'),
+            0x8d: Undocumented('adc a, iyl'),
             0x8e: OpAdcAIndexedIndirect(self, self.memory, 'iy'),
 
+            0x94: Undocumented('sub iyh'),
+            0x95: Undocumented('sub iyl'),
             0x96: OpSubAIndexedIndirect(self, self.memory, 'iy'),
+            0x9c: Undocumented('sbc a, iyh'),
+            0x9d: Undocumented('sbc a, iyl'),
             0x9e: OpSbcAIndexedIndirect(self, self.memory, 'iy'),
 
+            0xa4: Undocumented('and iyh'),
+            0xa5: Undocumented('and iyl'),
             0xa6: OpAndIndexedIndirect(self, self.memory, 'iy'),
+            0xac: Undocumented('xor a, iyh'),
+            0xad: Undocumented('xor a, iyl'),
             0xae: OpXorIndexedIndirect(self, self.memory, 'iy'),
+
+            0xb4: Undocumented('or iyh'),
+            0xb5: Undocumented('or iyl'),
             0xb6: OpOrIndexedIndirect(self, self.memory, 'iy'),
+            0xbc: Undocumented('cp iyh'),
+            0xbd: Undocumented('cp iyl'),
             0xbe: OpCpIndexedIndirect(self, self.memory, 'iy'),
 
             0xcb: self.init_indexed_cb_opcodes('iy'),

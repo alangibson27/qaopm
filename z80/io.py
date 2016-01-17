@@ -166,7 +166,7 @@ class OpOutA(BaseOp):
         return 'out (n), a'
 
 
-class OpOut8RegC(BaseOp):
+class OpOutC8Reg(BaseOp):
     def __init__(self, processor, io, dest_reg):
         BaseOp.__init__(self)
         self.processor = processor
@@ -182,6 +182,22 @@ class OpOut8RegC(BaseOp):
 
     def __str__(self):
         return 'out (c), {}'.format(self.dest_reg)
+
+
+class OpOutCZero(BaseOp):
+    def __init__(self, processor, io):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.io = io
+
+    def execute(self):
+        self.io.write(self.processor.main_registers['c'], self.processor.main_registers['b'], 0)
+
+    def t_states(self):
+        return 12
+
+    def __str__(self):
+        return 'out (c), 0'
 
 
 class OpOuti(BaseOp):

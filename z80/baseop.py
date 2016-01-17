@@ -12,6 +12,21 @@ class BaseOp:
         return 'unimplemented operation'
 
 
+class Undocumented(BaseOp):
+    def __init__(self, mnemonic):
+        BaseOp.__init__(self)
+        self.mnemonic = mnemonic
+
+    def execute(self):
+        raise NotImplementedError(self.mnemonic)
+
+    def t_states(self):
+        raise NotImplementedError(self.mnemonic)
+
+    def __str__(self):
+        return self.mnemonic
+
+
 class CondOp(BaseOp):
     def __init__(self):
         BaseOp.__init__(self)

@@ -224,6 +224,19 @@ class TestIO(TestHelper):
         # then
         self.io.verify_write(0xff, 0xbe, 0xbe)
 
+    def test_out_c_zero_writes_zero(self):
+        # given
+        self.given_register_contains_value('b', 0xbe)
+        self.given_register_contains_value('c', 0xef)
+
+        self.given_next_instruction_is(0xed, 0x71)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.io.verify_write(0xef, 0xbe, 0x00)
+
     def test_out_8reg_c_writes_value(self):
         values = [([0xed, 0x41], 'b'), ([0xed, 0x49], 'c'), ([0xed, 0x51], 'd'), ([0xed, 0x59], 'e'),
                   ([0xed, 0x61], 'h'), ([0xed, 0x69], 'l'), ([0xed, 0x79], 'a')]

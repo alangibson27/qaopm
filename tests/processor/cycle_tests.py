@@ -162,6 +162,7 @@ class TestCycles(TestHelper):
             ([0xed, 0xaa], 16),                 # ind
             ([0xd3, 0xff], 11),                 # out (0xff), a
             ([0xed, 0x41], 12),                 # out (c), b
+            ([0xed, 0x71], 12),                 # out (c), 0
         ]
 
         for op_codes, cycles in values:

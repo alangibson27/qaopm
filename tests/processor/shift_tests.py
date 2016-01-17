@@ -179,6 +179,39 @@ class TestShift(TestHelper):
         self.assert_flag('n').is_reset()
         self.assert_flag('c').is_reset()
 
+    def test_sll_reg(self):
+        regs = [(0x30, 'b'), (0x31, 'c'), (0x32, 'd'), (0x33, 'e'), (0x34, 'h'), (0x35, 'l'), (0x37, 'a')]
+        values = [(0b10101010, True,  0b01010101, True, False, False, True),
+                  (0b10101010, False, 0b01010101, True, False, False, True),
+                  (0b01010101, True,  0b10101011, False, True, False, False),
+                  (0b01010101, False, 0b10101011, False, True, False, False),
+                  (0b00000000, False, 0b00000001, False, False, False, False)]
+
+        for op_code, reg in regs:
+            for initial_acc, initial_carry, final_acc, final_carry, s, z, p in values:
+                yield self.check_reg_shift, reg, op_code, initial_acc, initial_carry, final_acc, final_carry, s, z, p
+
+    def test_sll_hl_indirect(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x4000)
+        self.processor.set_condition('c', False)
+        self.memory.poke(0x4000, 0b10101010)
+
+        self.given_next_instruction_is(0xcb, 0x36)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(0x4000).contains(0b01010101)
+
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_set()
+
     def test_srl_indexed_indirect(self):
         values = [(0xdd, 'ix'), (0xfd, 'iy')]
         for op_code, reg in values:
@@ -207,173 +240,173 @@ class TestShift(TestHelper):
         self.assert_flag('n').is_reset()
         self.assert_flag('c').is_reset()
 
-    # def test_rl_hl_indirect(self):
-    #     # given
-    #     self.given_register_pair_contains_value('hl', 0x4000)
-    #     self.processor.set_condition('c', False)
-    #     self.memory.poke(0x4000, 0b10101010)
-    #
-    #     self.given_next_instruction_is(0xcb, 0x16)
-    #
-    #     # when
-    #     self.processor.execute()
-    #
-    #     # then
-    #     self.assert_memory(0x4000).contains(0b01010100)
-    #
-    #     self.assert_flag('s').is_reset()
-    #     self.assert_flag('z').is_reset()
-    #     self.assert_flag('h').is_reset()
-    #     self.assert_flag('p').is_reset()
-    #     self.assert_flag('n').is_reset()
-    #     self.assert_flag('c').is_set()
-    #
-    # def test_rl_indexed_indirect(self):
-    #     values = [(0xdd, 'ix'), (0xfd, 'iy')]
-    #     for op_code, reg in values:
-    #         yield self.check_rl_indexed_indirect, op_code, reg
-    #
-    # def check_rl_indexed_indirect(self, op_code, reg):
-    #     # given
-    #     offset = random.randint(0, 255)
-    #     address = 0x4000 + to_signed(offset)
-    #     self.processor.index_registers[reg] = 0x4000
-    #     self.processor.set_condition('c', False)
-    #     self.memory.poke(address, 0b10101010)
-    #
-    #     self.given_next_instruction_is(op_code, 0xcb, offset, 0x16)
-    #
-    #     # when
-    #     self.processor.execute()
-    #
-    #     # then
-    #     self.assert_memory(address).contains(0b01010100)
-    #
-    #     self.assert_flag('s').is_reset()
-    #     self.assert_flag('z').is_reset()
-    #     self.assert_flag('h').is_reset()
-    #     self.assert_flag('p').is_reset()
-    #     self.assert_flag('n').is_reset()
-    #     self.assert_flag('c').is_set()
-    #
-    # def test_rrc_reg(self):
-    #     regs = [(0x08, 'b'), (0x09, 'c'), (0x0a, 'd'), (0x0b, 'e'), (0x0c, 'h'), (0x0d, 'l'), (0x0f, 'a')]
-    #     values = [(0b10101010, True,  0b01010101, False, False, False, True),
-    #               (0b10101010, False, 0b01010101, False, False, False, True),
-    #               (0b01010101, True,  0b10101010, True, True, False, True),
-    #               (0b01010101, False, 0b10101010, True, True, False, True),
-    #               (0b00000000, False, 0b00000000, False, False, True, True)]
-    #
-    #     for op_code, reg in regs:
-    #         for initial_acc, initial_carry, final_acc, final_carry, s, z, p in values:
-    #             yield self.check_reg_shift, reg, op_code, initial_acc, initial_carry, final_acc, final_carry, s, z, p
-    #
-    # def test_rrc_hl_indirect(self):
-    #     # given
-    #     self.given_register_pair_contains_value('hl', 0x4000)
-    #     self.processor.set_condition('c', False)
-    #     self.memory.poke(0x4000, 0b10101010)
-    #
-    #     self.given_next_instruction_is(0xcb, 0x0e)
-    #
-    #     # when
-    #     self.processor.execute()
-    #
-    #     # then
-    #     self.assert_memory(0x4000).contains(0b01010101)
-    #
-    #     self.assert_flag('s').is_reset()
-    #     self.assert_flag('z').is_reset()
-    #     self.assert_flag('h').is_reset()
-    #     self.assert_flag('p').is_set()
-    #     self.assert_flag('n').is_reset()
-    #     self.assert_flag('c').is_reset()
-    #
-    # def test_rrc_indexed_indirect(self):
-    #     values = [(0xdd, 'ix'), (0xfd, 'iy')]
-    #     for op_code, reg in values:
-    #         yield self.check_rrc_indexed_indirect, op_code, reg
-    #
-    # def check_rrc_indexed_indirect(self, op_code, reg):
-    #     # given
-    #     offset = random.randint(0, 255)
-    #     address = 0x4000 + to_signed(offset)
-    #     self.processor.index_registers[reg] = 0x4000
-    #     self.processor.set_condition('c', False)
-    #     self.memory.poke(address, 0b10101010)
-    #
-    #     self.given_next_instruction_is(op_code, 0xcb, offset, 0x0e)
-    #
-    #     # when
-    #     self.processor.execute()
-    #
-    #     # then
-    #     self.assert_memory(address).contains(0b01010101)
-    #
-    #     self.assert_flag('s').is_reset()
-    #     self.assert_flag('z').is_reset()
-    #     self.assert_flag('h').is_reset()
-    #     self.assert_flag('p').is_set()
-    #     self.assert_flag('n').is_reset()
-    #     self.assert_flag('c').is_reset()
-    #
-    # def test_rr_reg(self):
-    #     regs = [(0x18, 'b'), (0x19, 'c'), (0x1a, 'd'), (0x1b, 'e'), (0x1c, 'h'), (0x1d, 'l'), (0x1f, 'a')]
-    #     values = [(0b10101010, True,  0b11010101, False, True, False, False),
-    #               (0b10101010, False, 0b01010101, False, False, False, True),
-    #               (0b01010101, True,  0b10101010, True, True, False, True),
-    #               (0b01010101, False, 0b00101010, True, False, False, False),
-    #               (0b00000000, False, 0b00000000, False, False, True, True)]
-    #
-    #     for op_code, reg in regs:
-    #         for initial_acc, initial_carry, final_acc, final_carry, s, z, p in values:
-    #             yield self.check_reg_shift, reg, op_code, initial_acc, initial_carry, final_acc, final_carry, s, z, p
-    #
-    # def test_rr_hl_indirect(self):
-    #     # given
-    #     self.given_register_pair_contains_value('hl', 0x4000)
-    #     self.processor.set_condition('c', True)
-    #     self.memory.poke(0x4000, 0b10101010)
-    #
-    #     self.given_next_instruction_is(0xcb, 0x1e)
-    #
-    #     # when
-    #     self.processor.execute()
-    #
-    #     # then
-    #     self.assert_memory(0x4000).contains(0b11010101)
-    #
-    #     self.assert_flag('s').is_set()
-    #     self.assert_flag('z').is_reset()
-    #     self.assert_flag('h').is_reset()
-    #     self.assert_flag('p').is_reset()
-    #     self.assert_flag('n').is_reset()
-    #     self.assert_flag('c').is_reset()
-    #
-    # def test_rr_indexed_indirect(self):
-    #     values = [(0xdd, 'ix'), (0xfd, 'iy')]
-    #     for op_code, reg in values:
-    #         yield self.check_rr_indexed_indirect, op_code, reg
-    #
-    # def check_rr_indexed_indirect(self, op_code, reg):
-    #     # given
-    #     offset = random.randint(0, 255)
-    #     address = 0x4000 + to_signed(offset)
-    #     self.processor.index_registers[reg] = 0x4000
-    #     self.processor.set_condition('c', True)
-    #     self.memory.poke(address, 0b10101010)
-    #
-    #     self.given_next_instruction_is(op_code, 0xcb, offset, 0x1e)
-    #
-    #     # when
-    #     self.processor.execute()
-    #
-    #     # then
-    #     self.assert_memory(address).contains(0b11010101)
-    #
-    #     self.assert_flag('s').is_set()
-    #     self.assert_flag('z').is_reset()
-    #     self.assert_flag('h').is_reset()
-    #     self.assert_flag('p').is_reset()
-    #     self.assert_flag('n').is_reset()
-    #     self.assert_flag('c').is_reset()
+    def test_rl_hl_indirect(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x4000)
+        self.processor.set_condition('c', False)
+        self.memory.poke(0x4000, 0b10101010)
+
+        self.given_next_instruction_is(0xcb, 0x16)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(0x4000).contains(0b01010100)
+
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_set()
+
+    def test_rl_indexed_indirect(self):
+        values = [(0xdd, 'ix'), (0xfd, 'iy')]
+        for op_code, reg in values:
+            yield self.check_rl_indexed_indirect, op_code, reg
+
+    def check_rl_indexed_indirect(self, op_code, reg):
+        # given
+        offset = random.randint(0, 255)
+        address = 0x4000 + to_signed(offset)
+        self.processor.index_registers[reg] = 0x4000
+        self.processor.set_condition('c', False)
+        self.memory.poke(address, 0b10101010)
+
+        self.given_next_instruction_is(op_code, 0xcb, offset, 0x16)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(address).contains(0b01010100)
+
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_set()
+
+    def test_rrc_reg(self):
+        regs = [(0x08, 'b'), (0x09, 'c'), (0x0a, 'd'), (0x0b, 'e'), (0x0c, 'h'), (0x0d, 'l'), (0x0f, 'a')]
+        values = [(0b10101010, True,  0b01010101, False, False, False, True),
+                  (0b10101010, False, 0b01010101, False, False, False, True),
+                  (0b01010101, True,  0b10101010, True, True, False, True),
+                  (0b01010101, False, 0b10101010, True, True, False, True),
+                  (0b00000000, False, 0b00000000, False, False, True, True)]
+
+        for op_code, reg in regs:
+            for initial_acc, initial_carry, final_acc, final_carry, s, z, p in values:
+                yield self.check_reg_shift, reg, op_code, initial_acc, initial_carry, final_acc, final_carry, s, z, p
+
+    def test_rrc_hl_indirect(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x4000)
+        self.processor.set_condition('c', False)
+        self.memory.poke(0x4000, 0b10101010)
+
+        self.given_next_instruction_is(0xcb, 0x0e)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(0x4000).contains(0b01010101)
+
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_reset()
+
+    def test_rrc_indexed_indirect(self):
+        values = [(0xdd, 'ix'), (0xfd, 'iy')]
+        for op_code, reg in values:
+            yield self.check_rrc_indexed_indirect, op_code, reg
+
+    def check_rrc_indexed_indirect(self, op_code, reg):
+        # given
+        offset = random.randint(0, 255)
+        address = 0x4000 + to_signed(offset)
+        self.processor.index_registers[reg] = 0x4000
+        self.processor.set_condition('c', False)
+        self.memory.poke(address, 0b10101010)
+
+        self.given_next_instruction_is(op_code, 0xcb, offset, 0x0e)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(address).contains(0b01010101)
+
+        self.assert_flag('s').is_reset()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_set()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_reset()
+
+    def test_rr_reg(self):
+        regs = [(0x18, 'b'), (0x19, 'c'), (0x1a, 'd'), (0x1b, 'e'), (0x1c, 'h'), (0x1d, 'l'), (0x1f, 'a')]
+        values = [(0b10101010, True,  0b11010101, False, True, False, False),
+                  (0b10101010, False, 0b01010101, False, False, False, True),
+                  (0b01010101, True,  0b10101010, True, True, False, True),
+                  (0b01010101, False, 0b00101010, True, False, False, False),
+                  (0b00000000, False, 0b00000000, False, False, True, True)]
+
+        for op_code, reg in regs:
+            for initial_acc, initial_carry, final_acc, final_carry, s, z, p in values:
+                yield self.check_reg_shift, reg, op_code, initial_acc, initial_carry, final_acc, final_carry, s, z, p
+
+    def test_rr_hl_indirect(self):
+        # given
+        self.given_register_pair_contains_value('hl', 0x4000)
+        self.processor.set_condition('c', True)
+        self.memory.poke(0x4000, 0b10101010)
+
+        self.given_next_instruction_is(0xcb, 0x1e)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(0x4000).contains(0b11010101)
+
+        self.assert_flag('s').is_set()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_reset()
+
+    def test_rr_indexed_indirect(self):
+        values = [(0xdd, 'ix'), (0xfd, 'iy')]
+        for op_code, reg in values:
+            yield self.check_rr_indexed_indirect, op_code, reg
+
+    def check_rr_indexed_indirect(self, op_code, reg):
+        # given
+        offset = random.randint(0, 255)
+        address = 0x4000 + to_signed(offset)
+        self.processor.index_registers[reg] = 0x4000
+        self.processor.set_condition('c', True)
+        self.memory.poke(address, 0b10101010)
+
+        self.given_next_instruction_is(op_code, 0xcb, offset, 0x1e)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_memory(address).contains(0b11010101)
+
+        self.assert_flag('s').is_set()
+        self.assert_flag('z').is_reset()
+        self.assert_flag('h').is_reset()
+        self.assert_flag('p').is_reset()
+        self.assert_flag('n').is_reset()
+        self.assert_flag('c').is_reset()

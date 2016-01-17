@@ -37,6 +37,41 @@ class OpSlaHlIndirect(BaseOp):
         return 'sla (hl)'
 
 
+class OpSllReg(BaseOp):
+    def __init__(self, processor, reg):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.reg = reg
+
+    def execute(self):
+        result = _sll_value(self.processor, self.processor.main_registers[self.reg])
+        self.processor.main_registers[self.reg] = result
+
+    def t_states(self):
+        return 8
+
+    def __str__(self):
+        return 'sll {}'.format(self.reg)
+
+
+class OpSllHlIndirect(BaseOp):
+    def __init__(self, processor, memory):
+        BaseOp.__init__(self)
+        self.processor = processor
+        self.memory = memory
+
+    def execute(self):
+        address = self.processor.get_16bit_reg('hl')
+        result = _sll_value(self.processor, self.memory.peek(address))
+        self.memory.poke(address, result)
+
+    def t_states(self):
+        return 15
+
+    def __str__(self):
+        return 'sll (hl)'
+
+
 class OpSraReg(BaseOp):
     def __init__(self, processor, reg):
         BaseOp.__init__(self)
@@ -190,6 +225,13 @@ def _srl_value(processor, value):
     carry = value & 0b1
     rotated = value >> 1
     _set_flags(processor, rotated, carry)
+    return rotated
+
+
+def _sll_value(processor, value):
+    new_carry = value >> 7
+    rotated = ((value << 1) | 0b1) & 0xff
+    _set_flags(processor, rotated, new_carry)
     return rotated
 
 

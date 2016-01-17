@@ -1,5 +1,5 @@
 from baseop import BaseOp
-from z80.funcs import bitwise_sub
+from z80.funcs import big_endian_value, bitwise_sub
 
 
 class OpLdi(BaseOp):
@@ -66,75 +66,71 @@ class OpCpd(BaseOp):
         return 'cpd'
 
 
-class OpLdir(BaseOp):
-    def __init__(self, processor, memory):
+class BlockOp(BaseOp):
+    def __init__(self, processor):
         BaseOp.__init__(self)
         self.processor = processor
+        self.last_t_states = None
+
+    def _decrement_bc_and_update_pc(self):
+        bc = self.processor.get_16bit_reg('bc')
+        if not bc == 0x0000:
+            self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) % 0x10000
+        self.last_t_states = 16 if bc == 0x0000 else 21
+
+    def t_states(self):
+        return self.last_t_states
+
+
+class OpLdir(BlockOp):
+    def __init__(self, processor, memory):
+        BlockOp.__init__(self, processor)
         self.memory = memory
 
     def execute(self):
         _block_transfer(self.processor, self.memory, 1)
         self.processor.set_condition('p', False)
-        if not (self.processor.main_registers['b'] == 0x00 and self.processor.main_registers['c'] == 0x00):
-            self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) % 0x10000
-
-    def t_states(self):
-        pass
+        self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'ldir'
 
 
-class OpLddr(BaseOp):
+class OpLddr(BlockOp):
     def __init__(self, processor, memory):
-        BaseOp.__init__(self)
-        self.processor = processor
+        BlockOp.__init__(self, processor)
         self.memory = memory
 
     def execute(self):
         _block_transfer(self.processor, self.memory, -1)
         self.processor.set_condition('p', False)
-        if not (self.processor.main_registers['b'] == 0x00 and self.processor.main_registers['c'] == 0x00):
-            self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) % 0x10000
-
-    def t_states(self):
-        pass
+        self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'lddr'
 
 
-class OpCpir(BaseOp):
+class OpCpir(BlockOp):
     def __init__(self, processor, memory):
-        BaseOp.__init__(self)
-        self.processor = processor
+        BlockOp.__init__(self, processor)
         self.memory = memory
 
     def execute(self):
         _block_compare(self.processor, self.memory, 1)
-        if not (self.processor.get_16bit_reg('bc') == 0x0000):
-            self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) % 0x10000
-
-    def t_states(self):
-        pass
+        self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'cpir'
 
 
-class OpCpdr(BaseOp):
+class OpCpdr(BlockOp):
     def __init__(self, processor, memory):
-        BaseOp.__init__(self)
-        self.processor = processor
+        BlockOp.__init__(self, processor)
         self.memory = memory
 
     def execute(self):
         _block_compare(self.processor, self.memory, -1)
-        if not (self.processor.get_16bit_reg('bc') == 0x0000):
-            self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) % 0x10000
-
-    def t_states(self):
-        pass
+        self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'cpdr'

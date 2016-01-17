@@ -287,7 +287,7 @@ class OpLdSpExt(BaseOp):
         self.processor.special_registers['sp'] = big_endian_value([low_byte, high_byte])
 
     def t_states(self):
-        pass
+        return 20
 
     def __str__(self):
         return 'ld sp, (nn)'

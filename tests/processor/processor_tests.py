@@ -58,6 +58,9 @@ class TestHelper:
         self.processor.special_registers['pc'] = address
         self.instruction_pointer = address
 
+    def given_flag(self, flag):
+        return GivenFlagBuilder(self.processor, flag)
+
     def assert_cycles_taken(self, cycles):
         assert_equals(self.processor.cycles, cycles)
 
@@ -114,3 +117,12 @@ class FlagSetBuilder:
 
     def is_reset(self):
         assert_equals(self.value, False, 'flag {} not reset'.format(self.flag))
+
+
+class GivenFlagBuilder:
+    def __init__(self, processor, flag):
+        self.processor = processor
+        self.flag = flag
+
+    def set_to(self, value):
+        self.processor.set_condition(self.flag, value)

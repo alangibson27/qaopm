@@ -171,50 +171,182 @@ class TestCycles(TestHelper):
         # then
         assert_equals(executed.t_states(), cycles)
 
-    def test_execute_returns_correct_number_of_tstates_for_block_operations_when_bc_is_zero(self):
-        assert_true(False)
+    def test_execute_returns_correct_number_of_tstates_for_block_operations_when_bc_decrements_to_zero(self):
+        # given
+        self.given_next_instruction_is(0xed, 0xb0)
+        self.given_register_pair_contains_value('hl', 0xbeef)
+        self.given_register_pair_contains_value('de', 0xbabe)
+        self.given_register_pair_contains_value('bc', 0x0001)
 
-    def test_execute_returns_correct_number_of_tstates_for_block_operations_when_bc_is_nonzero(self):
-        assert_true(False)
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 16)
+
+    def test_execute_returns_correct_number_of_tstates_for_block_operations_when_bc_decrements_to_nonzero(self):
+        # given
+        self.given_next_instruction_is(0xed, 0xb8)
+        self.given_register_pair_contains_value('hl', 0xbeef)
+        self.given_register_pair_contains_value('de', 0xbabe)
+        self.given_register_pair_contains_value('bc', 0x0010)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 21)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_c_when_carry_is_set(self):
-        assert_true(False)
+        # given
+        self.given_flag('c').set_to(True)
+        self.given_next_instruction_is(0x38, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 12)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_c_when_carry_is_reset(self):
-        assert_true(False)
+        # given
+        self.given_flag('c').set_to(False)
+        self.given_next_instruction_is(0x38, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 7)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_nc_when_carry_is_set(self):
-        assert_true(False)
+        # given
+        self.given_flag('c').set_to(True)
+        self.given_next_instruction_is(0x30, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 7)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_nc_when_carry_is_reset(self):
-        assert_true(False)
+        # given
+        self.given_flag('c').set_to(False)
+        self.given_next_instruction_is(0x30, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 12)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_z_when_z_is_set(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(True)
+        self.given_next_instruction_is(0x28, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 12)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_z_when_z_is_reset(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(False)
+        self.given_next_instruction_is(0x28, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 7)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_nz_when_z_is_set(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(True)
+        self.given_next_instruction_is(0x20, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 7)
 
     def test_execute_returns_correct_number_of_tstates_for_jr_nz_when_z_is_reset(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(False)
+        self.given_next_instruction_is(0x20, 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 12)
 
     def test_execute_returns_correct_number_of_tstates_for_djnz_when_b_is_zero_after_decrement(self):
-        assert_true(False)
+        # given
+        self.given_next_instruction_is(0x10, 0xa0)
+        self.given_register_contains_value('b', 1)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 8)
 
     def test_execute_returns_correct_number_of_tstates_for_djnz_when_b_is_nonzero_after_decrement(self):
-        assert_true(False)
+        # given
+        self.given_next_instruction_is(0x10, 0xa0)
+        self.given_register_contains_value('b', 0x10)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 13)
 
     def test_execute_returns_correct_number_of_tstates_for_call_z_when_z_is_set(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(True)
+        self.given_next_instruction_is(0xcc, 0xef, 0xbe)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 5)
 
     def test_execute_returns_correct_number_of_tstates_for_call_z_when_z_is_reset(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(False)
+        self.given_next_instruction_is(0xcc, 0xef, 0xbe)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 3)
 
     def test_execute_returns_correct_number_of_tstates_for_ret_z_when_z_is_set(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(True)
+        self.given_next_instruction_is(0xc8)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 11)
 
     def test_execute_returns_correct_number_of_tstates_for_ret_z_when_z_is_reset(self):
-        assert_true(False)
+        # given
+        self.given_flag('z').set_to(False)
+        self.given_next_instruction_is(0xc8)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 5)

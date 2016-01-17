@@ -196,7 +196,7 @@ class OpSbcAImmediate(BaseOp):
         _sub_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
-        pass
+        return 7
 
     def __str__(self):
         return 'sbc a, n'

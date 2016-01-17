@@ -1,4 +1,4 @@
-from z80.baseop import BaseOp
+from z80.baseop import BaseOp, CondOp
 from z80.funcs import to_signed, big_endian_value
 
 
@@ -177,67 +177,55 @@ class OpJr(BaseOp):
         return 'jr n'
 
 
-class OpJrC(BaseOp):
+class OpJrC(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
-        _cond_jr(self.processor, 'c', True)
-
-    def t_states(self):
-        pass
+        self.last_t_states = _cond_jr(self.processor, 'c', True)
 
     def __str__(self):
         return 'jr c, n'
 
 
-class OpJrNc(BaseOp):
+class OpJrNc(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
-        _cond_jr(self.processor, 'c', False)
-
-    def t_states(self):
-        pass
+        self.last_t_states = _cond_jr(self.processor, 'c', False)
 
     def __str__(self):
         return 'jr nc, n'
 
 
-class OpJrZ(BaseOp):
+class OpJrZ(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
-        _cond_jr(self.processor, 'z', True)
-
-    def t_states(self):
-        pass
+        self.last_t_states = _cond_jr(self.processor, 'z', True)
 
     def __str__(self):
         return 'jr z, n'
 
 
-class OpJrNz(BaseOp):
+class OpJrNz(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
-        _cond_jr(self.processor, 'z', False)
-
-    def t_states(self):
-        pass
+        self.last_t_states = _cond_jr(self.processor, 'z', False)
 
     def __str__(self):
         return 'jr nz, n'
 
 
-class OpDjnz(BaseOp):
+class OpDjnz(CondOp):
     def __init__(self, processor):
         BaseOp.__init__(self)
         self.processor = processor
@@ -246,10 +234,10 @@ class OpDjnz(BaseOp):
         offset = to_signed(self.processor.get_next_byte())
         self.processor.main_registers['b'] = (self.processor.main_registers['b'] - 1)
         if self.processor.main_registers['b'] != 0:
+            self.last_t_states = 13
             _jr_offset(self.processor, offset)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 8
 
     def __str__(self):
         return 'djnz n'
@@ -263,6 +251,9 @@ def _cond_jr(processor, flag, jump_value):
     offset = to_signed(processor.get_next_byte())
     if processor.condition(flag) == jump_value:
         _jr_offset(processor, offset)
+        return 12
+    else:
+        return 7
 
 
 def _jr_offset(processor, offset):

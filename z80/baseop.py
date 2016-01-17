@@ -12,6 +12,15 @@ class BaseOp:
         return 'unimplemented operation'
 
 
+class CondOp(BaseOp):
+    def __init__(self):
+        BaseOp.__init__(self)
+        self.last_t_states = None
+
+    def t_states(self):
+        return self.last_t_states
+
+
 class Nop(BaseOp):
     def __init__(self):
         BaseOp.__init__(self)

@@ -1,5 +1,5 @@
 from funcs import big_endian_value, high_low_pair
-from z80.baseop import BaseOp
+from z80.baseop import BaseOp, CondOp
 
 
 class OpCall(BaseOp):
@@ -27,7 +27,7 @@ class OpCallDirect(BaseOp):
         call_to(self.processor, self.address)
 
     def t_states(self):
-        pass
+        return 17
 
     def __str__(self):
         return 'im2 response'
@@ -49,137 +49,137 @@ class OpRst(BaseOp):
         return 'rst {}'.format(hex(self.jump_address))
 
 
-class OpCallNz(BaseOp):
+class OpCallNz(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if not self.processor.condition('z'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call nz, nn'
 
 
-class OpCallZ(BaseOp):
+class OpCallZ(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if self.processor.condition('z'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call z, nn'
 
 
-class OpCallNc(BaseOp):
+class OpCallNc(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if not self.processor.condition('c'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call nc, nn'
 
 
-class OpCallC(BaseOp):
+class OpCallC(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if self.processor.condition('c'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call c, nn'
 
 
-class OpCallPo(BaseOp):
+class OpCallPo(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if not self.processor.condition('p'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call po, nn'
 
 
-class OpCallPe(BaseOp):
+class OpCallPe(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if self.processor.condition('p'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call pe, nn'
 
 
-class OpCallP(BaseOp):
+class OpCallP(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if not self.processor.condition('s'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call p, nn'
 
 
-class OpCallM(BaseOp):
+class OpCallM(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         address = _get_destination_from_pc(self.processor)
         if self.processor.condition('s'):
+            self.last_t_states = 5
             call_to(self.processor, address)
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 3
 
     def __str__(self):
         return 'call m, nn'
@@ -200,129 +200,129 @@ class OpRet(BaseOp):
         return 'ret'
 
 
-class OpRetNz(BaseOp):
+class OpRetNz(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if not self.processor.condition('z'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret nz'
 
 
-class OpRetZ(BaseOp):
+class OpRetZ(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if self.processor.condition('z'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret z'
 
 
-class OpRetNc(BaseOp):
+class OpRetNc(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if not self.processor.condition('c'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret nc'
 
 
-class OpRetC(BaseOp):
+class OpRetC(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if self.processor.condition('c'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret c'
 
 
-class OpRetPo(BaseOp):
+class OpRetPo(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if not self.processor.condition('p'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret po'
 
 
-class OpRetPe(BaseOp):
+class OpRetPe(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if self.processor.condition('p'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret pe'
 
 
-class OpRetP(BaseOp):
+class OpRetP(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if not self.processor.condition('s'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret p'
 
 
-class OpRetM(BaseOp):
+class OpRetM(CondOp):
     def __init__(self, processor):
-        BaseOp.__init__(self)
+        CondOp.__init__(self)
         self.processor = processor
 
     def execute(self):
         if self.processor.condition('s'):
+            self.last_t_states = 11
             self.processor.restore_pc_from_stack()
-
-    def t_states(self):
-        pass
+        else:
+            self.last_t_states = 5
 
     def __str__(self):
         return 'ret m'

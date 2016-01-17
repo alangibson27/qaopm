@@ -1,10 +1,11 @@
-from nose.tools import assert_equals, assert_in
 from random import randint
 
-from z80.io import IO
-from z80.memory import Memory
-from z80.processor import Processor
+from nose.tools import assert_equals, assert_in
+
+from memory.memory import Memory
 from z80.funcs import high_low_pair
+from z80.io import IO
+from z80.processor import Processor
 
 
 def random_byte():

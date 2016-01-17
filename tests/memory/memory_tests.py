@@ -1,5 +1,10 @@
+import os
+from tempfile import NamedTemporaryFile
+
 from nose.tools import *
-from z80.memory import Memory, MemoryException
+
+from memory.memory import load_memory, save_memory, Memory, MemoryException
+
 
 class TestMemory:
     def setup(self):
@@ -37,3 +42,25 @@ class TestMemory:
         with assert_raises(MemoryException) as context:
             self.memory.poke(1, 256)
         assert_true("invalid value for poke" in context.exception)
+
+    def test_read_into_memory(self):
+        load_memory(self.memory, _this_directory() + '/test.rom', 0x1000)
+        assert_equals(self.memory.peek(0x1000), 0x3e)
+        assert_equals(self.memory.peek(0x1001), 0x05)
+        assert_equals(self.memory.peek(0x1002), 0x3c)
+
+    def test_write_from_memory(self):
+        self.memory.poke(0x1000, 0x3e)
+        self.memory.poke(0x1001, 0x05)
+        self.memory.poke(0x1002, 0x3c)
+
+        with NamedTemporaryFile() as outfile:
+            save_memory(self.memory, outfile.name, 0x1000, 3)
+            load_memory(self.memory, outfile.name, 0x2000)
+            assert_equals(self.memory.peek(0x1000), 0x3e)
+            assert_equals(self.memory.peek(0x1001), 0x05)
+            assert_equals(self.memory.peek(0x1002), 0x3c)
+
+
+def _this_directory():
+    return os.path.dirname(os.path.abspath(__file__))

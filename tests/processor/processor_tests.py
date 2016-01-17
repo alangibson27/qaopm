@@ -1,6 +1,7 @@
-from nose.tools import assert_equals
+from nose.tools import assert_equals, assert_in
 from random import randint
 
+from z80.io import IO
 from z80.memory import Memory
 from z80.processor import Processor
 from z80.funcs import high_low_pair
@@ -14,7 +15,8 @@ class TestHelper:
     def __init__(self):
         self.instruction_pointer = 0x0
         self.memory = Memory()
-        self.processor = Processor(self.memory)
+        self.io = StubbedIO()
+        self.processor = Processor(self.memory, self.io)
 
     def given_next_instruction_is(self, *args):
         for arg in args:
@@ -85,6 +87,30 @@ class TestHelper:
 
     def assert_memory(self, address):
         return ContainsBuilder(self.memory.peek(address))
+
+
+class StubbedIO(IO):
+    def __init__(self):
+        self.read_stubs = {}
+        self.write_calls = []
+
+    def stub_read(self, port, high_byte, value):
+        self.read_stubs[(port, high_byte)] = value
+
+    def read(self, port, high_byte):
+        if (port, high_byte) in self.read_stubs:
+            return self.read_stubs[(port, high_byte)]
+        else:
+            return random_byte()
+
+    def write(self, port, high_byte, value):
+        self.write_calls.append((port, high_byte, value))
+
+    def verify_write(self, port, high_byte, value, index = None):
+        if index is None:
+            assert_in((port, high_byte, value), self.write_calls)
+        else:
+            assert_equals(self.write_calls[index], (port, high_byte, value))
 
 
 class EqualsBuilder:

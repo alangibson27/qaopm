@@ -156,6 +156,12 @@ class TestCycles(TestHelper):
             ([0xed, 0x4d], 14),                 # reti
             ([0xed, 0x45], 14),                 # retn
             ([0xc7], 11),                       # rst 0x00
+            ([0xdb, 0xff], 11),                 # in a, (0xff)
+            ([0xed, 0x40], 12),                 # in b, (c)
+            ([0xed, 0xa2], 16),                 # ini
+            ([0xed, 0xaa], 16),                 # ind
+            ([0xd3, 0xff], 11),                 # out (0xff), a
+            ([0xed, 0x41], 12),                 # out (c), b
         ]
 
         for op_codes, cycles in values:
@@ -350,3 +356,91 @@ class TestCycles(TestHelper):
 
         # then
         assert_equals(executed.t_states(), 5)
+
+    def test_execute_returns_correct_number_of_tstates_for_inir_when_b_decrements_to_zero(self):
+        # given
+        self.given_register_contains_value('b', 0x01)
+        self.given_next_instruction_is(0xed, 0xb2)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 16)
+
+    def test_execute_returns_correct_number_of_tstates_for_inir_when_b_decrements_to_nonzero(self):
+        # given
+        self.given_register_contains_value('b', 0x10)
+        self.given_next_instruction_is(0xed, 0xb2)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 21)
+
+    def test_execute_returns_correct_number_of_tstates_for_indr_when_b_decrements_to_zero(self):
+        # given
+        self.given_register_contains_value('b', 0x01)
+        self.given_next_instruction_is(0xed, 0xba)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 16)
+
+    def test_execute_returns_correct_number_of_tstates_for_indr_when_b_decrements_to_nonzero(self):
+        # given
+        self.given_register_contains_value('b', 0x10)
+        self.given_next_instruction_is(0xed, 0xba)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 21)
+
+    def test_execute_returns_correct_number_of_tstates_for_otir_when_b_decrements_to_zero(self):
+        # given
+        self.given_register_contains_value('b', 0x01)
+        self.given_next_instruction_is(0xed, 0xb3)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 16)
+
+    def test_execute_returns_correct_number_of_tstates_for_otir_when_b_decrements_to_nonzero(self):
+        # given
+        self.given_register_contains_value('b', 0x10)
+        self.given_next_instruction_is(0xed, 0xb3)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 21)
+
+    def test_execute_returns_correct_number_of_tstates_for_otdr_when_b_decrements_to_zero(self):
+        # given
+        self.given_register_contains_value('b', 0x01)
+        self.given_next_instruction_is(0xed, 0xbb)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 16)
+
+    def test_execute_returns_correct_number_of_tstates_for_otdr_when_b_decrements_to_nonzero(self):
+        # given
+        self.given_register_contains_value('b', 0x10)
+        self.given_next_instruction_is(0xed, 0xbb)
+
+        # when
+        executed = self.processor.execute()
+
+        # then
+        assert_equals(executed.t_states(), 21)

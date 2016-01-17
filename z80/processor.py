@@ -12,6 +12,7 @@ from shift import *
 from stack import *
 from z80.arithmetic_8 import *
 from z80.block_operations import *
+from z80.io import *
 
 
 class Op:
@@ -21,8 +22,9 @@ class Op:
 
 
 class Processor:
-    def __init__(self, memory):
+    def __init__(self, memory, io):
         self.memory = memory
+        self.io = io
         self.main_registers = self.build_swappable_register_set()
         self.alternate_registers = self.build_swappable_register_set()
         self.special_registers = self.build_special_register_set()
@@ -289,6 +291,7 @@ class Processor:
             0xd0: OpRetNc(self),
             0xd1: OpPop16Reg(self, 'de'),
             0xd2: OpJpNc(self),
+            0xd3: OpOutA(self, self.io),
             0xd4: OpCallNc(self),
             0xd5: OpPush16Reg(self, 'de'),
             0xd6: OpSubAImmediate(self, self.memory),
@@ -296,6 +299,7 @@ class Processor:
             0xd8: OpRetC(self),
             0xd9: OpExx(self),
             0xda: OpJpC(self),
+            0xdb: OpInA(self, self.io),
             0xdc: OpCallC(self),
             0xde: OpSbcAImmediate(self, self.memory),
             0xdf: OpRst(self, 0x18),
@@ -619,29 +623,42 @@ class Processor:
 
     def init_ed_opcodes(self):
         return {
+            0x40: OpIn8RegC(self, self.io, 'b'),
+            0x41: OpOut8RegC(self, self.io, 'b'),
             0x42: OpSbcHl16Reg(self, 'bc'),
             0x43: OpLdAddress16Reg(self, self.memory, 'bc'),
             0x44: OpNeg(self),
             0x45: OpRetn(self),
             0x46: OpIm(self, 0),
             0x47: OpLdIA(self),
+            0x48: OpIn8RegC(self, self.io, 'c'),
+            0x49: OpOut8RegC(self, self.io, 'c'),
             0x4a: OpAdcHl16Reg(self, 'bc'),
             0x4b: OpLd16RegAddress(self, self.memory, 'bc'),
             0x4d: OpReti(self),
             0x4f: OpLdRA(self),
 
+            0x50: OpIn8RegC(self, self.io, 'd'),
+            0x51: OpOut8RegC(self, self.io, 'd'),
             0x52: OpSbcHl16Reg(self, 'de'),
             0x53: OpLdAddress16Reg(self, self.memory, 'de'),
             0x56: OpIm(self, 1),
+            0x57: OpLdAI(self),
+            0x58: OpIn8RegC(self, self.io, 'e'),
+            0x59: OpOut8RegC(self, self.io, 'e'),
             0x5a: OpAdcHl16Reg(self, 'de'),
             0x5b: OpLd16RegAddress(self, self.memory, 'de'),
             0x5e: OpIm(self, 2),
             0x5f: OpLdAR(self),
 
+            0x60: OpIn8RegC(self, self.io, 'h'),
+            0x61: OpOut8RegC(self, self.io, 'h'),
             0x62: OpSbcHl16Reg(self, 'hl'),
             0x63: OpLdAddress16Reg(self, self.memory, 'hl'),
             0x66: OpIm(self, 0),
             0x67: OpRrd(self, self.memory),
+            0x68: OpIn8RegC(self, self.io, 'l'),
+            0x69: OpOut8RegC(self, self.io, 'l'),
             0x6a: OpAdcHl16Reg(self, 'hl'),
             0x6b: OpLd16RegAddress(self, self.memory, 'hl'),
             0x6f: OpRld(self, self.memory),
@@ -649,21 +666,29 @@ class Processor:
             0x72: OpSbcHl16Reg(self, 'sp'),
             0x73: OpLdExtSp(self, self.memory),
             0x76: Op(lambda: self.set_interrupt_mode(1), 'im 1'),
+            0x78: OpIn8RegC(self, self.io, 'a'),
+            0x79: OpOut8RegC(self, self.io, 'a'),
             0x7a: OpAdcHl16Reg(self, 'sp'),
             0x7b: OpLdSpExt(self, self.memory),
             0x7e: Op(lambda: self.set_interrupt_mode(2), 'im 2'),
 
-            0x57: OpLdAI(self),
-
             0xa0: OpLdi(self, self.memory),
             0xa1: OpCpi(self, self.memory),
+            0xa2: OpIni(self, self.memory, self.io),
+            0xa3: OpOuti(self, self.memory, self.io),
             0xa8: OpLdd(self, self.memory),
             0xa9: OpCpd(self, self.memory),
+            0xaa: OpInd(self, self.memory, self.io),
+            0xab: OpOutd(self, self.memory, self.io),
 
             0xb0: OpLdir(self, self.memory),
             0xb1: OpCpir(self, self.memory),
+            0xb2: OpInir(self, self.memory, self.io),
+            0xb3: OpOtir(self, self.memory, self.io),
             0xb8: OpLddr(self, self.memory),
-            0xb9: OpCpdr(self, self.memory)
+            0xb9: OpCpdr(self, self.memory),
+            0xba: OpIndr(self, self.memory, self.io),
+            0xbb: OpOtdr(self, self.memory, self.io)
         }
 
     def init_dd_opcodes(self):

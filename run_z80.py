@@ -52,8 +52,20 @@ def run():
 
         print('\n')
         print('Listing of memory values from {0:#06x} to {1:#06x}'.format(start, end))
-        for addr in range(start, end + 1):
-            print '{0:#06x}: {1:#04x}'.format(addr, memory.peek(addr))
+        addr = start
+        while True:
+            if addr > end:
+                break
+
+            values = [0x00] * 8
+            for i in range(0, 8):
+                values[i] = memory.peek(addr + i)
+
+            hex_values = ['{:#04x}'.format(val) for val in values]
+            chr_values = ['{}'.format(chr(val)) for val in values]
+
+            print '{0:#06x}: {1:}\t\t{2:}'.format(addr, ' '.join(hex_values), ' '.join(chr_values))
+            addr += 8
 
 if __name__ == '__main__':
     run()

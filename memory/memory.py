@@ -20,11 +20,15 @@ class MemoryException(Exception):
 
 def load_memory(memory, binary_file_name, base):
     with open(binary_file_name, 'rb') as binary_file:
+        load_memory_from_binary(memory, binary_file, base)
+
+
+def load_memory_from_binary(memory, binary_file, base):
+    byte = binary_file.read(1)
+    while byte != '':
+        memory.poke(base, ord(byte))
         byte = binary_file.read(1)
-        while byte != '':
-            memory.poke(base, ord(byte))
-            byte = binary_file.read(1)
-            base = (base + 1) & 0xffff
+        base = (base + 1) & 0xffff
 
 
 def save_memory(memory, binary_file_name, start, length):

@@ -83,6 +83,9 @@ class TestHelper:
     def assert_alt_register_pair(self, reg_pair):
         return EqualsBuilder('alt reg pair ' + reg_pair, self.processor.get_16bit_alt_reg(reg_pair))
 
+    def assert_index_register(self, index_register):
+        return EqualsBuilder('index reg ' + index_register, self.processor.index_registers[index_register])
+
     def assert_flag(self, flag_name):
         return FlagSetBuilder(flag_name, self.processor.condition(flag_name))
 

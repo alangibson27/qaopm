@@ -15,12 +15,6 @@ from z80.block_operations import *
 from z80.io import *
 
 
-class Op:
-    def __init__(self, function, mnemonic):
-        self.function = function
-        self.mnemonic = mnemonic
-
-
 class Processor:
     def __init__(self, memory, io):
         self.memory = memory
@@ -972,10 +966,7 @@ class Processor:
         enable_iff_after_op = self.enable_iff
         operation = self.get_operation()
         self.increment_r()
-        if not isinstance(operation, Op):
-            operation.execute()
-        else:
-            operation.function()
+        operation.execute()
         if enable_iff_after_op:
             self.set_iff()
             self.enable_iff = False
@@ -1043,10 +1034,7 @@ class Processor:
         self.special_registers[register_name] += 1
 
     def push_byte(self, byte):
-        if self.special_registers['sp'] == 0:
-            self.special_registers['sp'] = 0xffff
-        else:
-            self.special_registers['sp'] -= 1
+        self.special_registers['sp'] = (self.special_registers['sp'] - 1) & 0xffff
         self.memory.poke(self.special_registers['sp'], byte)
 
     def pop_byte(self):

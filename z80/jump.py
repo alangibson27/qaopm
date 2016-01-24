@@ -232,7 +232,7 @@ class OpDjnz(CondOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        self.processor.main_registers['b'] = (self.processor.main_registers['b'] - 1)
+        self.processor.main_registers['b'] = (self.processor.main_registers['b'] - 1) & 0xff
         if self.processor.main_registers['b'] != 0:
             self.last_t_states = 13
             _jr_offset(self.processor, offset)

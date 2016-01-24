@@ -270,3 +270,17 @@ class TestJumps(TestHelper):
 
         # then
         self.assert_pc_address().equals(0x1002)
+
+    def test_djnz_with_b_overflowing(self):
+        # given
+        self.given_program_counter_is(0x1000)
+        self.given_register_contains_value('b', 0x00)
+
+        self.given_next_instruction_is(0x10, 0x10)
+
+        # when
+        self.processor.execute()
+
+        # then
+        self.assert_pc_address().equals(0x1012)
+        self.assert_register('b').equals(0xff)

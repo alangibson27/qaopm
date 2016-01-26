@@ -22,7 +22,6 @@ class TestColour:
                   colour, ink_red, ink_green, ink_blue, paper_red, paper_green, paper_blue
 
     @staticmethod
-    def check_colours_return_correct_rgb(colour, ink_red, ink_green, ink_blue,
-                                         paper_red, paper_green, paper_blue):
-        assert_equals(colour.get_ink_rgb(), (ink_red, ink_green, ink_blue))
-        assert_equals(colour.get_paper_rgb(), (paper_red, paper_green, paper_blue))
+    def check_colours_return_correct_rgb(colour, ink_red, ink_green, ink_blue, paper_red, paper_green, paper_blue):
+        assert_equals(colour.ink_rgb, (ink_red, ink_green, ink_blue))
+        assert_equals(colour.paper_rgb, (paper_red, paper_green, paper_blue))

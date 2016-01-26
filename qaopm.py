@@ -7,4 +7,4 @@ if __name__ == '__main__':
     parser.add_argument('snapshot_file', help='.SNA-format snapshot file')
     args = parser.parse_args()
 
-    computer = start(args.rom_file, args.snapshot_file)
+    start(args.rom_file, args.snapshot_file)

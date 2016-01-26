@@ -13,6 +13,8 @@ class Memory:
     def peek(self, address):
         return self.memory[address & self.RAMTOP]
 
+    def block_peek(self, low, high):
+        return self.memory[low & self.RAMTOP:high & self.RAMTOP]
 
 class MemoryException(Exception):
     pass

@@ -56,8 +56,6 @@ def current_time_ms():
 
 
 def update_display(screen, display_adapter):
-    for x in xrange(0, 256):
-        for y in xrange(0, 192):
-            screen[x][y] = display_adapter.pixel_at(x, y)
+    display_adapter.update_display(screen)
     pygame.display.flip()
     return current_time_ms()

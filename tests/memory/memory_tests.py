@@ -43,6 +43,14 @@ class TestMemory:
             self.memory.poke(1, 256)
         assert_true("invalid value for poke" in context.exception)
 
+    def test_block_peek(self):
+        self.memory.poke(0xa000, 0x01)
+        self.memory.poke(0xafff, 0x02)
+        result = self.memory.block_peek(0xa000, 0xb000)
+        assert_equals(len(result), 0x1000)
+        assert_equals(result[0x000], 0x01)
+        assert_equals(result[0xfff], 0x02)
+
     def test_read_into_memory(self):
         load_memory(self.memory, _this_directory() + '/test.rom', 0x1000)
         assert_equals(self.memory.peek(0x1000), 0x3e)

@@ -41,7 +41,7 @@ class DisplayAdapter:
                 colour_address = 0x1800 + (0x20 * (y / 8)) + (x / 8)
 
                 colour_value = display_memory[colour_address]
-                if display_memory[pixel_address] & pow(2, bit) > 0:
+                if display_memory[pixel_address] & (1 << bit) > 0:
                     screen[x][y] = inks[colour_value]
                 else:
                     screen[x][y] = papers[colour_value]

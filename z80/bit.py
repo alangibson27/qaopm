@@ -56,7 +56,7 @@ class OpBitIndexedIndirect(BaseOp):
 
 
 def _bit(processor, value, bit_pos):
-    processor.set_condition('z', value & pow(2, bit_pos) == 0)
+    processor.set_condition('z', value & (1 << bit_pos) == 0)
     processor.set_condition('h', True)
     processor.set_condition('n', False)
 
@@ -117,7 +117,7 @@ class OpResIndexedIndirect(BaseOp):
 
 
 def _res(value, bit_pos):
-    return value & (0xff - pow(2, bit_pos))
+    return value & (0xff - (1 << bit_pos))
 
 
 class OpSetReg(BaseOp):
@@ -176,4 +176,4 @@ class OpSetIndexedIndirect(BaseOp):
 
 
 def _set(value, bit_pos):
-    return value | pow(2, bit_pos)
+    return value | (1 << bit_pos)

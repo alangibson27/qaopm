@@ -119,8 +119,8 @@ class OpRrcHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _rrc_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _rrc_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
@@ -174,8 +174,8 @@ class OpRlcHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _rlc_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _rlc_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
@@ -193,8 +193,8 @@ class OpRlHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _rl_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _rl_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
@@ -212,8 +212,8 @@ class OpRrHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _rr_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _rr_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
@@ -231,13 +231,13 @@ class OpRld(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        mem_value = self.memory.peek(address)
+        mem_value = self.memory[0xffff & address]
         mem_digits = to_hex_digits(mem_value)
 
         reg_value = self.processor.main_registers['a']
         reg_digits = to_hex_digits(reg_value)
 
-        self.memory.poke(address, (mem_digits[1] << 4) + reg_digits[1])
+        self.memory[0xffff & address] = (mem_digits[1] << 4) + reg_digits[1]
         self.processor.main_registers['a'] = reg_digits[0] + (mem_digits[0] >> 4)
 
         _set_sign_zero_parity_flags(self.processor, self.processor.main_registers['a'])
@@ -259,13 +259,13 @@ class OpRrd(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        mem_value = self.memory.peek(address)
+        mem_value = self.memory[0xffff & address]
         mem_digits = to_hex_digits(mem_value)
 
         reg_value = self.processor.main_registers['a']
         reg_digits = to_hex_digits(reg_value)
 
-        self.memory.poke(address, (reg_digits[1] << 4) + (mem_digits[0] >> 4))
+        self.memory[0xffff & address] = (reg_digits[1] << 4) + (mem_digits[0] >> 4)
         self.processor.main_registers['a'] = reg_digits[0] + mem_digits[1]
 
         _set_sign_zero_parity_flags(self.processor, self.processor.main_registers['a'])
@@ -289,9 +289,9 @@ class OpRlcIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        value = self.memory.peek(address)
+        value = self.memory[0xffff & address]
         result = _rlc_value(self.processor, value)
-        self.memory.poke(address, result)
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
@@ -311,9 +311,9 @@ class OpRrcIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        value = self.memory.peek(address)
+        value = self.memory[0xffff & address]
         result = _rrc_value(self.processor, value)
-        self.memory.poke(address, result)
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
@@ -333,9 +333,9 @@ class OpRlIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        value = self.memory.peek(address)
+        value = self.memory[0xffff & address]
         result = _rl_value(self.processor, value)
-        self.memory.poke(address, result)
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):
@@ -355,9 +355,9 @@ class OpRrIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        value = self.memory.peek(address)
+        value = self.memory[0xffff & address]
         result = _rr_value(self.processor, value)
-        self.memory.poke(address, result)
+        self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
 
     def t_states(self):

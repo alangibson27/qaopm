@@ -990,8 +990,8 @@ class Processor:
                 return self.im1_response_op
             elif self.interrupt_mode == 2:
                 table_index = big_endian_value([self.special_registers['r'] & 0xfe, self.special_registers['i']])
-                jump_low_byte = self.memory.peek(table_index)
-                jump_high_byte = self.memory.peek(table_index + 1)
+                jump_low_byte = self.memory[0xffff & table_index]
+                jump_high_byte = self.memory[0xffff & (table_index + 1)]
                 return OpCallDirect(self, big_endian_value([jump_low_byte, jump_high_byte]))
 
         if self.halting:
@@ -1017,12 +1017,12 @@ class Processor:
         if len(self.interrupt_data_queue) > 0:
             return self.interrupt_data_queue.pop(0)
         else:
-            op_code = self.memory.peek(self.special_registers['pc'])
+            op_code = self.memory[0xffff & self.special_registers['pc']]
             self.increment('pc')
             return op_code
 
     def get_signed_offset_byte(self):
-        return to_signed(self.memory.peek(self.special_registers['pc'] - 2))
+        return to_signed(self.memory[0xffff & (self.special_registers['pc'] - 2)])
 
     def restore_pc_from_stack(self):
         self.special_registers['pc'] = self._get_destination_from_stack()
@@ -1035,10 +1035,10 @@ class Processor:
 
     def push_byte(self, byte):
         self.special_registers['sp'] = (self.special_registers['sp'] - 1) & 0xffff
-        self.memory.poke(self.special_registers['sp'], byte)
+        self.memory[0xffff & self.special_registers['sp']] = byte
 
     def pop_byte(self):
-        byte = self.memory.peek(self.special_registers['sp'])
+        byte = self.memory[0xffff & self.special_registers['sp']]
         if self.special_registers['sp'] == 0xffff:
             self.special_registers['sp'] = 0
         else:

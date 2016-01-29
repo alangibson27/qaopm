@@ -76,8 +76,8 @@ class OpIncHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _inc_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _inc_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
 
     def t_states(self):
         return 11
@@ -94,8 +94,8 @@ class OpDecHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _dec_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _dec_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
 
     def t_states(self):
         return 11
@@ -148,8 +148,8 @@ class OpIncIndexedIndirect(BaseOp):
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
         address = self.processor.index_registers[self.indexed_reg] + offset
-        result = _inc_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _inc_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
 
     def t_states(self):
         return 23
@@ -168,8 +168,8 @@ class OpDecIndexedIndirect(BaseOp):
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
         address = self.processor.index_registers[self.indexed_reg] + offset
-        result = _dec_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _dec_value(self.processor, self.memory[0xffff & address])
+        self.memory[0xffff & address] = result
 
     def t_states(self):
         return 23

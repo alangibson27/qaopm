@@ -154,7 +154,7 @@ class Test8BitAddition(TestHelper):
         self.given_register_contains_value('a', 0b00001000)
         self.given_register_pair_contains_value('hl', 0xbeef)
 
-        self.memory.poke(0xbeef, 0b01000001)
+        self.memory[0xbeef] = 0b01000001
 
         self.given_next_instruction_is(0x86)
 
@@ -184,7 +184,7 @@ class Test8BitAddition(TestHelper):
         offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
-        self.memory.poke(0xbeef + signed_offset, 0b01000001)
+        self.memory[0xbeef + signed_offset] = 0b01000001
 
         self.given_next_instruction_is(op_codes, offset)
 
@@ -317,7 +317,7 @@ class Test8BitAddition(TestHelper):
         self.processor.set_condition('c', True)
 
         self.given_register_pair_contains_value('hl', 0xa000)
-        self.memory.poke(0xa000, 0b01000001)
+        self.memory[0xa000] = 0b01000001
 
         self.given_next_instruction_is(0x8e)
 
@@ -348,7 +348,7 @@ class Test8BitAddition(TestHelper):
         offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
-        self.memory.poke(0xbeef + signed_offset, 0b01000001)
+        self.memory[0xbeef + signed_offset] = 0b01000001
 
         self.given_next_instruction_is(op_codes, offset)
 

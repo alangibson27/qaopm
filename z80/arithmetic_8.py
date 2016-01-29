@@ -41,7 +41,7 @@ class OpAddAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, False)
 
     def t_states(self):
@@ -58,7 +58,7 @@ class OpAdcAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -141,7 +141,7 @@ class OpSubAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, False)
 
     def t_states(self):
@@ -158,7 +158,7 @@ class OpSbcAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -211,7 +211,7 @@ class OpAddAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, False)
 
     def t_states(self):
@@ -230,7 +230,7 @@ class OpAdcAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -249,7 +249,7 @@ class OpSubAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, False)
 
     def t_states(self):
@@ -268,7 +268,7 @@ class OpSbcAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -304,7 +304,7 @@ class OpAndAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        _and_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+        _and_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
 
     def __str__(self):
         return 'and (hl)'
@@ -334,7 +334,7 @@ class OpAndIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _and_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+        _and_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
 
     def t_states(self):
         return 19
@@ -369,7 +369,7 @@ class OpXorAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        _xor_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+        _xor_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
 
     def __str__(self):
         return 'xor (hl)'
@@ -399,7 +399,7 @@ class OpXorIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _xor_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+        _xor_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
 
     def t_states(self):
         return 19
@@ -434,7 +434,7 @@ class OpOrAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        _or_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+        _or_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
 
     def __str__(self):
         return 'or (hl)'
@@ -464,7 +464,7 @@ class OpOrIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _or_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+        _or_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
 
     def t_states(self):
         return 19
@@ -499,7 +499,7 @@ class OpCpAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _cp_value(self.processor, value, False)
 
     def __str__(self):
@@ -530,7 +530,7 @@ class OpCpIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _cp_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset), False)
+        _cp_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)], False)
 
     def t_states(self):
         return 19

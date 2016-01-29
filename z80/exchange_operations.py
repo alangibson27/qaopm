@@ -44,11 +44,11 @@ class OpExSpIndirectHl(BaseOp):
         old_h = self.processor.main_registers['h']
         old_l = self.processor.main_registers['l']
 
-        self.processor.main_registers['h'] = self.memory.peek(self.processor.special_registers['sp'] + 1)
-        self.processor.main_registers['l'] = self.memory.peek(self.processor.special_registers['sp'])
+        self.processor.main_registers['h'] = self.memory[0xffff & (self.processor.special_registers['sp'] + 1)]
+        self.processor.main_registers['l'] = self.memory[0xffff & self.processor.special_registers['sp']]
 
-        self.memory.poke(self.processor.special_registers['sp'], old_l)
-        self.memory.poke(self.processor.special_registers['sp'] + 1, old_h)
+        self.memory[self.processor.special_registers['sp']] = old_l
+        self.memory[0xffff & (self.processor.special_registers['sp'] + 1)] = old_h
 
     def t_states(self):
         return 19
@@ -87,12 +87,12 @@ class OpExSpIndirectIndexed(BaseOp):
     def execute(self):
         old_index = self.processor.index_registers[self.indexed_reg]
         self.processor.index_registers[self.indexed_reg] = big_endian_value(
-            [self.memory.peek(self.processor.special_registers['sp']),
-             self.memory.peek(self.processor.special_registers['sp'] + 1)])
+            [self.memory[self.processor.special_registers['sp']],
+             self.memory[0xffff & (self.processor.special_registers['sp'] + 1)]])
 
         high_byte, low_byte = high_low_pair(old_index)
-        self.memory.poke(self.processor.special_registers['sp'], low_byte)
-        self.memory.poke(self.processor.special_registers['sp'] + 1, high_byte)
+        self.memory[0xffff & self.processor.special_registers['sp']] = low_byte
+        self.memory[0xffff & (self.processor.special_registers['sp'] + 1)] = high_byte
 
     def t_states(self):
         return 23

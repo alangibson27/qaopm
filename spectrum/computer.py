@@ -21,7 +21,7 @@ class DummyIO(IO):
 
 
 def start(rom_file, snapshot_file):
-    memory = Memory()
+    memory = [0x00] * 0x10000
     processor = Processor(memory, DummyIO())
     display_adapter = DisplayAdapter(memory)
 

@@ -63,8 +63,8 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_stack_pointer_is(0xbeef)
         self.given_register_pair_contains_value('hl', 0x1234)
 
-        self.memory.poke(0xbeef, 0xba)
-        self.memory.poke(0xbef0, 0xbe)
+        self.memory[0xbeef] = 0xba
+        self.memory[0xbef0] = 0xbe
 
         self.given_next_instruction_is(0xe3)
 
@@ -84,8 +84,8 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def check_ex_sp_indirect_index_reg(self, op_codes, register_pair):
         # given
         self.given_stack_pointer_is(0xbeef)
-        self.memory.poke(0xbeef, 0x12)
-        self.memory.poke(0xbef0, 0x34)
+        self.memory[0xbeef] = 0x12
+        self.memory[0xbef0] = 0x34
 
         self.processor.index_registers[register_pair] = 0xbeba
 
@@ -106,7 +106,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0xbeef)
 
-        self.memory.poke(0x1000, 0xba)
+        self.memory[0x1000] = 0xba
 
         self.given_next_instruction_is(0xed, 0xa0)
 
@@ -129,7 +129,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x0001)
 
-        self.memory.poke(0x1000, 0xba)
+        self.memory[0x1000] = 0xba
 
         self.given_next_instruction_is(0xed, 0xa0)
 
@@ -152,7 +152,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x000a)
 
-        self.memory.poke(0x1000, 0xff)
+        self.memory[0x1000] = 0xff
 
         self.given_next_instruction_is(0xed, 0xb0)
 
@@ -176,7 +176,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x0001)
 
-        self.memory.poke(0x1000, 0xff)
+        self.memory[0x1000] = 0xff
 
         self.given_next_instruction_is(0xed, 0xb0)
 
@@ -200,7 +200,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x0000)
 
-        self.memory.poke(0x1000, 0xff)
+        self.memory[0x1000] = 0xff
 
         self.given_next_instruction_is(0xed, 0xb0)
 
@@ -224,7 +224,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0xbeef)
 
-        self.memory.poke(0x1000, 0xba)
+        self.memory[0x1000] = 0xba
 
         self.given_next_instruction_is(0xed, 0xa8)
 
@@ -247,7 +247,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x0001)
 
-        self.memory.poke(0x1000, 0xba)
+        self.memory[0x1000] = 0xba
 
         self.given_next_instruction_is(0xed, 0xa8)
 
@@ -270,7 +270,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x000a)
 
-        self.memory.poke(0x1000, 0xff)
+        self.memory[0x1000] = 0xff
 
         self.given_next_instruction_is(0xed, 0xb8)
 
@@ -294,7 +294,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x0001)
 
-        self.memory.poke(0x1000, 0xff)
+        self.memory[0x1000] = 0xff
 
         self.given_next_instruction_is(0xed, 0xb8)
 
@@ -318,7 +318,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
         self.given_register_pair_contains_value('de', 0x2000)
         self.given_register_pair_contains_value('bc', 0x0000)
 
-        self.memory.poke(0x1000, 0xff)
+        self.memory[0x1000] = 0xff
 
         self.given_next_instruction_is(0xed, 0xb8)
 
@@ -339,7 +339,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpi_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0090)
         self.given_register_contains_value('a', 0xbe)
@@ -362,7 +362,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpi_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0xbe)
@@ -385,7 +385,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpi_with_memory_less_than_a_and_half_borrow(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0b00001000)
+        self.memory[0x1000] = 0b00001000
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0b10000000)
@@ -408,7 +408,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpi_with_memory_greater_than_a_and_half_borrow(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0b00001000)
+        self.memory[0x1000] = 0b00001000
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0b10000000)
@@ -431,7 +431,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpi_with_memory_greater_than_a_and_full_borrow(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0b10000000)
+        self.memory[0x1000] = 0b10000000
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0b00000001)
@@ -454,7 +454,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpir_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0090)
         self.given_register_contains_value('a', 0xbe)
@@ -479,7 +479,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpir_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0xbe)
@@ -504,7 +504,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpir_with_memory_equal_to_a_and_bc_equal_to_zero(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0000)
         self.given_register_contains_value('a', 0xbe)
@@ -529,7 +529,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpd_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0090)
         self.given_register_contains_value('a', 0xbe)
@@ -552,7 +552,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpd_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0xbe)
@@ -575,7 +575,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpd_with_memory_less_than_a_and_half_borrow(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0b00001000)
+        self.memory[0x1000] = 0b00001000
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0b10000000)
@@ -598,7 +598,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpd_with_memory_greater_than_a_and_half_borrow(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0b00001000)
+        self.memory[0x1000] = 0b00001000
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0b10000000)
@@ -621,7 +621,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpd_with_memory_greater_than_a_and_full_borrow(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0b10000000)
+        self.memory[0x1000] = 0b10000000
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0b00000001)
@@ -644,7 +644,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpdr_with_memory_equal_to_a_and_bc_greater_than_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0090)
         self.given_register_contains_value('a', 0xbe)
@@ -669,7 +669,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpdr_with_memory_equal_to_a_and_bc_equal_to_one(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0001)
         self.given_register_contains_value('a', 0xbe)
@@ -694,7 +694,7 @@ class TestExchangeBlockTransferAndSearch(TestHelper):
     def test_cpdr_with_memory_equal_to_a_and_bc_equal_to_zero(self):
         # given
         self.given_register_pair_contains_value('hl', 0x1000)
-        self.memory.poke(0x1000, 0xbe)
+        self.memory[0x1000] = 0xbe
 
         self.given_register_pair_contains_value('bc', 0x0000)
         self.given_register_contains_value('a', 0xbe)

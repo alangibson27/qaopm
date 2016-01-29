@@ -176,8 +176,8 @@ class TestCallReturn(TestHelper):
         self.given_program_counter_is(0x1234)
         self.given_stack_pointer_is(0xfffd)
 
-        self.memory.poke(0xfffd, 0xef)
-        self.memory.poke(0xfffe, 0xbe)
+        self.memory[0xfffd] = 0xef
+        self.memory[0xfffe] = 0xbe
 
         self.given_next_instruction_is(0xc9)
 
@@ -198,8 +198,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('z', z_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xc0)
 
@@ -220,8 +220,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('z', z_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xc8)
 
@@ -242,8 +242,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('c', c_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xd0)
 
@@ -264,8 +264,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('c', c_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xd8)
 
@@ -286,8 +286,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('p', p_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xe0)
 
@@ -308,8 +308,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('p', p_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xe8)
 
@@ -330,8 +330,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('s', s_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xf0)
 
@@ -352,8 +352,8 @@ class TestCallReturn(TestHelper):
         self.given_stack_pointer_is(0xfffd)
         self.processor.set_condition('s', s_flag)
 
-        self.memory.poke(0xfffd, 0xbe)
-        self.memory.poke(0xfffe, 0xba)
+        self.memory[0xfffd] = 0xbe
+        self.memory[0xfffe] = 0xba
 
         self.given_next_instruction_is(0xf8)
 

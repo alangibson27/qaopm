@@ -266,7 +266,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xa3)
 
@@ -286,7 +286,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xa3)
 
@@ -306,7 +306,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xb3)
 
@@ -327,7 +327,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xb3)
 
@@ -348,7 +348,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xab)
 
@@ -368,7 +368,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xab)
 
@@ -388,7 +388,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xbb)
 
@@ -409,7 +409,7 @@ class TestIO(TestHelper):
         self.given_register_contains_value('c', 0xef)
 
         self.given_register_pair_contains_value('hl', 0xbeef)
-        self.memory.poke(0xbeef, 0xaa)
+        self.memory[0xbeef] = 0xaa
 
         self.given_next_instruction_is(0xed, 0xbb)
 

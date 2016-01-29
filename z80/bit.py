@@ -26,7 +26,7 @@ class OpBitHlIndirect(BaseOp):
         self.bit_pos = bit_pos
 
     def execute(self):
-        _bit(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')), self.bit_pos)
+        _bit(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')], self.bit_pos)
 
     def t_states(self):
         return 12
@@ -46,7 +46,7 @@ class OpBitIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        _bit(self.processor, self.memory.peek(address), self.bit_pos)
+        _bit(self.processor, self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 20
@@ -87,7 +87,7 @@ class OpResHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        self.memory.poke(address, _res(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 15
@@ -107,7 +107,7 @@ class OpResIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        self.memory.poke(address, _res(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 23
@@ -146,7 +146,7 @@ class OpSetHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        self.memory.poke(address, _set(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 15
@@ -166,7 +166,7 @@ class OpSetIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        self.memory.poke(address, _set(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 23

@@ -215,8 +215,8 @@ class TestInterrupts(TestHelper):
         self.maskable_interrupt_mode_is(2)
         self.given_next_instruction_is(0xcb, 0xc0)
 
-        self.memory.poke(0xb0e0, 0xef)
-        self.memory.poke(0xb0e1, 0xbe)
+        self.memory[0xb0e0] = 0xef
+        self.memory[0xb0e1] = 0xbe
 
         self.given_register_contains_value('i', 0xb0)
         self.given_register_contains_value('r', 0xe1)
@@ -242,8 +242,8 @@ class TestInterrupts(TestHelper):
         self.maskable_interrupt_mode_is(2)
         self.given_next_instruction_is(0xcb, 0xc0)
 
-        self.memory.poke(0xb0e0, 0xef)
-        self.memory.poke(0xb0e1, 0xbe)
+        self.memory[0xb0e0] = 0xef
+        self.memory[0xb0e1] = 0xbe
 
         self.given_register_contains_value('i', 0xb0)
         self.given_register_contains_value('r', 0xe1)
@@ -265,8 +265,8 @@ class TestInterrupts(TestHelper):
         self.given_stack_pointer_is(0xffff)
 
         # nmi service routine
-        self.memory.poke(0x0066, 0xcb)
-        self.memory.poke(0x0067, 0xc7)
+        self.memory[0x0066] = 0xcb
+        self.memory[0x0067] = 0xc7
 
         # when
         self.processor.nmi()
@@ -287,8 +287,8 @@ class TestInterrupts(TestHelper):
         self.given_stack_pointer_is(0xffff)
 
         # nmi service routine
-        self.memory.poke(0x0066, 0xcb)
-        self.memory.poke(0x0067, 0xc7)
+        self.memory[0x0066] = 0xcb
+        self.memory[0x0067] = 0xc7
 
         # when
         self.processor.nmi()
@@ -446,5 +446,5 @@ class RoutineBuilder:
 
     def does(self, op_codes):
         for op_code in op_codes:
-            self.memory.poke(self.address, op_code)
+            self.memory[self.address] = op_code
             self.address += 1

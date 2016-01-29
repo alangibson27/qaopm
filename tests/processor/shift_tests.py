@@ -40,7 +40,7 @@ class TestShift(TestHelper):
         # given
         self.given_register_pair_contains_value('hl', 0x4000)
         self.processor.set_condition('c', False)
-        self.memory.poke(0x4000, 0b10101010)
+        self.memory[0x4000] = 0b10101010
 
         self.given_next_instruction_is(0xcb, 0x26)
 
@@ -68,7 +68,7 @@ class TestShift(TestHelper):
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
         self.processor.set_condition('c', False)
-        self.memory.poke(address, 0b10101010)
+        self.memory[address] = 0b10101010
 
         self.given_next_instruction_is(op_code, 0xcb, offset, 0x26)
 
@@ -101,7 +101,7 @@ class TestShift(TestHelper):
         # given
         self.given_register_pair_contains_value('hl', 0x4000)
         self.processor.set_condition('c', False)
-        self.memory.poke(0x4000, 0b10101010)
+        self.memory[0x4000] = 0b10101010
 
         self.given_next_instruction_is(0xcb, 0x2e)
 
@@ -129,7 +129,7 @@ class TestShift(TestHelper):
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
         self.processor.set_condition('c', False)
-        self.memory.poke(address, 0b10101010)
+        self.memory[address] = 0b10101010
 
         self.given_next_instruction_is(op_code, 0xcb, offset, 0x2e)
 
@@ -162,7 +162,7 @@ class TestShift(TestHelper):
         # given
         self.given_register_pair_contains_value('hl', 0x4000)
         self.processor.set_condition('c', False)
-        self.memory.poke(0x4000, 0b10101010)
+        self.memory[0x4000] = 0b10101010
 
         self.given_next_instruction_is(0xcb, 0x3e)
 
@@ -195,7 +195,7 @@ class TestShift(TestHelper):
         # given
         self.given_register_pair_contains_value('hl', 0x4000)
         self.processor.set_condition('c', False)
-        self.memory.poke(0x4000, 0b10101010)
+        self.memory[0x4000] = 0b10101010
 
         self.given_next_instruction_is(0xcb, 0x36)
 
@@ -223,7 +223,7 @@ class TestShift(TestHelper):
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
         self.processor.set_condition('c', False)
-        self.memory.poke(address, 0b10101010)
+        self.memory[address] = 0b10101010
 
         self.given_next_instruction_is(op_code, 0xcb, offset, 0x3e)
 
@@ -244,7 +244,7 @@ class TestShift(TestHelper):
         # given
         self.given_register_pair_contains_value('hl', 0x4000)
         self.processor.set_condition('c', False)
-        self.memory.poke(0x4000, 0b10101010)
+        self.memory[0x4000] = 0b10101010
 
         self.given_next_instruction_is(0xcb, 0x16)
 
@@ -272,7 +272,7 @@ class TestShift(TestHelper):
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
         self.processor.set_condition('c', False)
-        self.memory.poke(address, 0b10101010)
+        self.memory[address] = 0b10101010
 
         self.given_next_instruction_is(op_code, 0xcb, offset, 0x16)
 
@@ -305,7 +305,7 @@ class TestShift(TestHelper):
         # given
         self.given_register_pair_contains_value('hl', 0x4000)
         self.processor.set_condition('c', False)
-        self.memory.poke(0x4000, 0b10101010)
+        self.memory[0x4000] = 0b10101010
 
         self.given_next_instruction_is(0xcb, 0x0e)
 
@@ -333,7 +333,7 @@ class TestShift(TestHelper):
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
         self.processor.set_condition('c', False)
-        self.memory.poke(address, 0b10101010)
+        self.memory[address] = 0b10101010
 
         self.given_next_instruction_is(op_code, 0xcb, offset, 0x0e)
 
@@ -366,7 +366,7 @@ class TestShift(TestHelper):
         # given
         self.given_register_pair_contains_value('hl', 0x4000)
         self.processor.set_condition('c', True)
-        self.memory.poke(0x4000, 0b10101010)
+        self.memory[0x4000] = 0b10101010
 
         self.given_next_instruction_is(0xcb, 0x1e)
 
@@ -394,7 +394,7 @@ class TestShift(TestHelper):
         address = 0x4000 + to_signed(offset)
         self.processor.index_registers[reg] = 0x4000
         self.processor.set_condition('c', True)
-        self.memory.poke(address, 0b10101010)
+        self.memory[address] = 0b10101010
 
         self.given_next_instruction_is(op_code, 0xcb, offset, 0x1e)
 

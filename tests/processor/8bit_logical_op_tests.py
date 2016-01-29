@@ -137,7 +137,7 @@ class Test8BitLogicalOps(TestHelper):
         self.given_register_contains_value('a', 0b11111111)
         self.given_register_pair_contains_value('hl', 0x4000)
 
-        self.memory.poke(0x4000, 0b00111000)
+        self.memory[0x4000] = 0b00111000
 
         self.given_next_instruction_is(0xa6)
 
@@ -167,7 +167,7 @@ class Test8BitLogicalOps(TestHelper):
         offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
-        self.memory.poke(0xbeef + signed_offset, 0b00111000)
+        self.memory[0xbeef + signed_offset] = 0b00111000
 
         self.given_next_instruction_is(op_codes, offset)
 
@@ -318,7 +318,7 @@ class Test8BitLogicalOps(TestHelper):
         self.given_register_contains_value('a', 0b11000111)
         self.given_register_pair_contains_value('hl', 0x4000)
 
-        self.memory.poke(0x4000, 0b00111000)
+        self.memory[0x4000] = 0b00111000
 
         self.given_next_instruction_is(0xb6)
 
@@ -348,7 +348,7 @@ class Test8BitLogicalOps(TestHelper):
         offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
-        self.memory.poke(0xbeef + signed_offset, 0b00111000)
+        self.memory[0xbeef + signed_offset] = 0b00111000
 
         self.given_next_instruction_is(op_codes, offset)
 
@@ -499,7 +499,7 @@ class Test8BitLogicalOps(TestHelper):
         self.given_register_contains_value('a', 0b11000111)
         self.given_register_pair_contains_value('hl', 0x4000)
 
-        self.memory.poke(0x4000, 0b00111000)
+        self.memory[0x4000] = 0b00111000
 
         self.given_next_instruction_is(0xae)
 
@@ -529,7 +529,7 @@ class Test8BitLogicalOps(TestHelper):
         offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
 
-        self.memory.poke(0xbeef + signed_offset, 0b00111000)
+        self.memory[0xbeef + signed_offset] = 0b00111000
 
         self.given_next_instruction_is(op_codes, offset)
 

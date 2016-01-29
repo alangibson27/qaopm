@@ -17,7 +17,7 @@ class DisplayAdapter:
         get_address_and_bit_position = self.get_address_and_bit_position
         inks = self.inks
         papers = self.papers
-        display_memory = self.memory.block_peek(0x4000, 0x5b00)
+        display_memory = self.memory[0x4000:0x5b00]
 
         for x in xrange(0, 256):
             for y in xrange(0, 192):

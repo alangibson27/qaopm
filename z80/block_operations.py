@@ -140,7 +140,7 @@ def _block_transfer(processor, memory, increment):
     src_addr = processor.get_16bit_reg('hl')
     tgt_addr = processor.get_16bit_reg('de')
 
-    memory.poke(tgt_addr, memory.peek(src_addr))
+    memory[0xffff & tgt_addr] = memory[src_addr]
 
     src_addr = (src_addr + increment) % 0x10000
     processor.set_16bit_reg('hl', src_addr)
@@ -158,7 +158,7 @@ def _block_transfer(processor, memory, increment):
 def _block_compare(processor, memory, increment):
     src_addr = processor.get_16bit_reg('hl')
 
-    value_to_compare = memory.peek(src_addr)
+    value_to_compare = memory[src_addr]
     result, half_carry, full_carry = bitwise_sub(processor.main_registers['a'], value_to_compare)
 
     src_addr = (src_addr + increment) % 0x10000

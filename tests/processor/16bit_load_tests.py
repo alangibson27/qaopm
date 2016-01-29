@@ -92,8 +92,8 @@ class Test16BitLoadGroup(TestHelper):
 
         # then
         assert_equals(self.processor.special_registers['sp'], 0xfffd)
-        assert_equals(self.memory.peek(0xfffe), msb)
-        assert_equals(self.memory.peek(0xfffd), lsb)
+        assert_equals(self.memory[0xfffe], msb)
+        assert_equals(self.memory[0xfffd], lsb)
 
     def test_push_with_wraparound(self):
         # given
@@ -106,8 +106,8 @@ class Test16BitLoadGroup(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0xffff), 0xab)
-        assert_equals(self.memory.peek(0xfffe), 0xcd)
+        assert_equals(self.memory[0xffff], 0xab)
+        assert_equals(self.memory[0xfffe], 0xcd)
 
     def test_pop_without_wraparound(self):
         operations = [
@@ -122,8 +122,8 @@ class Test16BitLoadGroup(TestHelper):
         msb = random_byte()
         lsb = random_byte()
 
-        self.memory.poke(0xfff0, lsb)
-        self.memory.poke(0xfff1, msb)
+        self.memory[0xfff0] = lsb
+        self.memory[0xfff1] = msb
 
         self.given_stack_pointer_is(0xfff0)
 
@@ -143,8 +143,8 @@ class Test16BitLoadGroup(TestHelper):
 
     def test_pop_with_wraparound(self):
         # given
-        self.memory.poke(0xffff, 0xab)
-        self.memory.poke(0x0000, 0xcd)
+        self.memory[0xffff] = 0xab
+        self.memory[0x0000] = 0xcd
 
         self.given_stack_pointer_is(0xffff)
 
@@ -189,8 +189,8 @@ class Test16BitLoadGroup(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0xbeee), 0x34)
-        assert_equals(self.memory.peek(0xbeef), 0x12)
+        assert_equals(self.memory[0xbeee], 0x34)
+        assert_equals(self.memory[0xbeef], 0x12)
 
     def test_ld_16reg_ext_addr_without_wraparound(self):
         operations = [
@@ -208,8 +208,8 @@ class Test16BitLoadGroup(TestHelper):
 
     def check_ld_16reg_ext_addr_without_wraparound(self, op_codes, dest_register):
         # given
-        self.memory.poke(0x1000, 0x10)
-        self.memory.poke(0x1001, 0x20)
+        self.memory[0x1000] = 0x10
+        self.memory[0x1001] = 0x20
 
         self.given_next_instruction_is(op_codes, 0x00, 0x10)
 

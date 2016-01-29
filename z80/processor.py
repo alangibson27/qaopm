@@ -1017,8 +1017,9 @@ class Processor:
         if len(self.interrupt_data_queue) > 0:
             return self.interrupt_data_queue.pop(0)
         else:
-            op_code = self.memory[0xffff & self.special_registers['pc']]
-            self.increment('pc')
+            pc_value = self.special_registers['pc']
+            op_code = self.memory[0xffff & pc_value]
+            self.special_registers['pc'] = (pc_value + 1) & 0xffff
             return op_code
 
     def get_signed_offset_byte(self):
@@ -1029,9 +1030,6 @@ class Processor:
 
     def _get_destination_from_stack(self):
         return big_endian_value([self.pop_byte(), self.pop_byte()])
-
-    def increment(self, register_name):
-        self.special_registers[register_name] += 1
 
     def push_byte(self, byte):
         self.special_registers['sp'] = (self.special_registers['sp'] - 1) & 0xffff

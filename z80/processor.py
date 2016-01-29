@@ -372,15 +372,16 @@ class Processor:
 
     def get_operation(self):
         if self.iff[0] and len(self.interrupt_requests) > 0:
+            interrupt_mode = self.interrupt_mode
             self.halting = False
             next_request = self.interrupt_requests.pop(0)
             next_request.acknowledge()
-            if self.interrupt_mode == 0:
+            if interrupt_mode == 0:
                 self.push_pc()
                 self.interrupt_data_queue = next_request.get_im0_data()
-            elif self.interrupt_mode == 1:
+            elif interrupt_mode == 1:
                 return self.im1_response_op
-            elif self.interrupt_mode == 2:
+            elif interrupt_mode == 2:
                 table_index = big_endian_value([self.special_registers['r'] & 0xfe, self.special_registers['i']])
                 jump_low_byte = self.memory[0xffff & table_index]
                 jump_high_byte = self.memory[0xffff & (table_index + 1)]
@@ -391,16 +392,7 @@ class Processor:
         else:
             op_code = self.get_next_byte()
 
-        operation = self.operations_by_opcode[op_code]
-        if isinstance(operation, dict):
-            op_code = self.get_next_byte()
-            operation = operation[op_code]
-            if isinstance(operation, dict):
-                self.get_next_byte()
-                op_code = self.get_next_byte()
-                operation = operation[op_code]
-
-        return operation
+        return self.operations_by_opcode[op_code]
 
     def get_address_at_pc(self):
         return [self.get_next_byte(), self.get_next_byte()]
@@ -449,11 +441,10 @@ class Processor:
     def get_16bit_reg(self, register_pair):
         if register_pair == 'sp':
             return self.special_registers['sp']
-        elif register_pair == 'ix' or register_pair == 'iy':
-            return self.index_registers[register_pair]
         else:
-            msb = self.main_registers[register_pair[0]]
-            lsb = self.main_registers[register_pair[1]]
+            main_registers = self.main_registers
+            msb = main_registers[register_pair[0]]
+            lsb = main_registers[register_pair[1]]
             return big_endian_value([lsb, msb])
 
     def set_16bit_reg(self, register_pair, val_16bit):
@@ -461,8 +452,9 @@ class Processor:
             self.special_registers['sp'] = val_16bit
         else:
             high_byte, low_byte = high_low_pair(val_16bit)
-            self.main_registers[register_pair[0]] = high_byte
-            self.main_registers[register_pair[1]] = low_byte
+            main_registers = self.main_registers
+            main_registers[register_pair[0]] = high_byte
+            main_registers[register_pair[1]] = low_byte
 
     def get_16bit_alt_reg(self, register_pair):
         msb = self.alternate_registers[register_pair[0]]

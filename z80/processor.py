@@ -965,18 +965,19 @@ class Processor:
     def execute(self):
         enable_iff_after_op = self.enable_iff
         operation = self.get_operation()
-        self.increment_r()
+
+        # increment refresh register
+        current_r = self.special_registers['r']
+        high_bit = current_r & 0b10000000
+        low_bits = current_r & 0b01111111
+        low_bits += 1
+        self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
+
         operation.execute()
         if enable_iff_after_op:
             self.set_iff()
             self.enable_iff = False
         return operation
-
-    def increment_r(self):
-        high_bit = self.special_registers['r'] & 0b10000000
-        low_bits = self.special_registers['r'] & 0b01111111
-        low_bits = low_bits + 1
-        self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
 
     def get_operation(self):
         if self.iff[0] and len(self.interrupt_requests) > 0:

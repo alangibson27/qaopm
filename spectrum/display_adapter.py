@@ -14,14 +14,30 @@ class DisplayAdapter:
                         self.papers[attr] = colour.paper_rgb
 
     def update_display(self, screen):
-        get_address_and_bit_position = self.get_address_and_bit_position
         inks = self.inks
         papers = self.papers
         display_memory = self.memory[0x4000:0x5b00]
 
         for x in xrange(0, 256):
             for y in xrange(0, 192):
-                pixel_address, bit = get_address_and_bit_position(x, y)
+                bit = x % 8
+                x_offset = (x / 8)
+
+                hi = y & 0b00111000
+                lo = y & 0b00000111
+
+                line = (hi >> 3) | (lo << 3)
+
+                if y < 0x40:
+                    address_base = 0x0000
+                elif y < 0x80:
+                    address_base = 0x0800
+                else:
+                    address_base = 0x1000
+
+                address = address_base + (line * 32) + x_offset
+                pixel_address = address
+                bit = (7 - bit)
                 colour_address = 0x1800 + (0x20 * (y / 8)) + (x / 8)
 
                 colour_value = display_memory[colour_address]
@@ -29,48 +45,6 @@ class DisplayAdapter:
                     screen[x][y] = inks[colour_value]
                 else:
                     screen[x][y] = papers[colour_value]
-
-    @staticmethod
-    def get_address_and_bit_position(x, y):
-        bit = x % 8
-        x_offset = (x / 8)
-
-        hi = y & 0b00111000
-        lo = y & 0b00000111
-
-        line = (hi >> 3) | (lo << 3)
-
-        if y < 0x40:
-            address_base = 0x0000
-        elif y < 0x80:
-            address_base = 0x0800
-        else:
-            address_base = 0x1000
-
-        address = address_base + (line * 32) + x_offset
-        return address, (7 - bit)
-
-    @staticmethod
-    def get_coordinate(address, bit):
-        if address < 0x4800:
-            y_base = 0
-            address -= 0x4000
-        elif address < 0x5000:
-            y_base = 64
-            address -= 0x4800
-        else:
-            y_base = 128
-            address -= 0x5000
-
-        line = address / 32
-
-        hi = line & 0b00111000
-        lo = line & 0b00000111
-
-        y = y_base + ((hi >> 3) | (lo << 3))
-        x = ((address % 32) * 8) + (7 - bit)
-        return x, y
-
 
 colour_masks = {
     0: 0x000000,

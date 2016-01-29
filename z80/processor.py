@@ -30,8 +30,10 @@ class Processor:
         self.enable_iff = False
         self.iff = [False, False]
         self.interrupt_data_queue = []
+        self.interrupt_data_exists = False
         self.interrupt_mode = 0
         self.interrupt_requests = []
+        self.interrupt_requests_exist = False
         self.halting = False
         self.im1_response_op = OpRst(self, 0x0038)
         self.condition_masks = {
@@ -347,6 +349,7 @@ class Processor:
 
     def interrupt(self, interrupt_request):
         self.interrupt_requests.append(interrupt_request)
+        self.interrupt_requests_exist = True
 
     def push_pc(self):
         high_byte, low_byte = high_low_pair(self.special_registers['pc'])
@@ -371,14 +374,17 @@ class Processor:
         return operation
 
     def get_operation(self):
-        if self.iff[0] and len(self.interrupt_requests) > 0:
+        if self.iff[0] and self.interrupt_requests_exist:
             interrupt_mode = self.interrupt_mode
             self.halting = False
             next_request = self.interrupt_requests.pop(0)
+            if len(self.interrupt_requests) == 0:
+                self.interrupt_requests_exist = False
             next_request.acknowledge()
             if interrupt_mode == 0:
                 self.push_pc()
                 self.interrupt_data_queue = next_request.get_im0_data()
+                self.interrupt_data_exists = True
             elif interrupt_mode == 1:
                 return self.im1_response_op
             elif interrupt_mode == 2:
@@ -398,8 +404,12 @@ class Processor:
         return [self.get_next_byte(), self.get_next_byte()]
 
     def get_next_byte(self):
-        if len(self.interrupt_data_queue) > 0:
-            return self.interrupt_data_queue.pop(0)
+        if self.interrupt_data_exists:
+            # if len(self.interrupt_data_queue) > 0:
+            item = self.interrupt_data_queue.pop(0)
+            if len(self.interrupt_data_queue) == 0:
+                self.interrupt_data_exists = False
+            return item
         else:
             pc_value = self.special_registers['pc']
             op_code = self.memory[0xffff & pc_value]

@@ -18,33 +18,58 @@ class DisplayAdapter:
         papers = self.papers
         display_memory = self.memory[0x4000:0x5b00]
 
-        for x in xrange(0, 256):
-            for y in xrange(0, 192):
-                bit = x % 8
-                x_offset = (x / 8)
+        for y in xrange(0, 192):
+            hi = y & 0b00111000
+            lo = y & 0b00000111
+            line = (hi >> 3) | (lo << 3)
 
-                hi = y & 0b00111000
-                lo = y & 0b00000111
+            if y < 0x40:
+                address_base = 0x0000
+            elif y < 0x80:
+                address_base = 0x0800
+            else:
+                address_base = 0x1000
 
-                line = (hi >> 3) | (lo << 3)
+            for x in xrange(0, 32):
+                colour_address = 0x1800 + (0x20 * (y / 8)) + x
 
-                if y < 0x40:
-                    address_base = 0x0000
-                elif y < 0x80:
-                    address_base = 0x0800
-                else:
-                    address_base = 0x1000
+                for bit in xrange(0, 8):
+                    pixel_address = address_base + (line * 32) + x
+                    colour_value = display_memory[colour_address]
+                    display_x = (x * 8) + (7 - bit)
+                    if display_memory[pixel_address] & (1 << bit) > 0:
+                        screen[display_x][y] = inks[colour_value]
+                    else:
+                        screen[display_x][y] = papers[colour_value]
 
-                address = address_base + (line * 32) + x_offset
-                pixel_address = address
-                bit = (7 - bit)
-                colour_address = 0x1800 + (0x20 * (y / 8)) + (x / 8)
 
-                colour_value = display_memory[colour_address]
-                if display_memory[pixel_address] & (1 << bit) > 0:
-                    screen[x][y] = inks[colour_value]
-                else:
-                    screen[x][y] = papers[colour_value]
+        # for x in xrange(0, 256):
+        #     for y in xrange(0, 192):
+        #         bit = x % 8
+        #         x_offset = (x / 8)
+        #
+        #         hi = y & 0b00111000
+        #         lo = y & 0b00000111
+        #
+        #         line = (hi >> 3) | (lo << 3)
+        #
+        #         if y < 0x40:
+        #             address_base = 0x0000
+        #         elif y < 0x80:
+        #             address_base = 0x0800
+        #         else:
+        #             address_base = 0x1000
+        #
+        #         address = address_base + (line * 32) + x_offset
+        #         pixel_address = address
+        #         bit = (7 - bit)
+        #         colour_address = 0x1800 + (0x20 * (y / 8)) + (x / 8)
+        #
+        #         colour_value = display_memory[colour_address]
+        #         if display_memory[pixel_address] & (1 << bit) > 0:
+        #             screen[x][y] = inks[colour_value]
+        #         else:
+        #             screen[x][y] = papers[colour_value]
 
 colour_masks = {
     0: 0x000000,

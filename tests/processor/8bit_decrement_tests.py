@@ -67,7 +67,7 @@ class Test8BitDecrementOps(TestHelper):
     def test_dec_hl_indirect(self):
         # given
         self.given_register_pair_contains_value('hl', 0xbabe)
-        self.memory.poke(0xbabe, 0b00000010)
+        self.memory[0xbabe] = 0b00000010
 
         self.given_next_instruction_is(0x35)
 
@@ -93,7 +93,7 @@ class Test8BitDecrementOps(TestHelper):
         self.processor.index_registers[register] = 0xbeef
         offset = random.randint(0, 255)
         signed_offset = to_signed(offset)
-        self.memory.poke(0xbeef + signed_offset, 0b00111000)
+        self.memory[0xbeef + signed_offset] = 0b00111000
 
         self.given_next_instruction_is(op_codes, offset)
 

@@ -168,7 +168,7 @@ class OpJr(BaseOp):
         self.processor = processor
 
     def execute(self):
-        _jr_offset(self.processor, to_signed(self.processor.get_next_byte()))
+        _jr_offset(self.processor.special_registers, to_signed(self.processor.get_next_byte()))
 
     def t_states(self):
         return 12
@@ -235,7 +235,7 @@ class OpDjnz(CondOp):
         self.processor.main_registers['b'] = (self.processor.main_registers['b'] - 1) & 0xff
         if self.processor.main_registers['b'] != 0:
             self.last_t_states = 13
-            _jr_offset(self.processor, offset)
+            _jr_offset(self.processor.special_registers, offset)
         else:
             self.last_t_states = 8
 
@@ -250,13 +250,13 @@ def jp_to(processor, address):
 def _cond_jr(processor, flag, jump_value):
     offset = to_signed(processor.get_next_byte())
     if processor.condition(flag) == jump_value:
-        _jr_offset(processor, offset)
+        _jr_offset(processor.special_registers, offset)
         return 12
     else:
         return 7
 
 
-def _jr_offset(processor, offset):
-    processor.special_registers['pc'] = (processor.special_registers['pc'] + offset) & 0xffff
+def _jr_offset(special_registers, offset):
+    special_registers['pc'] = (special_registers['pc'] + offset) & 0xffff
 
 

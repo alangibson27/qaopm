@@ -1,5 +1,5 @@
 from baseop import BaseOp
-from funcs import has_parity, to_signed
+from funcs import has_parity
 
 
 class OpSlaReg(BaseOp):
@@ -27,8 +27,8 @@ class OpSlaHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _sla_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _sla_value(self.processor, self.memory[0xffff & address])
+        self.memory[address] = result
 
     def t_states(self):
         return 15
@@ -62,8 +62,8 @@ class OpSllHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _sll_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _sll_value(self.processor, self.memory[0xffff & address])
+        self.memory[address] = result
 
     def t_states(self):
         return 15
@@ -97,8 +97,8 @@ class OpSraHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _sra_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _sra_value(self.processor, self.memory[0xffff & address])
+        self.memory[address] = result
 
     def t_states(self):
         return 15
@@ -132,8 +132,8 @@ class OpSrlHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        result = _srl_value(self.processor, self.memory.peek(address))
-        self.memory.poke(address, result)
+        result = _srl_value(self.processor, self.memory[0xffff & address])
+        self.memory[address] = result
 
     def t_states(self):
         return 15
@@ -152,9 +152,9 @@ class OpSlaIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        value = self.memory.peek(address)
+        value = self.memory[0xffff & address]
         result = _sla_value(self.processor, value)
-        self.memory.poke(address, result)
+        self.memory[address] = result
 
     def t_states(self):
         return 23
@@ -173,9 +173,9 @@ class OpSraIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        value = self.memory.peek(address)
+        value = self.memory[0xffff & address]
         result = _sra_value(self.processor, value)
-        self.memory.poke(address, result)
+        self.memory[address] = result
 
     def t_states(self):
         return 23
@@ -194,9 +194,9 @@ class OpSrlIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        value = self.memory.peek(address)
+        value = self.memory[0xffff & address]
         result = _srl_value(self.processor, value)
-        self.memory.poke(address, result)
+        self.memory[address] = result
 
     def t_states(self):
         return 23

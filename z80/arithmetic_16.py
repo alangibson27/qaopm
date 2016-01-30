@@ -9,12 +9,13 @@ class OpAddHl16Reg(BaseOp):
         self.source_reg = source_reg
 
     def execute(self):
-        result, half_carry, full_carry = bitwise_add_16bit(self.processor.get_16bit_reg('hl'),
-                                                           self.processor.get_16bit_reg(self.source_reg))
-        self.processor.set_16bit_reg('hl', result)
-        self.processor.set_condition('h', half_carry)
-        self.processor.set_condition('n', False)
-        self.processor.set_condition('c', full_carry)
+        processor = self.processor
+        result, half_carry, full_carry = bitwise_add_16bit(processor.get_16bit_reg('hl'),
+                                                           processor.get_16bit_reg(self.source_reg))
+        processor.set_16bit_reg('hl', result)
+        processor.set_condition('h', half_carry)
+        processor.set_condition('n', False)
+        processor.set_condition('c', full_carry)
 
     def t_states(self):
         return 11
@@ -35,13 +36,14 @@ class OpAdcHl16Reg(BaseOp):
         result, half_carry, full_carry = bitwise_add_16bit(self.processor.get_16bit_reg('hl'), to_add)
         signed_result = to_signed_16bit(result)
 
-        self.processor.set_16bit_reg('hl', result)
-        self.processor.set_condition('s', result & 0x8000 > 0)
-        self.processor.set_condition('z', result == 0)
-        self.processor.set_condition('h', half_carry)
-        self.processor.set_condition('p', (signed_hl < 0) != (signed_result < 0))
-        self.processor.set_condition('n', False)
-        self.processor.set_condition('c', full_carry)
+        processor = self.processor
+        processor.set_16bit_reg('hl', result)
+        processor.set_condition('s', result & 0x8000 > 0)
+        processor.set_condition('z', result == 0)
+        processor.set_condition('h', half_carry)
+        processor.set_condition('p', (signed_hl < 0) != (signed_result < 0))
+        processor.set_condition('n', False)
+        processor.set_condition('c', full_carry)
 
     def t_states(self):
         return 15
@@ -62,13 +64,14 @@ class OpSbcHl16Reg(BaseOp):
         result, half_borrow, full_borrow = bitwise_sub_16bit(self.processor.get_16bit_reg('hl'), to_sub)
         signed_result = to_signed_16bit(result)
 
-        self.processor.set_16bit_reg('hl', result)
-        self.processor.set_condition('s', result & 0x8000 > 0)
-        self.processor.set_condition('z', result == 0)
-        self.processor.set_condition('h', half_borrow)
-        self.processor.set_condition('p', (signed_hl < 0) != (signed_result < 0))
-        self.processor.set_condition('n', True)
-        self.processor.set_condition('c', full_borrow)
+        processor = self.processor
+        processor.set_16bit_reg('hl', result)
+        processor.set_condition('s', result & 0x8000 > 0)
+        processor.set_condition('z', result == 0)
+        processor.set_condition('h', half_borrow)
+        processor.set_condition('p', (signed_hl < 0) != (signed_result < 0))
+        processor.set_condition('n', True)
+        processor.set_condition('c', full_borrow)
 
     def t_states(self):
         return 15
@@ -85,13 +88,14 @@ class OpAddIndexedReg(BaseOp):
         self.source_reg = source_reg
 
     def execute(self):
-        result, half_carry, full_carry = bitwise_add_16bit(self.processor.index_registers[self.indexed_reg],
-                                                           self.processor.get_16bit_reg(self.source_reg))
+        processor = self.processor
+        result, half_carry, full_carry = bitwise_add_16bit(processor.index_registers[self.indexed_reg],
+                                                           processor.get_16bit_reg(self.source_reg))
 
-        self.processor.index_registers[self.indexed_reg] = result
-        self.processor.set_condition('h', half_carry)
-        self.processor.set_condition('n', False)
-        self.processor.set_condition('c', full_carry)
+        processor.index_registers[self.indexed_reg] = result
+        processor.set_condition('h', half_carry)
+        processor.set_condition('n', False)
+        processor.set_condition('c', full_carry)
 
     def t_states(self):
         return 15

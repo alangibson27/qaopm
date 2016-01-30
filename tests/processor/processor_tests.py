@@ -15,7 +15,7 @@ def random_byte():
 class TestHelper:
     def __init__(self):
         self.instruction_pointer = 0x0
-        self.memory = Memory()
+        self.memory = [0x00] * 0x10000
         self.io = StubbedIO()
         self.processor = Processor(self.memory, self.io)
 
@@ -28,7 +28,7 @@ class TestHelper:
                 self.poke_at_ip(arg)
 
     def poke_at_ip(self, byte):
-        self.memory.poke(self.instruction_pointer, byte)
+        self.memory[self.instruction_pointer] = byte
         self.instruction_pointer += 1
 
     def given_register_contains_value(self, register, value):
@@ -90,7 +90,7 @@ class TestHelper:
         return FlagSetBuilder(flag_name, self.processor.condition(flag_name))
 
     def assert_memory(self, address):
-        return ContainsBuilder(self.memory.peek(address))
+        return ContainsBuilder(self.memory[address])
 
 
 class StubbedIO(IO):

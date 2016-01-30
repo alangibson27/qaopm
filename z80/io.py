@@ -144,7 +144,7 @@ def _read_and_decrement_b(processor, memory, io, hl_increment):
     byte_counter = processor.main_registers['b']
     value = io.read(processor.main_registers['c'], byte_counter)
     destination = processor.get_16bit_reg('hl')
-    memory.poke(destination, value)
+    memory[0xffff & destination] = value
     processor.main_registers['b'] = (byte_counter - 1) & 0xff
     processor.set_16bit_reg('hl', (destination + hl_increment) & 0xffff)
 
@@ -291,5 +291,5 @@ class OpOtdr(BaseOp):
 def _write_and_decrement_b(processor, memory, io, hl_increment):
     processor.main_registers['b'] = (processor.main_registers['b'] - 1) & 0xff
     source = processor.get_16bit_reg('hl')
-    io.write(processor.main_registers['c'], processor.main_registers['b'], memory.peek(source))
+    io.write(processor.main_registers['c'], processor.main_registers['b'], memory[0xffff & source])
     processor.set_16bit_reg('hl', (source + hl_increment) & 0xffff)

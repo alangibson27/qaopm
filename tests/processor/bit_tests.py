@@ -45,7 +45,7 @@ class TestBitOperations(TestHelper):
     def check_bit_hl_indirect(self, op_code, bit_pos, bit_value):
         # given
         self.given_register_pair_contains_value('hl', 0x1234)
-        self.memory.poke(0x1234, pow(2, bit_pos) if bit_value else 0)
+        self.memory[0x1234] = pow(2, bit_pos) if bit_value else 0
         self.given_next_instruction_is(0xcb, op_code)
 
         # when
@@ -68,7 +68,7 @@ class TestBitOperations(TestHelper):
         # given
         offset = randint(0, 255)
         self.processor.index_registers[reg] = 0x1234
-        self.memory.poke(0x1234 + to_signed(offset), pow(2, bit_pos) if bit_value else 0)
+        self.memory[0x1234 + to_signed(offset)] = pow(2, bit_pos) if bit_value else 0
         self.given_next_instruction_is(reg_op_code, 0xcb, offset, op_code)
 
         # when
@@ -115,14 +115,14 @@ class TestBitOperations(TestHelper):
     def check_res_hl_indirect(self, op_code, bit_pos):
         # given
         self.given_register_pair_contains_value('hl', 0x1234)
-        self.memory.poke(0x1234, 0xff)
+        self.memory[0x1234] = 0xff
         self.given_next_instruction_is(0xcb, op_code)
 
         # when
         self.processor.execute()
 
         # then
-        value = self.memory.peek(0x1234)
+        value = self.memory[0x1234]
         assert_true(value & pow(2, bit_pos) == 0)
 
     def test_res_indexed_indirect(self):
@@ -137,14 +137,14 @@ class TestBitOperations(TestHelper):
         offset = randint(0, 255)
         address = 0x1234 + to_signed(offset)
         self.processor.index_registers[reg] = 0x1234
-        self.memory.poke(address, 0xff)
+        self.memory[address] = 0xff
         self.given_next_instruction_is(reg_op_code, 0xcb, offset, op_code)
 
         # when
         self.processor.execute()
 
         # then
-        assert_true(self.memory.peek(address) & pow(2, bit_pos) == 0)
+        assert_true(self.memory[address] & pow(2, bit_pos) == 0)
 
     def test_set_reg(self):
         values = [(0xc0, 'b', 0), (0xc1, 'c', 0), (0xc2, 'd', 0), (0xc3, 'e', 0), (0xc4, 'h', 0), (0xc5, 'l', 0), (0xc7, 'a', 0),
@@ -182,14 +182,14 @@ class TestBitOperations(TestHelper):
     def check_set_hl_indirect(self, op_code, bit_pos):
         # given
         self.given_register_pair_contains_value('hl', 0x1234)
-        self.memory.poke(0x1234, 0x00)
+        self.memory[0x1234] = 0x00
         self.given_next_instruction_is(0xcb, op_code)
 
         # when
         self.processor.execute()
 
         # then
-        value = self.memory.peek(0x1234)
+        value = self.memory[0x1234]
         assert_true(value & pow(2, bit_pos) > 0)
 
     def test_set_indexed_indirect(self):
@@ -204,11 +204,11 @@ class TestBitOperations(TestHelper):
         offset = randint(0, 255)
         address = 0x1234 + to_signed(offset)
         self.processor.index_registers[reg] = 0x1234
-        self.memory.poke(address, 0x00)
+        self.memory[address] = 0x00
         self.given_next_instruction_is(reg_op_code, 0xcb, offset, op_code)
 
         # when
         self.processor.execute()
 
         # then
-        assert_true(self.memory.peek(address) & pow(2, bit_pos) > 0)
+        assert_true(self.memory[address] & pow(2, bit_pos) > 0)

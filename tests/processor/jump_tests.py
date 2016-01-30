@@ -5,8 +5,8 @@ class TestJumps(TestHelper):
     def test_jp(self):
         # given
         self.given_register_contains_value('a', 0x00)
-        self.memory.poke(0xbeef, 0xcb)
-        self.memory.poke(0xbef0, 0xff)
+        self.memory[0xbeef] = 0xcb
+        self.memory[0xbef0] = 0xff
 
         self.given_next_instruction_is(0xc3, 0xef, 0xbe)
 

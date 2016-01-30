@@ -59,7 +59,7 @@ def run():
 
             values = [0x00] * 8
             for i in range(0, 8):
-                values[i] = memory.peek(addr + i)
+                values[i] = memory[0xffff & (addr + i)]
 
             hex_values = ['{:#04x}'.format(val) for val in values]
             chr_values = ['{}'.format(chr(val)) for val in values]

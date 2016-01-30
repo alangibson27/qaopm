@@ -41,7 +41,7 @@ class OpAddAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, False)
 
     def t_states(self):
@@ -58,7 +58,7 @@ class OpAdcAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -141,7 +141,7 @@ class OpSubAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, False)
 
     def t_states(self):
@@ -158,7 +158,7 @@ class OpSbcAHlIndirect(BaseOp):
         self.memory = memory
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -211,7 +211,7 @@ class OpAddAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, False)
 
     def t_states(self):
@@ -230,7 +230,7 @@ class OpAdcAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -249,7 +249,7 @@ class OpSubAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, False)
 
     def t_states(self):
@@ -268,7 +268,7 @@ class OpSbcAIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        value = self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset)
+        value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, self.processor.condition('c'))
 
     def t_states(self):
@@ -304,7 +304,7 @@ class OpAndAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        _and_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+        _and_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
 
     def __str__(self):
         return 'and (hl)'
@@ -334,7 +334,7 @@ class OpAndIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _and_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+        _and_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
 
     def t_states(self):
         return 19
@@ -369,7 +369,7 @@ class OpXorAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        _xor_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+        _xor_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
 
     def __str__(self):
         return 'xor (hl)'
@@ -399,7 +399,7 @@ class OpXorIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _xor_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+        _xor_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
 
     def t_states(self):
         return 19
@@ -434,7 +434,7 @@ class OpOrAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        _or_a_value(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')))
+        _or_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
 
     def __str__(self):
         return 'or (hl)'
@@ -464,7 +464,7 @@ class OpOrIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _or_a_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset))
+        _or_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
 
     def t_states(self):
         return 19
@@ -499,7 +499,7 @@ class OpCpAHlIndirect(BaseOp):
         return 7
 
     def execute(self):
-        value = self.memory.peek(self.processor.get_16bit_reg('hl'))
+        value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _cp_value(self.processor, value, False)
 
     def __str__(self):
@@ -530,7 +530,7 @@ class OpCpIndexedIndirect(BaseOp):
 
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
-        _cp_value(self.processor, self.memory.peek(self.processor.index_registers[self.indexed_reg] + offset), False)
+        _cp_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)], False)
 
     def t_states(self):
         return 19
@@ -545,15 +545,17 @@ class OpNeg(BaseOp):
         self.processor = processor
 
     def execute(self):
-        result, half_carry, _ = bitwise_sub(0, self.processor.main_registers['a'])
+        processor = self.processor
+        result, half_carry, _ = bitwise_sub(0, processor.main_registers['a'])
 
-        self.processor.set_condition('s', to_signed(result) < 0)
-        self.processor.set_condition('z', result == 0)
-        self.processor.set_condition('h', half_carry)
-        self.processor.set_condition('p', self.processor.main_registers['a'] == 0x80)
-        self.processor.set_condition('n', True)
-        self.processor.set_condition('c', self.processor.main_registers['a'] != 0x00)
-        self.processor.main_registers['a'] = result
+        set_condition = processor.set_condition
+        set_condition('s', to_signed(result) < 0)
+        set_condition('z', result == 0)
+        set_condition('h', half_carry)
+        set_condition('p', processor.main_registers['a'] == 0x80)
+        set_condition('n', True)
+        set_condition('c', processor.main_registers['a'] != 0x00)
+        processor.main_registers['a'] = result
 
     def t_states(self):
         return 8
@@ -568,9 +570,10 @@ class OpCpl(BaseOp):
         self.processor = processor
 
     def execute(self):
-        self.processor.main_registers['a'] = 0xff - self.processor.main_registers['a']
-        self.processor.set_condition('h', True)
-        self.processor.set_condition('n', True)
+        processor = self.processor
+        processor.main_registers['a'] = 0xff - processor.main_registers['a']
+        processor.set_condition('h', True)
+        processor.set_condition('n', True)
 
     def t_states(self):
         return 4
@@ -585,9 +588,10 @@ class OpScf(BaseOp):
         self.processor = processor
 
     def execute(self):
-        self.processor.set_condition('h', False)
-        self.processor.set_condition('n', False)
-        self.processor.set_condition('c', True)
+        processor = self.processor
+        processor.set_condition('h', False)
+        processor.set_condition('n', False)
+        processor.set_condition('c', True)
 
     def t_states(self):
         return 4
@@ -602,9 +606,10 @@ class OpCcf(BaseOp):
         self.processor = processor
 
     def execute(self):
-        self.processor.set_condition('h', self.processor.condition('c'))
-        self.processor.set_condition('c', not self.processor.condition('c'))
-        self.processor.set_condition('n', False)
+        processor = self.processor
+        processor.set_condition('h', processor.condition('c'))
+        processor.set_condition('c', not processor.condition('c'))
+        processor.set_condition('n', False)
 
     def t_states(self):
         return 4
@@ -635,64 +640,66 @@ class OpDaa(BaseOp):
         return 'daa'
 
     def _daa_after_add(self, digits, fc, hc):
+        processor = self.processor
         if not fc and not hc:
             if digits[0] <= 0x9 and digits[1] <= 0x9:
                 pass
             elif digits[0] <= 0x8 and digits[1] >= 0xa:
-                self.processor.main_registers['a'] += 0x6
+                processor.main_registers['a'] += 0x6
             elif digits[0] >= 0xa and digits[1] <= 0x9:
-                self.processor.main_registers['a'] += 0x60
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0x60
+                processor.set_condition('c', True)
             elif digits[0] >= 0x9 and digits[1] >= 0xa:
-                self.processor.main_registers['a'] += 0x66
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0x66
+                processor.set_condition('c', True)
         elif not fc and hc:
             if digits[0] <= 0x9 and digits[1] <= 0x3:
-                self.processor.main_registers['a'] += 0x6
+                processor.main_registers['a'] += 0x6
             elif digits[0] >= 0xa and digits[1] <= 0x3:
-                self.processor.main_registers['a'] += 0x66
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0x66
+                processor.set_condition('c', True)
         elif fc and not hc:
             if digits[0] <= 0x2 and digits[1] <= 0x9:
-                self.processor.main_registers['a'] += 0x60
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0x60
+                processor.set_condition('c', True)
             elif digits[0] <= 0x2 and digits[1] >= 0xa:
-                self.processor.main_registers['a'] += 0x66
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0x66
+                processor.set_condition('c', True)
         elif fc and hc:
             if digits[0] <= 0x3 and digits[1] <= 0x3:
-                self.processor.main_registers['a'] += 0x66
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0x66
+                processor.set_condition('c', True)
 
-        self.processor.main_registers['a'] &= 0xff
+        processor.main_registers['a'] &= 0xff
 
-        result = self.processor.main_registers['a']
-        self.processor.set_condition('s', (result & 0b10000000) > 0)
-        self.processor.set_condition('z', result == 0)
-        self.processor.set_condition('p', has_parity(result))
+        result = processor.main_registers['a']
+        processor.set_condition('s', (result & 0b10000000) > 0)
+        processor.set_condition('z', result == 0)
+        processor.set_condition('p', has_parity(result))
 
     def _daa_after_sub(self, digits, fc, hc):
+        processor = self.processor
         if not fc and not hc:
             if digits[0] <= 0x9 and digits[1] <= 0x9:
                 pass
         elif not fc and hc:
             if digits[0] <= 0x8 and digits[1] >= 0x6:
-                self.processor.main_registers['a'] += 0xfa
+                processor.main_registers['a'] += 0xfa
         elif fc and not hc:
             if digits[0] >= 0x7 and digits[1] <= 0x9:
-                self.processor.main_registers['a'] += 0xa0
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0xa0
+                processor.set_condition('c', True)
         elif fc and hc:
             if digits[0] >= 0x6 and digits[1] >= 0x6:
-                self.processor.main_registers['a'] += 0x9a
-                self.processor.set_condition('c', True)
+                processor.main_registers['a'] += 0x9a
+                processor.set_condition('c', True)
 
-        self.processor.main_registers['a'] &= 0xff
+        processor.main_registers['a'] &= 0xff
 
-        result = self.processor.main_registers['a']
-        self.processor.set_condition('s', (result & 0b10000000) > 0)
-        self.processor.set_condition('z', result == 0)
-        self.processor.set_condition('p', has_parity(result))
+        result = processor.main_registers['a']
+        processor.set_condition('s', (result & 0b10000000) > 0)
+        processor.set_condition('z', result == 0)
+        processor.set_condition('p', has_parity(result))
 
 
 def _add_a(processor, value, carry):
@@ -702,12 +709,13 @@ def _add_a(processor, value, carry):
     result, half_carry, full_carry = bitwise_add(processor.main_registers['a'], value)
     signed_result = to_signed(result)
     processor.main_registers['a'] = result
-    processor.set_condition('s', signed_result < 0)
-    processor.set_condition('z', result == 0)
-    processor.set_condition('h', half_carry)
-    processor.set_condition('p', (signed_a < 0) != (signed_result < 0))
-    processor.set_condition('n', False)
-    processor.set_condition('c', full_carry)
+    set_condition = processor.set_condition
+    set_condition('s', signed_result < 0)
+    set_condition('z', result == 0)
+    set_condition('h', half_carry)
+    set_condition('p', (signed_a < 0) != (signed_result < 0))
+    set_condition('n', False)
+    set_condition('c', full_carry)
 
 
 def _sub_a(processor, value, carry):
@@ -717,45 +725,51 @@ def _sub_a(processor, value, carry):
     result, half_carry, full_carry = bitwise_sub(processor.main_registers['a'], value)
     signed_result = to_signed(result)
     processor.main_registers['a'] = result
-    processor.set_condition('s', signed_result < 0)
-    processor.set_condition('z', result == 0)
-    processor.set_condition('h', half_carry)
-    processor.set_condition('p', (signed_a < 0) != (signed_result < 0))
-    processor.set_condition('n', True)
-    processor.set_condition('c', full_carry)
+    set_condition = processor.set_condition
+    set_condition('s', signed_result < 0)
+    set_condition('z', result == 0)
+    set_condition('h', half_carry)
+    set_condition('p', (signed_a < 0) != (signed_result < 0))
+    set_condition('n', True)
+    set_condition('c', full_carry)
 
 
 def _and_a_value(processor, value):
     result = processor.main_registers['a'] & value
     processor.main_registers['a'] = result
-    processor.set_condition('s', result & 0b10000000 > 0)
-    processor.set_condition('z', result == 0)
-    processor.set_condition('h', True)
-    processor.set_condition('p', has_parity(result))
-    processor.set_condition('n', False)
-    processor.set_condition('c', False)
+    set_condition = processor.set_condition
+    set_condition('s', result & 0b10000000 > 0)
+    set_condition('z', result == 0)
+    set_condition('h', True)
+    set_condition('p', has_parity(result))
+    set_condition('n', False)
+    set_condition('c', False)
 
 
 def _xor_a_value(processor, value):
     result = processor.main_registers['a'] ^ value
     processor.main_registers['a'] = result
-    processor.set_condition('s', result & 0b10000000 > 0)
-    processor.set_condition('z', result == 0)
-    processor.set_condition('h', False)
-    processor.set_condition('p', has_parity(result))
-    processor.set_condition('n', False)
-    processor.set_condition('c', False)
+
+    set_condition = processor.set_condition
+    set_condition('s', result & 0b10000000 > 0)
+    set_condition('z', result == 0)
+    set_condition('h', False)
+    set_condition('p', has_parity(result))
+    set_condition('n', False)
+    set_condition('c', False)
 
 
 def _or_a_value(processor, value):
     result = processor.main_registers['a'] | value
     processor.main_registers['a'] = result
-    processor.set_condition('s', result & 0b10000000 > 0)
-    processor.set_condition('z', result == 0)
-    processor.set_condition('h', False)
-    processor.set_condition('p', has_parity(result))
-    processor.set_condition('n', False)
-    processor.set_condition('c', False)
+
+    set_condition = processor.set_condition
+    set_condition('s', result & 0b10000000 > 0)
+    set_condition('z', result == 0)
+    set_condition('h', False)
+    set_condition('p', has_parity(result))
+    set_condition('n', False)
+    set_condition('c', False)
 
 
 def _cp_value(processor, value, carry):
@@ -764,10 +778,12 @@ def _cp_value(processor, value, carry):
         value = (value + 1) & 0xff
     result, half_carry, full_carry = bitwise_sub(processor.main_registers['a'], value)
     signed_result = to_signed(result)
-    processor.set_condition('s', signed_result < 0)
-    processor.set_condition('z', result == 0)
-    processor.set_condition('h', half_carry)
-    processor.set_condition('p', (signed_a < 0) != (signed_result < 0))
-    processor.set_condition('n', True)
-    processor.set_condition('c', full_carry)
+
+    set_condition = processor.set_condition
+    set_condition('s', signed_result < 0)
+    set_condition('z', result == 0)
+    set_condition('h', half_carry)
+    set_condition('p', (signed_a < 0) != (signed_result < 0))
+    set_condition('n', True)
+    set_condition('c', full_carry)
 

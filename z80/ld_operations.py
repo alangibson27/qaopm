@@ -32,7 +32,7 @@ class OpLd16RegIndirectFrom8Reg(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg(self.destination_reg)
-        self.memory.poke(address, self.processor.main_registers[self.source_reg])
+        self.memory[0xffff & address] = self.processor.main_registers[self.source_reg]
 
     def t_states(self):
         return 7
@@ -68,7 +68,7 @@ class OpLd8RegFrom16RegIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg(self.source_reg)
-        self.processor.main_registers[self.destination_reg] = self.memory.peek(address)
+        self.processor.main_registers[self.destination_reg] = self.memory[0xffff & address]
 
     def t_states(self):
         return 7
@@ -102,7 +102,7 @@ class OpLdAddressA(BaseOp):
 
     def execute(self):
         little_endian_address = self.processor.get_address_at_pc()
-        self.memory.poke(big_endian_value(little_endian_address), self.processor.main_registers['a'])
+        self.memory[0xffff & big_endian_value(little_endian_address)] = self.processor.main_registers['a']
 
     def t_states(self):
         return 13
@@ -119,7 +119,7 @@ class OpLdAAddress(BaseOp):
 
     def execute(self):
         little_endian_address = self.processor.get_address_at_pc()
-        self.processor.main_registers['a'] = self.memory.peek(big_endian_value(little_endian_address))
+        self.processor.main_registers['a'] = self.memory[0xffff & big_endian_value(little_endian_address)]
 
     def t_states(self):
         return 13
@@ -137,8 +137,8 @@ class OpLdAddress16Reg(BaseOp):
 
     def execute(self):
         dest_address = big_endian_value(self.processor.get_address_at_pc())
-        self.memory.poke(dest_address, self.processor.main_registers[self.source_reg[1]])
-        self.memory.poke(dest_address + 1, self.processor.main_registers[self.source_reg[0]])
+        self.memory[0xffff & dest_address] = self.processor.main_registers[self.source_reg[1]]
+        self.memory[0xffff & dest_address + 1] = self.processor.main_registers[self.source_reg[0]]
 
     def t_states(self):
         return 20
@@ -155,8 +155,8 @@ class OpLdAddressHl(BaseOp):
 
     def execute(self):
         dest_address = big_endian_value(self.processor.get_address_at_pc())
-        self.memory.poke(dest_address, self.processor.main_registers['l'])
-        self.memory.poke(dest_address + 1, self.processor.main_registers['h'])
+        self.memory[0xffff & dest_address] = self.processor.main_registers['l']
+        self.memory[0xffff & dest_address + 1] = self.processor.main_registers['h']
 
     def t_states(self):
         return 16
@@ -174,8 +174,8 @@ class OpLd16RegAddress(BaseOp):
 
     def execute(self):
         src_address = big_endian_value(self.processor.get_address_at_pc())
-        low_byte = self.memory.peek(src_address)
-        high_byte = self.memory.peek(src_address + 1)
+        low_byte = self.memory[0xffff & src_address]
+        high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.main_registers[self.destination_reg[0]] = high_byte
         self.processor.main_registers[self.destination_reg[1]] = low_byte
 
@@ -194,8 +194,8 @@ class OpLdHlAddress(BaseOp):
 
     def execute(self):
         src_address = big_endian_value(self.processor.get_address_at_pc())
-        low_byte = self.memory.peek(src_address)
-        high_byte = self.memory.peek(src_address + 1)
+        low_byte = self.memory[0xffff & src_address]
+        high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.main_registers['h'] = high_byte
         self.processor.main_registers['l'] = low_byte
 
@@ -246,7 +246,7 @@ class OpLdHlIndirectImmediate(BaseOp):
 
     def execute(self):
         operand = self.processor.get_next_byte()
-        self.memory.poke(self.processor.get_16bit_reg('hl'), operand)
+        self.memory[0xffff & self.processor.get_16bit_reg('hl')] = operand
 
     def t_states(self):
         return 10
@@ -264,8 +264,8 @@ class OpLdExtSp(BaseOp):
     def execute(self):
         dest_address = big_endian_value(self.processor.get_address_at_pc())
         high_byte, low_byte = high_low_pair(self.processor.special_registers['sp'])
-        self.memory.poke(dest_address, low_byte)
-        self.memory.poke(dest_address + 1, high_byte)
+        self.memory[0xffff & dest_address] = low_byte
+        self.memory[0xffff & (dest_address + 1)] = high_byte
 
     def t_states(self):
         return 20
@@ -282,8 +282,8 @@ class OpLdSpExt(BaseOp):
 
     def execute(self):
         src_address = big_endian_value(self.processor.get_address_at_pc())
-        low_byte = self.memory.peek(src_address)
-        high_byte = self.memory.peek(src_address + 1)
+        low_byte = self.memory[0xffff & src_address]
+        high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.special_registers['sp'] = big_endian_value([low_byte, high_byte])
 
     def t_states(self):
@@ -320,8 +320,8 @@ class OpLdExtIndexed(BaseOp):
     def execute(self):
         dest_address = big_endian_value(self.processor.get_address_at_pc())
         high_byte, low_byte = high_low_pair(self.processor.index_registers[self.indexed_reg])
-        self.memory.poke(dest_address, low_byte)
-        self.memory.poke(dest_address + 1, high_byte)
+        self.memory[0xffff & dest_address] = low_byte
+        self.memory[0xffff & (dest_address + 1)] = high_byte
 
     def t_states(self):
         return 20
@@ -339,8 +339,8 @@ class OpLdIndexedExt(BaseOp):
 
     def execute(self):
         src_address = big_endian_value(self.processor.get_address_at_pc())
-        low_byte = self.memory.peek(src_address)
-        high_byte = self.memory.peek(src_address + 1)
+        low_byte = self.memory[0xffff & src_address]
+        high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.index_registers[self.indexed_reg] = big_endian_value([low_byte, high_byte])
 
     def t_states(self):
@@ -362,7 +362,7 @@ class OpLdIndexedIndirectImmediate(BaseOp):
         immediate_value = self.processor.get_next_byte()
 
         offset = to_signed(operand)
-        self.memory.poke(self.processor.index_registers[self.indexed_reg] + offset, immediate_value)
+        self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)] = immediate_value
 
     def t_states(self):
         return 19
@@ -382,8 +382,8 @@ class OpLd8RegIndexedIndirect(BaseOp):
     def execute(self):
         operand = self.processor.get_next_byte()
         offset = to_signed(operand)
-        self.processor.main_registers[self.destination_reg] = self.memory.peek(
-            self.processor.index_registers[self.indexed_reg] + offset)
+        self.processor.main_registers[self.destination_reg] = self.memory[
+            0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
 
     def t_states(self):
         return 19
@@ -403,8 +403,8 @@ class OpLdIndexedIndirect8Reg(BaseOp):
     def execute(self):
         operand = self.processor.get_next_byte()
         offset = to_signed(operand)
-        self.memory.poke(self.processor.index_registers[self.indexed_reg] + offset,
-                         self.processor.main_registers[self.source_reg])
+        self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)] = \
+            self.processor.main_registers[self.source_reg]
 
     def t_states(self):
         return 19

@@ -26,7 +26,7 @@ class OpBitHlIndirect(BaseOp):
         self.bit_pos = bit_pos
 
     def execute(self):
-        _bit(self.processor, self.memory.peek(self.processor.get_16bit_reg('hl')), self.bit_pos)
+        _bit(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')], self.bit_pos)
 
     def t_states(self):
         return 12
@@ -46,7 +46,7 @@ class OpBitIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        _bit(self.processor, self.memory.peek(address), self.bit_pos)
+        _bit(self.processor, self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 20
@@ -56,7 +56,7 @@ class OpBitIndexedIndirect(BaseOp):
 
 
 def _bit(processor, value, bit_pos):
-    processor.set_condition('z', value & pow(2, bit_pos) == 0)
+    processor.set_condition('z', value & (1 << bit_pos) == 0)
     processor.set_condition('h', True)
     processor.set_condition('n', False)
 
@@ -87,7 +87,7 @@ class OpResHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        self.memory.poke(address, _res(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 15
@@ -107,7 +107,7 @@ class OpResIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        self.memory.poke(address, _res(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 23
@@ -117,7 +117,7 @@ class OpResIndexedIndirect(BaseOp):
 
 
 def _res(value, bit_pos):
-    return value & (0xff - pow(2, bit_pos))
+    return value & (0xff - (1 << bit_pos))
 
 
 class OpSetReg(BaseOp):
@@ -146,7 +146,7 @@ class OpSetHlIndirect(BaseOp):
 
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
-        self.memory.poke(address, _set(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 15
@@ -166,7 +166,7 @@ class OpSetIndexedIndirect(BaseOp):
     def execute(self):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
-        self.memory.poke(address, _set(self.memory.peek(address), self.bit_pos))
+        self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
 
     def t_states(self):
         return 23
@@ -176,4 +176,4 @@ class OpSetIndexedIndirect(BaseOp):
 
 
 def _set(value, bit_pos):
-    return value | pow(2, bit_pos)
+    return value | (1 << bit_pos)

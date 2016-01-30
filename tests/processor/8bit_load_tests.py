@@ -58,7 +58,7 @@ class Test8BitLoadGroup(TestHelper):
         # given
         self.given_register_pair_contains_value(source_pointer, 0xa0a0)
         self.given_next_instruction_is(op_code)
-        self.memory.poke(0xa0a0, 0xaa)
+        self.memory[0xa0a0] = 0xaa
 
         # when
         self.processor.execute()
@@ -90,7 +90,7 @@ class Test8BitLoadGroup(TestHelper):
         # then
         self.assert_pc_address().equals(0x0001)
 
-        assert_equals(0xbb, self.memory.peek(0xb0c0))
+        assert_equals(0xbb, self.memory[0xb0c0])
 
     def test_ld_reg_indirect_reg_where_l_reg_is_used(self):
         # given
@@ -104,7 +104,7 @@ class Test8BitLoadGroup(TestHelper):
         # then
         self.assert_pc_address().equals(0x0001)
 
-        assert_equals(0xc0, self.memory.peek(0xb0c0))
+        assert_equals(0xc0, self.memory[0xb0c0])
 
     def test_ld_reg_indirect_reg_where_h_reg_is_used(self):
         # given
@@ -118,7 +118,7 @@ class Test8BitLoadGroup(TestHelper):
         # then
         self.assert_pc_address().equals(0x0001)
 
-        assert_equals(0xb0, self.memory.peek(0xb0c0))
+        assert_equals(0xb0, self.memory[0xb0c0])
 
     def test_ld_reg_immediate(self):
         operations = [
@@ -152,7 +152,7 @@ class Test8BitLoadGroup(TestHelper):
         # then
         self.assert_pc_address().equals(0x0002)
 
-        assert_equals(0xff, self.memory.peek(0xa123))
+        assert_equals(0xff, self.memory[0xa123])
 
     def test_ld_reg_indexed_addr(self):
         operations = [
@@ -175,7 +175,7 @@ class Test8BitLoadGroup(TestHelper):
 
         referenced_address = 0x1000 + to_signed(operand)
         address_value = random_byte()
-        self.memory.poke(referenced_address, address_value)
+        self.memory[referenced_address] = address_value
 
         # when
         self.processor.execute()
@@ -190,7 +190,7 @@ class Test8BitLoadGroup(TestHelper):
         self.given_next_instruction_is(0xdd, 0x7e, 0x80)
         self.given_register_contains_value('ix', 0x0a)
 
-        self.memory.poke(0xff8a, 0x12)
+        self.memory[0xff8a] = 0x12
 
         # when
         self.processor.execute()
@@ -205,7 +205,7 @@ class Test8BitLoadGroup(TestHelper):
         self.given_next_instruction_is(0xdd, 0x7e, 0x7f)
         self.given_register_contains_value('ix', 0xffff)
 
-        self.memory.poke(0x007e, 0x12)
+        self.memory[0x007e] = 0x12
 
         # when
         self.processor.execute()
@@ -220,7 +220,7 @@ class Test8BitLoadGroup(TestHelper):
         self.given_next_instruction_is(0x3a, little_endian_address[0], little_endian_address[1])
 
         memory_value = random_byte()
-        self.memory.poke(big_endian_value(little_endian_address), memory_value)
+        self.memory[big_endian_value(little_endian_address)] = memory_value
 
         # when
         self.processor.execute()
@@ -268,7 +268,7 @@ class Test8BitLoadGroup(TestHelper):
         self.assert_pc_address().equals(0x0003)
 
         referenced_address = 0x1000 + to_signed(operand)
-        assert_equals(self.memory.peek(referenced_address), register_value)
+        assert_equals(self.memory[referenced_address], register_value)
 
     def test_ld_ext_addr_from_a(self):
         # given
@@ -284,7 +284,7 @@ class Test8BitLoadGroup(TestHelper):
         # then
         self.assert_pc_address().equals(0x0003)
 
-        assert_equals(self.memory.peek(big_endian_value(little_endian_address)), register_value)
+        assert_equals(self.memory[big_endian_value(little_endian_address)], register_value)
 
     def test_ld_indexed_addr_immediate(self):
         operations = [
@@ -307,4 +307,4 @@ class Test8BitLoadGroup(TestHelper):
         self.processor.execute()
 
         # then
-        assert_equals(self.memory.peek(0x1000 + to_signed(operand)), immediate_value)
+        assert_equals(self.memory[0xffff & (0x1000 + to_signed(operand))], immediate_value)

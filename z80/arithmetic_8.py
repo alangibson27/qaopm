@@ -10,8 +10,6 @@ class OpAddA8Reg(BaseOp):
 
     def execute(self):
         _add_a(self.processor, self.processor.main_registers[self.reg], False)
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -26,8 +24,6 @@ class OpAdcA8Reg(BaseOp):
 
     def execute(self):
         _add_a(self.processor, self.processor.main_registers[self.reg], self.processor.condition('c'))
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -43,8 +39,6 @@ class OpAddAHlIndirect(BaseOp):
     def execute(self):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, False)
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -60,8 +54,6 @@ class OpAdcAHlIndirect(BaseOp):
     def execute(self):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, self.processor.condition('c'))
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -77,8 +69,6 @@ class OpAddAImmediate(BaseOp):
     def execute(self):
         value = self.processor.get_next_byte()
         _add_a(self.processor, value, False)
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -94,8 +84,6 @@ class OpAdcAImmediate(BaseOp):
     def execute(self):
         value = self.processor.get_next_byte()
         _add_a(self.processor, value, self.processor.condition('c'))
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -110,8 +98,6 @@ class OpSubA8Reg(BaseOp):
 
     def execute(self):
         _sub_a(self.processor, self.processor.main_registers[self.reg], False)
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -126,8 +112,6 @@ class OpSbcA8Reg(BaseOp):
 
     def execute(self):
         _sub_a(self.processor, self.processor.main_registers[self.reg], self.processor.condition('c'))
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -143,8 +127,6 @@ class OpSubAHlIndirect(BaseOp):
     def execute(self):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, False)
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -160,8 +142,6 @@ class OpSbcAHlIndirect(BaseOp):
     def execute(self):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, self.processor.condition('c'))
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -177,8 +157,6 @@ class OpSubAImmediate(BaseOp):
     def execute(self):
         value = self.processor.get_next_byte()
         _sub_a(self.processor, value, False)
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -194,8 +172,6 @@ class OpSbcAImmediate(BaseOp):
     def execute(self):
         value = self.processor.get_next_byte()
         _sub_a(self.processor, value, self.processor.condition('c'))
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -213,8 +189,6 @@ class OpAddAIndexedIndirect(BaseOp):
         offset = to_signed(self.processor.get_next_byte())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, False)
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -232,8 +206,6 @@ class OpAdcAIndexedIndirect(BaseOp):
         offset = to_signed(self.processor.get_next_byte())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, self.processor.condition('c'))
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -251,8 +223,6 @@ class OpSubAIndexedIndirect(BaseOp):
         offset = to_signed(self.processor.get_next_byte())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, False)
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -270,8 +240,6 @@ class OpSbcAIndexedIndirect(BaseOp):
         offset = to_signed(self.processor.get_next_byte())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, self.processor.condition('c'))
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -284,11 +252,9 @@ class OpAndA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def t_states(self):
-        return 4
-
     def execute(self):
         _and_a_value(self.processor, self.processor.main_registers[self.reg])
+        return 4
 
     def __str__(self):
         return 'and {}'.format(self.reg)
@@ -300,11 +266,9 @@ class OpAndAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def t_states(self):
-        return 7
-
     def execute(self):
         _and_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
+        return 7
 
     def __str__(self):
         return 'and (hl)'
@@ -317,8 +281,6 @@ class OpAndAImmediate(BaseOp):
 
     def execute(self):
         _and_a_value(self.processor, self.processor.get_next_byte())
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -335,8 +297,6 @@ class OpAndIndexedIndirect(BaseOp):
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
         _and_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -349,11 +309,9 @@ class OpXorA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def t_states(self):
-        return 4
-
     def execute(self):
         _xor_a_value(self.processor, self.processor.main_registers[self.reg])
+        return 4
 
     def __str__(self):
         return 'xor {}'.format(self.reg)
@@ -365,11 +323,9 @@ class OpXorAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def t_states(self):
-        return 7
-
     def execute(self):
         _xor_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
+        return 7
 
     def __str__(self):
         return 'xor (hl)'
@@ -382,8 +338,6 @@ class OpXorAImmediate(BaseOp):
 
     def execute(self):
         _xor_a_value(self.processor, self.processor.get_next_byte())
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -400,8 +354,6 @@ class OpXorIndexedIndirect(BaseOp):
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
         _xor_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -414,11 +366,9 @@ class OpOrA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def t_states(self):
-        return 4
-
     def execute(self):
         _or_a_value(self.processor, self.processor.main_registers[self.reg])
+        return 4
 
     def __str__(self):
         return 'or {}'.format(self.reg)
@@ -430,11 +380,9 @@ class OpOrAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def t_states(self):
-        return 7
-
     def execute(self):
         _or_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
+        return 7
 
     def __str__(self):
         return 'or (hl)'
@@ -447,8 +395,6 @@ class OpOrAImmediate(BaseOp):
 
     def execute(self):
         _or_a_value(self.processor, self.processor.get_next_byte())
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -465,8 +411,6 @@ class OpOrIndexedIndirect(BaseOp):
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
         _or_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -479,11 +423,9 @@ class OpCpA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def t_states(self):
-        return 4
-
     def execute(self):
         _cp_value(self.processor, self.processor.main_registers[self.reg], False)
+        return 4
 
     def __str__(self):
         return 'cp {}'.format(self.reg)
@@ -495,12 +437,10 @@ class OpCpAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def t_states(self):
-        return 7
-
     def execute(self):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _cp_value(self.processor, value, False)
+        return 7
 
     def __str__(self):
         return 'cp (hl)'
@@ -513,8 +453,6 @@ class OpCpImmediate(BaseOp):
 
     def execute(self):
         _cp_value(self.processor, self.processor.get_next_byte(), False)
-
-    def t_states(self):
         return 7
 
     def __str__(self):
@@ -531,8 +469,6 @@ class OpCpIndexedIndirect(BaseOp):
     def execute(self):
         offset = to_signed(self.processor.get_next_byte())
         _cp_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)], False)
-
-    def t_states(self):
         return 19
 
     def __str__(self):
@@ -556,8 +492,6 @@ class OpNeg(BaseOp):
         set_condition('n', True)
         set_condition('c', processor.main_registers['a'] != 0x00)
         processor.main_registers['a'] = result
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -574,8 +508,6 @@ class OpCpl(BaseOp):
         processor.main_registers['a'] = 0xff - processor.main_registers['a']
         processor.set_condition('h', True)
         processor.set_condition('n', True)
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -592,8 +524,6 @@ class OpScf(BaseOp):
         processor.set_condition('h', False)
         processor.set_condition('n', False)
         processor.set_condition('c', True)
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -610,8 +540,6 @@ class OpCcf(BaseOp):
         processor.set_condition('h', processor.condition('c'))
         processor.set_condition('c', not processor.condition('c'))
         processor.set_condition('n', False)
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -632,8 +560,6 @@ class OpDaa(BaseOp):
             self._daa_after_sub(digits, fc, hc)
         else:
             self._daa_after_add(digits, fc, hc)
-
-    def t_states(self):
         return 4
 
     def __str__(self):

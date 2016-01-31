@@ -49,11 +49,7 @@ class OpIndexedCbGroup(BaseOp):
     def execute(self):
         self.processor.get_next_byte()
         op = self.ops[self.processor.get_next_byte()]
-        op.execute()
-        self.last_t_states = op.t_states()
-
-    def t_states(self):
-        return self.last_t_states
+        return op.execute()
 
     def __str__(self):
         return 'INDEXED CB GROUP'

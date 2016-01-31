@@ -20,8 +20,6 @@ class OpInA(BaseOp):
         port = self.processor.get_next_byte()
         value = self.io.read(port, self.processor.main_registers['a'])
         self.processor.main_registers['a'] = value
-
-    def t_states(self):
         return 11
 
     def __str__(self):
@@ -44,8 +42,6 @@ class OpIn8RegC(BaseOp):
         self.processor.set_condition('h', False)
         self.processor.set_condition('p', has_parity(value))
         self.processor.set_condition('n', False)
-
-    def t_states(self):
         return 12
 
     def __str__(self):
@@ -63,8 +59,6 @@ class OpIni(BaseOp):
         _read_and_decrement_b(self.processor, self.memory, self.io, 1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -84,13 +78,10 @@ class OpInir(BaseOp):
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            self.last_t_states = 16
+            return 16
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) & 0xffff
-            self.last_t_states = 21
-
-    def t_states(self):
-        return self.last_t_states
+            return 21
 
     def __str__(self):
         return 'inir'
@@ -107,8 +98,6 @@ class OpInd(BaseOp):
         _read_and_decrement_b(self.processor, self.memory, self.io, -1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -128,13 +117,10 @@ class OpIndr(BaseOp):
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            self.last_t_states = 16
+            return 16
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) & 0xffff
-            self.last_t_states = 21
-
-    def t_states(self):
-        return self.last_t_states
+            return 21
 
     def __str__(self):
         return 'indr'
@@ -158,8 +144,6 @@ class OpOutA(BaseOp):
     def execute(self):
         port = self.processor.get_next_byte()
         self.io.write(port, self.processor.main_registers['a'], self.processor.main_registers['a'])
-
-    def t_states(self):
         return 11
 
     def __str__(self):
@@ -176,8 +160,6 @@ class OpOutC8Reg(BaseOp):
     def execute(self):
         self.io.write(self.processor.main_registers['c'], self.processor.main_registers['b'],
                       self.processor.main_registers[self.dest_reg])
-
-    def t_states(self):
         return 12
 
     def __str__(self):
@@ -192,8 +174,6 @@ class OpOutCZero(BaseOp):
 
     def execute(self):
         self.io.write(self.processor.main_registers['c'], self.processor.main_registers['b'], 0)
-
-    def t_states(self):
         return 12
 
     def __str__(self):
@@ -211,8 +191,6 @@ class OpOuti(BaseOp):
         _write_and_decrement_b(self.processor, self.memory, self.io, 1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -232,13 +210,10 @@ class OpOtir(BaseOp):
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            self.last_t_states = 16
+            return 16
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) & 0xffff
-            self.last_t_states = 21
-
-    def t_states(self):
-        return self.last_t_states
+            return 21
 
     def __str__(self):
         return 'otir'
@@ -255,8 +230,6 @@ class OpOutd(BaseOp):
         _write_and_decrement_b(self.processor, self.memory, self.io, -1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -276,13 +249,10 @@ class OpOtdr(BaseOp):
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            self.last_t_states = 16
+            return 16
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) & 0xffff
-            self.last_t_states = 21
-
-    def t_states(self):
-        return self.last_t_states
+            return 21
 
     def __str__(self):
         return 'otdr'

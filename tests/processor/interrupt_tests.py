@@ -313,14 +313,14 @@ class TestInterrupts(TestHelper):
         # when
         self.processor.execute()
 
-        last_op = self.processor.execute()
-        assert_equals(str(last_op), 'nop')
+        self.processor.execute()
+        assert_equals(str(self.processor.last_operation), 'nop')
 
         self.processor.nmi()
-        last_op = self.processor.execute()
+        self.processor.execute()
 
         # then
-        assert_equals(str(last_op), 'inc a')
+        assert_equals(str(self.processor.last_operation), 'inc a')
         self.assert_register('a').equals(0x01)
 
     def test_halt_executes_nops_until_maskable_interrupt_when_maskable_interrupts_enabled(self):
@@ -335,15 +335,15 @@ class TestInterrupts(TestHelper):
         # when
         self.processor.execute()
 
-        last_op = self.processor.execute()
-        assert_equals(str(last_op), 'nop')
+        self.processor.execute()
+        assert_equals(str(self.processor.last_operation), 'nop')
 
         self.an_im1_interrupt_is_generated()
         self.processor.execute()
-        last_op = self.processor.execute()
+        self.processor.execute()
 
         # then
-        assert_equals(str(last_op), 'inc a')
+        assert_equals(str(self.processor.last_operation), 'inc a')
         self.assert_register('a').equals(0x01)
 
     def test_halt_executes_nops_despite_maskable_interrupt_when_maskable_interrupts_disabled(self):
@@ -358,14 +358,14 @@ class TestInterrupts(TestHelper):
         # when
         self.processor.execute()
 
-        last_op = self.processor.execute()
-        assert_equals(str(last_op), 'nop')
+        self.processor.execute()
+        assert_equals(str(self.processor.last_operation), 'nop')
 
         self.an_im1_interrupt_is_generated()
-        last_op = self.processor.execute()
+        self.processor.execute()
 
         # then
-        assert_equals(str(last_op), 'nop')
+        assert_equals(str(self.processor.last_operation), 'nop')
 
     def test_retn_reenables_maskable_interrupts(self):
         # given
@@ -429,9 +429,9 @@ class TestInterrupts(TestHelper):
         return RoutineBuilder(self.memory, address)
 
     def execute_until_nop(self):
-        op = self.processor.execute()
-        while str(op) != 'nop':
-            op = self.processor.execute()
+        self.processor.execute()
+        while str(self.processor.last_operation) != 'nop':
+            self.processor.execute()
 
     def execute_range(self, from_addr, to_addr):
         self.processor.special_registers['pc'] = from_addr

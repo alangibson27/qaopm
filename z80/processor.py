@@ -36,6 +36,7 @@ class Processor:
         self.interrupt_requests_exist = False
         self.halting = False
         self.im1_response_op = OpRst(self, 0x0038)
+        self.last_operation = None
         self.condition_masks = {
             'c': 0b00000001,
             'n': 0b00000010,
@@ -367,11 +368,12 @@ class Processor:
         low_bits += 1
         self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
 
-        operation.execute()
+        t_states = operation.execute()
         if enable_iff_after_op:
             self.set_iff()
             self.enable_iff = False
-        return operation
+        self.last_operation = operation
+        return t_states
 
     def get_operation(self):
         if self.iff[0] and self.interrupt_requests_exist:

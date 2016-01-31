@@ -11,8 +11,6 @@ class OpSlaReg(BaseOp):
     def execute(self):
         result = _sla_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -29,8 +27,6 @@ class OpSlaHlIndirect(BaseOp):
         address = self.processor.get_16bit_reg('hl')
         result = _sla_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-
-    def t_states(self):
         return 15
 
     def __str__(self):
@@ -46,8 +42,6 @@ class OpSllReg(BaseOp):
     def execute(self):
         result = _sll_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -64,8 +58,6 @@ class OpSllHlIndirect(BaseOp):
         address = self.processor.get_16bit_reg('hl')
         result = _sll_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-
-    def t_states(self):
         return 15
 
     def __str__(self):
@@ -81,8 +73,6 @@ class OpSraReg(BaseOp):
     def execute(self):
         result = _sra_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -99,8 +89,6 @@ class OpSraHlIndirect(BaseOp):
         address = self.processor.get_16bit_reg('hl')
         result = _sra_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-
-    def t_states(self):
         return 15
 
     def __str__(self):
@@ -116,8 +104,6 @@ class OpSrlReg(BaseOp):
     def execute(self):
         result = _srl_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -134,8 +120,6 @@ class OpSrlHlIndirect(BaseOp):
         address = self.processor.get_16bit_reg('hl')
         result = _srl_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-
-    def t_states(self):
         return 15
 
     def __str__(self):
@@ -155,8 +139,6 @@ class OpSlaIndexedIndirect(BaseOp):
         value = self.memory[0xffff & address]
         result = _sla_value(self.processor, value)
         self.memory[address] = result
-
-    def t_states(self):
         return 23
 
     def __str__(self):
@@ -176,8 +158,6 @@ class OpSraIndexedIndirect(BaseOp):
         value = self.memory[0xffff & address]
         result = _sra_value(self.processor, value)
         self.memory[address] = result
-
-    def t_states(self):
         return 23
 
     def __str__(self):
@@ -197,8 +177,6 @@ class OpSrlIndexedIndirect(BaseOp):
         value = self.memory[0xffff & address]
         result = _srl_value(self.processor, value)
         self.memory[address] = result
-
-    def t_states(self):
         return 23
 
     def __str__(self):

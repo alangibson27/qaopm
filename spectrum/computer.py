@@ -46,8 +46,7 @@ def run_loop(processor, screen, display_adapter):
         update_display(screen, display_adapter) + seconds_per_refresh
         t_states = 0
         while t_states < t_states_per_refresh:
-            executed = processor.execute()
-            t_states += executed.t_states()
+            t_states += processor.execute()
 
 
 def current_time_ms():

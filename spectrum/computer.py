@@ -5,7 +5,7 @@ from pygame.pixelarray import PixelArray
 
 from memory.memory import Memory, load_memory
 from spectrum.display_adapter import DisplayAdapter
-from spectrum.snapshot import load_sna_snapshot
+from spectrum.snapshot import load_sna_snapshot, load_z80_v1_snapshot
 from z80.interrupt_operations import OpRetn
 from z80.io import IO
 from z80.processor import Processor
@@ -26,8 +26,7 @@ def start(rom_file, snapshot_file):
     display_adapter = DisplayAdapter(memory)
 
     load_memory(memory, rom_file, 0x0000)
-    load_sna_snapshot(snapshot_file, processor, memory)
-    OpRetn(processor).execute()
+    load_z80_v1_snapshot(snapshot_file, processor, memory)
 
     pygame.init()
     size = 256, 192
@@ -42,7 +41,7 @@ def run_loop(processor, screen, display_adapter):
     t_states_per_refresh = seconds_per_refresh / time_per_t_state
 
     i = 0
-    while i < 50:
+    while 1:
         i += 1
         update_display(screen, display_adapter) + seconds_per_refresh
         t_states = 0

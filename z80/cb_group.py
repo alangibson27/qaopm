@@ -284,11 +284,7 @@ class OpCbGroup(BaseOp):
 
     def execute(self):
         op = self.ops[self.processor.get_next_byte()]
-        op.execute()
-        self.last_t_states = op.t_states()
-
-    def t_states(self):
-        return self.last_t_states
+        return op.execute()
 
     def __str__(self):
         return 'CB GROUP'

@@ -10,8 +10,6 @@ class OpInc8Reg(BaseOp):
 
     def execute(self):
         self.processor.main_registers[self.reg] = _inc_value(self.processor, self.processor.main_registers[self.reg])
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -26,8 +24,6 @@ class OpDec8Reg(BaseOp):
 
     def execute(self):
         self.processor.main_registers[self.reg] = _dec_value(self.processor, self.processor.main_registers[self.reg])
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -43,8 +39,6 @@ class OpInc16Reg(BaseOp):
     def execute(self):
         result = (self.processor.get_16bit_reg(self.reg) + 1) & 0xffff
         self.processor.set_16bit_reg(self.reg, result)
-
-    def t_states(self):
         return 6
 
     def __str__(self):
@@ -60,8 +54,6 @@ class OpDec16Reg(BaseOp):
     def execute(self):
         result = (self.processor.get_16bit_reg(self.reg) - 1) & 0xffff
         self.processor.set_16bit_reg(self.reg, result)
-
-    def t_states(self):
         return 6
 
     def __str__(self):
@@ -78,8 +70,6 @@ class OpIncHlIndirect(BaseOp):
         address = self.processor.get_16bit_reg('hl')
         result = _inc_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-
-    def t_states(self):
         return 11
 
     def __str__(self):
@@ -96,8 +86,6 @@ class OpDecHlIndirect(BaseOp):
         address = self.processor.get_16bit_reg('hl')
         result = _dec_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-
-    def t_states(self):
         return 11
 
     def __str__(self):
@@ -113,8 +101,6 @@ class OpIncIndexed(BaseOp):
     def execute(self):
         result = (self.processor.index_registers[self.indexed_reg] + 1) & 0xffff
         self.processor.index_registers[self.indexed_reg] = result
-
-    def t_states(self):
         return 10
 
     def __str__(self):
@@ -130,8 +116,6 @@ class OpDecIndexed(BaseOp):
     def execute(self):
         result = (self.processor.index_registers[self.indexed_reg] - 1) & 0xffff
         self.processor.index_registers[self.indexed_reg] = result
-
-    def t_states(self):
         return 10
 
     def __str__(self):
@@ -150,8 +134,6 @@ class OpIncIndexedIndirect(BaseOp):
         address = self.processor.index_registers[self.indexed_reg] + offset
         result = _inc_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-
-    def t_states(self):
         return 23
 
     def __str__(self):
@@ -170,8 +152,6 @@ class OpDecIndexedIndirect(BaseOp):
         address = self.processor.index_registers[self.indexed_reg] + offset
         result = _dec_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-
-    def t_states(self):
         return 23
 
     def __str__(self):

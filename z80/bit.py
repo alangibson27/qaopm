@@ -10,8 +10,6 @@ class OpBitReg(BaseOp):
 
     def execute(self):
         _bit(self.processor, self.processor.main_registers[self.reg], self.bit_pos)
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -27,8 +25,6 @@ class OpBitHlIndirect(BaseOp):
 
     def execute(self):
         _bit(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')], self.bit_pos)
-
-    def t_states(self):
         return 12
 
     def __str__(self):
@@ -47,8 +43,6 @@ class OpBitIndexedIndirect(BaseOp):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
         _bit(self.processor, self.memory[0xffff & address], self.bit_pos)
-
-    def t_states(self):
         return 20
 
     def __str__(self):
@@ -70,8 +64,6 @@ class OpResReg(BaseOp):
 
     def execute(self):
         self.processor.main_registers[self.reg] = _res(self.processor.main_registers[self.reg], self.bit_pos)
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -88,8 +80,6 @@ class OpResHlIndirect(BaseOp):
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
         self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
-
-    def t_states(self):
         return 15
 
     def __str__(self):
@@ -108,8 +98,6 @@ class OpResIndexedIndirect(BaseOp):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
         self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
-
-    def t_states(self):
         return 23
 
     def __str__(self):
@@ -129,8 +117,6 @@ class OpSetReg(BaseOp):
 
     def execute(self):
         self.processor.main_registers[self.reg] = _set(self.processor.main_registers[self.reg], self.bit_pos)
-
-    def t_states(self):
         return 8
 
     def __str__(self):
@@ -147,8 +133,6 @@ class OpSetHlIndirect(BaseOp):
     def execute(self):
         address = self.processor.get_16bit_reg('hl')
         self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
-
-    def t_states(self):
         return 15
 
     def __str__(self):
@@ -167,8 +151,6 @@ class OpSetIndexedIndirect(BaseOp):
         offset = self.processor.get_signed_offset_byte()
         address = self.processor.index_registers[self.indexed_reg] + offset
         self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
-
-    def t_states(self):
         return 23
 
     def __str__(self):

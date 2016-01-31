@@ -10,8 +10,6 @@ class OpLdi(BaseOp):
 
     def execute(self):
         _block_transfer(self.processor, self.memory, 1)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -26,8 +24,6 @@ class OpLdd(BaseOp):
 
     def execute(self):
         _block_transfer(self.processor, self.memory, -1)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -42,8 +38,6 @@ class OpCpi(BaseOp):
 
     def execute(self):
         _block_compare(self.processor, self.memory, 1)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -58,8 +52,6 @@ class OpCpd(BaseOp):
 
     def execute(self):
         _block_compare(self.processor, self.memory, -1)
-
-    def t_states(self):
         return 16
 
     def __str__(self):
@@ -76,10 +68,7 @@ class BlockOp(BaseOp):
         bc = self.processor.get_16bit_reg('bc')
         if not bc == 0x0000:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc'] - 2) % 0x10000
-        self.last_t_states = 16 if bc == 0x0000 else 21
-
-    def t_states(self):
-        return self.last_t_states
+        return 16 if bc == 0x0000 else 21
 
 
 class OpLdir(BlockOp):
@@ -90,7 +79,7 @@ class OpLdir(BlockOp):
     def execute(self):
         _block_transfer(self.processor, self.memory, 1)
         self.processor.set_condition('p', False)
-        self._decrement_bc_and_update_pc()
+        return self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'ldir'
@@ -104,7 +93,7 @@ class OpLddr(BlockOp):
     def execute(self):
         _block_transfer(self.processor, self.memory, -1)
         self.processor.set_condition('p', False)
-        self._decrement_bc_and_update_pc()
+        return self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'lddr'
@@ -117,7 +106,7 @@ class OpCpir(BlockOp):
 
     def execute(self):
         _block_compare(self.processor, self.memory, 1)
-        self._decrement_bc_and_update_pc()
+        return self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'cpir'
@@ -130,7 +119,7 @@ class OpCpdr(BlockOp):
 
     def execute(self):
         _block_compare(self.processor, self.memory, -1)
-        self._decrement_bc_and_update_pc()
+        return self._decrement_bc_and_update_pc()
 
     def __str__(self):
         return 'cpdr'

@@ -14,8 +14,6 @@ class OpLdAR(BaseOp):
         self.processor.set_condition('h', False)
         self.processor.set_condition('p', self.processor.iff[1])
         self.processor.set_condition('n', False)
-
-    def t_states(self):
         return 9
 
     def __str__(self):
@@ -29,8 +27,6 @@ class OpLdAI(BaseOp):
 
     def execute(self):
         self.processor.main_registers['a'] = self.processor.special_registers['i']
-
-    def t_states(self):
         return 9
 
     def __str__(self):
@@ -44,8 +40,6 @@ class OpLdIA(BaseOp):
 
     def execute(self):
         self.processor.special_registers['i'] = self.processor.main_registers['a']
-
-    def t_states(self):
         return 9
 
     def __str__(self):
@@ -59,8 +53,6 @@ class OpLdRA(BaseOp):
 
     def execute(self):
         self.processor.special_registers['r'] = self.processor.main_registers['a']
-
-    def t_states(self):
         return 9
 
     def __str__(self):
@@ -75,8 +67,6 @@ class OpDi(BaseOp):
     def execute(self):
         self.processor.iff[0] = False
         self.processor.iff[1] = False
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -90,8 +80,6 @@ class OpEi(BaseOp):
 
     def execute(self):
         self.processor.enable_iff = True
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -106,8 +94,6 @@ class OpRetn(BaseOp):
     def execute(self):
         self.processor.iff[0] = self.processor.iff[1]
         self.processor.restore_pc_from_stack()
-
-    def t_states(self):
         return 14
 
     def __str__(self):
@@ -121,8 +107,6 @@ class OpReti(BaseOp):
 
     def execute(self):
         self.processor.restore_pc_from_stack()
-
-    def t_states(self):
         return 14
 
     def __str__(self):
@@ -136,8 +120,6 @@ class OpHalt(BaseOp):
 
     def execute(self):
         self.processor.halting = True
-
-    def t_states(self):
         return 4
 
     def __str__(self):
@@ -152,8 +134,6 @@ class OpIm(BaseOp):
 
     def execute(self):
         self.processor.set_interrupt_mode(self.interrupt_mode)
-
-    def t_states(self):
         return 8
 
     def __str__(self):

@@ -8,16 +8,17 @@ from spectrum.display_adapter import DisplayAdapter
 from spectrum.snapshot import load_sna_snapshot, load_z80_v1_snapshot
 from z80.interrupt_operations import OpRetn
 from z80.io import IO
-from z80.processor import Processor
+from z80.processor import Processor, InterruptRequest
 
 
 class DummyIO(IO):
     def read(self, port, high_byte):
-        print 'read {}'.format(hex(port))
-        return 0
+        # print 'read {}'.format(hex(port))
+        return 191
 
     def write(self, port, high_byte, value):
-        print 'write {}, {}'.format(hex(port), hex(value))
+        pass
+        # print 'write {}, {}'.format(hex(port), hex(value))
 
 
 def start(rom_file, snapshot_file):
@@ -45,8 +46,13 @@ def run_loop(processor, screen, display_adapter):
         i += 1
         update_display(screen, display_adapter) + seconds_per_refresh
         t_states = 0
+        processor.interrupt(InterruptRequest(irq_ack))
         while t_states < t_states_per_refresh:
             t_states += processor.execute()
+
+
+def irq_ack():
+    pass
 
 
 def current_time_ms():

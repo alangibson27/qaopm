@@ -361,13 +361,6 @@ class Processor:
         enable_iff_after_op = self.enable_iff
         operation = self.get_operation()
 
-        # increment refresh register
-        current_r = self.special_registers['r']
-        high_bit = current_r & 0b10000000
-        low_bits = current_r & 0b01111111
-        low_bits += 1
-        self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
-
         t_states = operation.execute()
         if enable_iff_after_op:
             self.set_iff()
@@ -407,12 +400,18 @@ class Processor:
 
     def get_next_byte(self):
         if self.interrupt_data_exists:
-            # if len(self.interrupt_data_queue) > 0:
             item = self.interrupt_data_queue.pop(0)
             if len(self.interrupt_data_queue) == 0:
                 self.interrupt_data_exists = False
             return item
         else:
+            # increment refresh register
+            current_r = self.special_registers['r']
+            high_bit = current_r & 0b10000000
+            low_bits = current_r & 0b01111111
+            low_bits += 1
+            self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
+
             pc_value = self.special_registers['pc']
             op_code = self.memory[0xffff & pc_value]
             self.special_registers['pc'] = (pc_value + 1) & 0xffff

@@ -362,8 +362,9 @@ class Processor:
         enable_iff_after_op = self.enable_iff
 
         pc = self.special_registers['pc']
-        instruction_bytes = deque(self.memory[pc:pc+6 if pc < 0xfffb else 0x10000])
-        instruction_bytes.extend(self.memory[0:6 - len(instruction_bytes)])
+        bytes_under_ramtop = 6 if pc < 0xfffb else 0x10000 - pc
+        instruction_bytes = deque(self.memory[pc:pc + bytes_under_ramtop])
+        instruction_bytes.extend(self.memory[0:6 - bytes_under_ramtop])
 
         operation, interrupt_triggered = self.get_operation(instruction_bytes)
 
@@ -372,15 +373,16 @@ class Processor:
             self.set_iff()
             self.enable_iff = False
         self.last_operation = operation
+        bytes_left = 6 - len(instruction_bytes)
         if not jumped:
-            self.special_registers['pc'] += 6 - len(instruction_bytes)
+            self.special_registers['pc'] += bytes_left
 
         # increment refresh register
         if not interrupt_triggered:
             current_r = self.special_registers['r']
             high_bit = current_r & 0b10000000
             low_bits = current_r & 0b01111111
-            low_bits += (6 - len(instruction_bytes))
+            low_bits += bytes_left
             self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
 
         return t_states

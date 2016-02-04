@@ -7,10 +7,10 @@ class OpJp(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _abs_jp_address(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         jp_to(self.processor, address)
-        return 10
+        return 10, True
 
     def __str__(self):
         return 'jp nn'
@@ -21,9 +21,9 @@ class OpJpHlIndirect(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         self.processor.special_registers['pc'] = self.processor.get_16bit_reg('hl')
-        return 4
+        return 4, True
 
     def __str__(self):
         return 'jp (hl)'
@@ -35,9 +35,9 @@ class OpJpIndexedIndirect(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         self.processor.special_registers['pc'] = self.processor.index_registers[self.reg]
-        return 8
+        return 8, True
 
     def __str__(self):
         return 'jp ({})'.format(self.reg)
@@ -48,8 +48,8 @@ class OpJpNz(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 'z', False)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 'z', False)
 
     def __str__(self):
         return 'jp nz, nn'
@@ -60,8 +60,8 @@ class OpJpZ(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 'z', True)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 'z', True)
 
     def __str__(self):
         return 'jp z, nn'
@@ -72,8 +72,8 @@ class OpJpNc(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 'c', False)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 'c', False)
 
     def __str__(self):
         return 'jp nc, nn'
@@ -84,8 +84,8 @@ class OpJpC(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 'c', True)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 'c', True)
 
     def __str__(self):
         return 'jp c, nn'
@@ -96,8 +96,8 @@ class OpJpPo(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 'p', False)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 'p', False)
 
     def __str__(self):
         return 'jp po, nn'
@@ -108,8 +108,8 @@ class OpJpPe(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 'p', True)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 'p', True)
 
     def __str__(self):
         return 'jp pe, nn'
@@ -120,8 +120,8 @@ class OpJpP(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 's', False)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 's', False)
 
     def __str__(self):
         return 'jp p, nn'
@@ -132,22 +132,20 @@ class OpJpM(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jp(self.processor, 's', True)
+    def execute(self, instruction_bytes):
+        return _cond_jp(self.processor, instruction_bytes, 's', True)
 
     def __str__(self):
         return 'jp m, nn'
 
 
-def _cond_jp(processor, flag, jump_value):
-    address = _abs_jp_address(processor)
+def _cond_jp(processor, instruction_bytes, flag, jump_value):
+    address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
     if processor.condition(flag) == jump_value:
         processor.special_registers['pc'] = address
-    return 10
-
-
-def _abs_jp_address(processor):
-    return big_endian_value([processor.get_next_byte(), processor.get_next_byte()])
+        return 10, True
+    else:
+        return 10, False
 
 
 class OpJr(BaseOp):
@@ -155,9 +153,9 @@ class OpJr(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        _jr_offset(self.processor.special_registers, to_signed(self.processor.get_next_byte()))
-        return 12
+    def execute(self, instruction_bytes):
+        _jr_offset(self.processor.special_registers, to_signed(instruction_bytes.popleft()))
+        return 12, True
 
     def __str__(self):
         return 'jr n'
@@ -168,8 +166,8 @@ class OpJrC(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jr(self.processor, 'c', True)
+    def execute(self, instruction_bytes):
+        return _cond_jr(self.processor, instruction_bytes, 'c', True)
 
     def __str__(self):
         return 'jr c, n'
@@ -180,8 +178,8 @@ class OpJrNc(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jr(self.processor, 'c', False)
+    def execute(self, instruction_bytes):
+        return _cond_jr(self.processor, instruction_bytes, 'c', False)
 
     def __str__(self):
         return 'jr nc, n'
@@ -192,8 +190,8 @@ class OpJrZ(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jr(self.processor, 'z', True)
+    def execute(self, instruction_bytes):
+        return _cond_jr(self.processor, instruction_bytes, 'z', True)
 
     def __str__(self):
         return 'jr z, n'
@@ -204,8 +202,8 @@ class OpJrNz(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        return _cond_jr(self.processor, 'z', False)
+    def execute(self, instruction_bytes):
+        return _cond_jr(self.processor, instruction_bytes, 'z', False)
 
     def __str__(self):
         return 'jr nz, n'
@@ -216,14 +214,14 @@ class OpDjnz(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, instruction_bytes):
+        offset = to_signed(instruction_bytes.popleft())
         self.processor.main_registers['b'] = (self.processor.main_registers['b'] - 1) & 0xff
         if self.processor.main_registers['b'] != 0:
             _jr_offset(self.processor.special_registers, offset)
-            return 13
+            return 13, True
         else:
-            return 8
+            return 8, False
 
     def __str__(self):
         return 'djnz n'
@@ -233,14 +231,14 @@ def jp_to(processor, address):
     processor.special_registers['pc'] = address
 
 
-def _cond_jr(processor, flag, jump_value):
-    offset = to_signed(processor.get_next_byte())
+def _cond_jr(processor, instruction_bytes, flag, jump_value):
+    offset = to_signed(instruction_bytes.popleft())
     if processor.condition(flag) == jump_value:
         _jr_offset(processor.special_registers, offset)
-        return 12
+        return 12, True
     else:
-        return 7
+        return 7, False
 
 
 def _jr_offset(special_registers, offset):
-    special_registers['pc'] = (special_registers['pc'] + offset) & 0xffff
+    special_registers['pc'] = (special_registers['pc'] + (offset + 2)) & 0xffff

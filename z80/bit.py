@@ -1,4 +1,5 @@
 from baseop import BaseOp
+from z80.funcs import to_signed
 
 
 class OpBitReg(BaseOp):
@@ -8,9 +9,9 @@ class OpBitReg(BaseOp):
         self.reg = reg
         self.bit_pos = bit_pos
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         _bit(self.processor, self.processor.main_registers[self.reg], self.bit_pos)
-        return 8
+        return 8, False
 
     def __str__(self):
         return 'bit {}, {}'.format(self.bit_pos, self.reg)
@@ -23,9 +24,9 @@ class OpBitHlIndirect(BaseOp):
         self.memory = memory
         self.bit_pos = bit_pos
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         _bit(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')], self.bit_pos)
-        return 12
+        return 12, False
 
     def __str__(self):
         return 'bit {}, (hl)'.format(self.bit_pos)
@@ -39,11 +40,11 @@ class OpBitIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
         self.bit_pos = bit_pos
 
-    def execute(self):
-        offset = self.processor.get_signed_offset_byte()
+    def execute(self, instruction_bytes):
+        offset = to_signed(instruction_bytes.popleft())
         address = self.processor.index_registers[self.indexed_reg] + offset
         _bit(self.processor, self.memory[0xffff & address], self.bit_pos)
-        return 20
+        return 20, False
 
     def __str__(self):
         return 'bit {}, ({} + d)'.format(self.bit_pos, self.indexed_reg)
@@ -62,9 +63,9 @@ class OpResReg(BaseOp):
         self.reg = reg
         self.bit_pos = bit_pos
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         self.processor.main_registers[self.reg] = _res(self.processor.main_registers[self.reg], self.bit_pos)
-        return 8
+        return 8, False
 
     def __str__(self):
         return 'res {}, {}'.format(self.bit_pos, self.reg)
@@ -77,10 +78,10 @@ class OpResHlIndirect(BaseOp):
         self.memory = memory
         self.bit_pos = bit_pos
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         address = self.processor.get_16bit_reg('hl')
         self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
-        return 15
+        return 15, False
 
     def __str__(self):
         return 'res {}, (hl)'.format(self.bit_pos)
@@ -94,11 +95,11 @@ class OpResIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
         self.bit_pos = bit_pos
 
-    def execute(self):
-        offset = self.processor.get_signed_offset_byte()
+    def execute(self, instruction_bytes):
+        offset = to_signed(instruction_bytes.popleft())
         address = self.processor.index_registers[self.indexed_reg] + offset
         self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
-        return 23
+        return 23, False
 
     def __str__(self):
         return 'res {}, ({} + d)'.format(self.bit_pos, self.indexed_reg)
@@ -115,9 +116,9 @@ class OpSetReg(BaseOp):
         self.reg = reg
         self.bit_pos = bit_pos
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         self.processor.main_registers[self.reg] = _set(self.processor.main_registers[self.reg], self.bit_pos)
-        return 8
+        return 8, False
 
     def __str__(self):
         return 'set {}, {}'.format(self.bit_pos, self.reg)
@@ -130,10 +131,10 @@ class OpSetHlIndirect(BaseOp):
         self.memory = memory
         self.bit_pos = bit_pos
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         address = self.processor.get_16bit_reg('hl')
         self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
-        return 15
+        return 15, False
 
     def __str__(self):
         return 'set {}, (hl)'.format(self.bit_pos)
@@ -147,11 +148,11 @@ class OpSetIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
         self.bit_pos = bit_pos
 
-    def execute(self):
-        offset = self.processor.get_signed_offset_byte()
+    def execute(self, instruction_bytes):
+        offset = to_signed(instruction_bytes.popleft())
         address = self.processor.index_registers[self.indexed_reg] + offset
         self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
-        return 23
+        return 23, False
 
     def __str__(self):
         return 'set {}, ({} + d)'.format(self.bit_pos, self.indexed_reg)

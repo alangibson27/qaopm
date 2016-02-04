@@ -2,7 +2,7 @@ class BaseOp:
     def __init__(self):
         pass
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         raise NotImplementedError("operation not implemented")
 
     def __str__(self):
@@ -14,7 +14,7 @@ class Undocumented(BaseOp):
         BaseOp.__init__(self)
         self.mnemonic = mnemonic
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         raise NotImplementedError(self.mnemonic)
 
     def __str__(self):
@@ -25,8 +25,8 @@ class Nop(BaseOp):
     def __init__(self):
         BaseOp.__init__(self)
 
-    def execute(self):
-        return 4
+    def execute(self, instruction_bytes):
+        return 4, False
 
     def __str__(self):
         return 'nop'

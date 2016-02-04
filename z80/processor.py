@@ -1,5 +1,6 @@
 from arithmetic_16 import *
 from baseop import *
+from collections import deque
 from bit import *
 from call import *
 from exchange_operations import *
@@ -35,7 +36,7 @@ class Processor:
         self.interrupt_requests = []
         self.interrupt_requests_exist = False
         self.halting = False
-        self.im1_response_op = OpRst(self, 0x0038)
+        self.im1_response_op = OpRst(self, 0x0038, True)
         self.last_operation = None
         self.condition_masks = {
             'c': 0b00000001,
@@ -359,16 +360,32 @@ class Processor:
 
     def execute(self):
         enable_iff_after_op = self.enable_iff
-        operation = self.get_operation()
 
-        t_states = operation.execute()
+        pc = self.special_registers['pc']
+        instruction_bytes = deque(self.memory[pc:pc+6 if pc < 0xfffb else 0x10000])
+        instruction_bytes.extend(self.memory[0:6 - len(instruction_bytes)])
+
+        operation, interrupt_triggered = self.get_operation(instruction_bytes)
+
+        t_states, jumped = operation.execute(instruction_bytes)
         if enable_iff_after_op:
             self.set_iff()
             self.enable_iff = False
         self.last_operation = operation
+        if not jumped:
+            self.special_registers['pc'] += 6 - len(instruction_bytes)
+
+        # increment refresh register
+        if not interrupt_triggered:
+            current_r = self.special_registers['r']
+            high_bit = current_r & 0b10000000
+            low_bits = current_r & 0b01111111
+            low_bits += (6 - len(instruction_bytes))
+            self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
+
         return t_states
 
-    def get_operation(self):
+    def get_operation(self, instruction_bytes):
         if self.iff[0] and self.interrupt_requests_exist:
             interrupt_mode = self.interrupt_mode
             self.halting = False
@@ -376,46 +393,48 @@ class Processor:
             if len(self.interrupt_requests) == 0:
                 self.interrupt_requests_exist = False
             next_request.acknowledge()
-            if interrupt_mode == 0:
-                self.push_pc()
-                self.interrupt_data_queue = next_request.get_im0_data()
-                self.interrupt_data_exists = True
-            elif interrupt_mode == 1:
-                return self.im1_response_op
+            if interrupt_mode == 1:
+                return self.im1_response_op, True
             elif interrupt_mode == 2:
                 table_index = big_endian_value([self.special_registers['r'] & 0xfe, self.special_registers['i']])
                 jump_low_byte = self.memory[0xffff & table_index]
                 jump_high_byte = self.memory[0xffff & (table_index + 1)]
-                return OpCallDirect(self, big_endian_value([jump_low_byte, jump_high_byte]))
+                return OpCallDirect(self, big_endian_value([jump_low_byte, jump_high_byte]), True), True
 
         if self.halting:
             op_code = 0x00
         else:
-            op_code = self.get_next_byte()
+            op_code = instruction_bytes.popleft()
 
-        return self.operations_by_opcode[op_code]
+        return self.operations_by_opcode[op_code], False
 
-    def get_address_at_pc(self):
-        return [self.get_next_byte(), self.get_next_byte()]
+    # def get_address_at_pc(self):
+    #     return [self.get_next_byte(), self.get_next_byte()]
 
-    def get_next_byte(self):
-        if self.interrupt_data_exists:
-            item = self.interrupt_data_queue.pop(0)
-            if len(self.interrupt_data_queue) == 0:
-                self.interrupt_data_exists = False
-            return item
-        else:
-            # increment refresh register
-            current_r = self.special_registers['r']
-            high_bit = current_r & 0b10000000
-            low_bits = current_r & 0b01111111
-            low_bits += 1
-            self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
+    def fetch_bytes(self):
+        pc = self.special_registers['pc']
+        bytes = self.memory[pc:pc+6 if pc < 0xfffb else 0x10000]
+        bytes.extend(self.memory[0:6 - len(bytes)])
+        return bytes
 
-            pc_value = self.special_registers['pc']
-            op_code = self.memory[0xffff & pc_value]
-            self.special_registers['pc'] = (pc_value + 1) & 0xffff
-            return op_code
+    # def get_next_byte(self):
+    #     if self.interrupt_data_exists:
+    #         item = self.interrupt_data_queue.popleft()
+    #         if len(self.interrupt_data_queue) == 0:
+    #             self.interrupt_data_exists = False
+    #         return item
+    #     else:
+    #         # increment refresh register
+    #         # current_r = self.special_registers['r']
+    #         # high_bit = current_r & 0b10000000
+    #         # low_bits = current_r & 0b01111111
+    #         # low_bits += 1
+    #         self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
+    #
+    #         pc_value = self.special_registers['pc']
+    #         op_code = self.memory[0xffff & pc_value]
+    #         self.special_registers['pc'] = (pc_value + 1) & 0xffff
+    #         return op_code
 
     def get_signed_offset_byte(self):
         return to_signed(self.memory[0xffff & (self.special_registers['pc'] - 2)])

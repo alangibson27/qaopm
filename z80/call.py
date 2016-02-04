@@ -7,37 +7,39 @@ class OpCall(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        call_to(self.processor, _get_destination_from_pc(self.processor))
-        return 17
+    def execute(self, instruction_bytes):
+        call_to(self.processor, 3, big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()]))
+        return 17, True
 
     def __str__(self):
         return 'call nn'
 
 
 class OpCallDirect(BaseOp):
-    def __init__(self, processor, address):
+    def __init__(self, processor, address, interrupt_triggered = False):
         BaseOp.__init__(self)
         self.processor = processor
         self.address = address
+        self.interrupt_triggered = interrupt_triggered
 
-    def execute(self):
-        call_to(self.processor, self.address)
-        return 17
+    def execute(self, instruction_bytes):
+        call_to(self.processor, 0 if self.interrupt_triggered else 3, self.address)
+        return 17, True
 
     def __str__(self):
         return 'im2 response'
 
 
 class OpRst(BaseOp):
-    def __init__(self, processor, jump_address):
+    def __init__(self, processor, jump_address, interrupt_triggered = False):
         BaseOp.__init__(self)
         self.processor = processor
         self.jump_address = jump_address
+        self.interrupt_triggered = interrupt_triggered
 
-    def execute(self):
-        call_to(self.processor, self.jump_address)
-        return 11
+    def execute(self, instruction_bytes):
+        call_to(self.processor, 0 if self.interrupt_triggered else 1, self.jump_address)
+        return 11, True
 
     def __str__(self):
         return 'rst {}'.format(hex(self.jump_address))
@@ -48,13 +50,13 @@ class OpCallNz(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if not self.processor.condition('z'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call nz, nn'
@@ -65,13 +67,13 @@ class OpCallZ(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if self.processor.condition('z'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call z, nn'
@@ -82,13 +84,13 @@ class OpCallNc(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if not self.processor.condition('c'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call nc, nn'
@@ -99,13 +101,13 @@ class OpCallC(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if self.processor.condition('c'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call c, nn'
@@ -116,13 +118,13 @@ class OpCallPo(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if not self.processor.condition('p'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call po, nn'
@@ -133,13 +135,13 @@ class OpCallPe(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if self.processor.condition('p'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call pe, nn'
@@ -150,13 +152,13 @@ class OpCallP(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if not self.processor.condition('s'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call p, nn'
@@ -167,13 +169,13 @@ class OpCallM(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        address = _get_destination_from_pc(self.processor)
+    def execute(self, instruction_bytes):
+        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
         if self.processor.condition('s'):
-            call_to(self.processor, address)
-            return 5
+            call_to(self.processor, 3, address)
+            return 5, True
         else:
-            return 3
+            return 3, False
 
     def __str__(self):
         return 'call m, nn'
@@ -184,9 +186,9 @@ class OpRet(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         self.processor.restore_pc_from_stack()
-        return 10
+        return 10, True
 
     def __str__(self):
         return 'ret'
@@ -197,12 +199,12 @@ class OpRetNz(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if not self.processor.condition('z'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret nz'
@@ -213,12 +215,12 @@ class OpRetZ(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if self.processor.condition('z'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret z'
@@ -229,12 +231,12 @@ class OpRetNc(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if not self.processor.condition('c'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret nc'
@@ -245,12 +247,12 @@ class OpRetC(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if self.processor.condition('c'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret c'
@@ -261,12 +263,12 @@ class OpRetPo(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if not self.processor.condition('p'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret po'
@@ -277,12 +279,12 @@ class OpRetPe(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if self.processor.condition('p'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret pe'
@@ -293,12 +295,12 @@ class OpRetP(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if not self.processor.condition('s'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret p'
@@ -309,25 +311,19 @@ class OpRetM(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, instruction_bytes):
         if self.processor.condition('s'):
             self.processor.restore_pc_from_stack()
-            return 11
+            return 11, True
         else:
-            return 5
+            return 5, False
 
     def __str__(self):
         return 'ret m'
 
 
-def call_to(processor, destination):
-    sp_high, sp_low = high_low_pair(processor.special_registers['pc'])
+def call_to(processor, instruction_size, destination):
+    sp_high, sp_low = high_low_pair(processor.special_registers['pc'] + instruction_size)
     processor.push_byte(sp_high)
     processor.push_byte(sp_low)
     processor.special_registers['pc'] = destination
-
-
-def _get_destination_from_pc(processor):
-    next_pc_low = processor.get_next_byte()
-    next_pc_high = processor.get_next_byte()
-    return big_endian_value([next_pc_low, next_pc_high])

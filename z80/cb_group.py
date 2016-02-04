@@ -282,9 +282,9 @@ class OpCbGroup(BaseOp):
             0xff: OpSetReg(processor, 'a', 7)
         }
 
-    def execute(self):
-        op = self.ops[self.processor.get_next_byte()]
-        return op.execute()
+    def execute(self, instruction_bytes):
+        op = self.ops[instruction_bytes.popleft()]
+        return op.execute(instruction_bytes)
 
     def __str__(self):
         return 'CB GROUP'

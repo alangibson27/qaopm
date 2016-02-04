@@ -47,9 +47,9 @@ class OpIndexedCbGroup(BaseOp):
         }
 
     def execute(self, instruction_bytes):
-        index_byte = instruction_bytes.popleft()
-        op = self.ops[instruction_bytes.popleft()]
-        instruction_bytes.appendleft(index_byte)
+        index_byte = instruction_bytes.pop()
+        op = self.ops[instruction_bytes.pop()]
+        instruction_bytes.append(index_byte)
         return op.execute(instruction_bytes)
 
     def __str__(self):

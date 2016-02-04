@@ -10,8 +10,8 @@ class OpLd16RegImmediate(BaseOp):
         self.reg = reg
 
     def execute(self, instruction_bytes):
-        lsb = instruction_bytes.popleft()
-        msb = instruction_bytes.popleft()
+        lsb = instruction_bytes.pop()
+        msb = instruction_bytes.pop()
         self.processor.main_registers[self.reg[0]] = msb
         self.processor.main_registers[self.reg[1]] = lsb
         return 10, False
@@ -44,7 +44,7 @@ class OpLd8RegImmediate(BaseOp):
         self.reg = reg
 
     def execute(self, instruction_bytes):
-        operand = instruction_bytes.popleft()
+        operand = instruction_bytes.pop()
         self.processor.main_registers[self.reg] = operand
         return 7, False
 
@@ -91,7 +91,7 @@ class OpLdAddressA(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        little_endian_address = [instruction_bytes.popleft(), instruction_bytes.popleft()]
+        little_endian_address = [instruction_bytes.pop(), instruction_bytes.pop()]
         self.memory[0xffff & big_endian_value(little_endian_address)] = self.processor.main_registers['a']
         return 13, False
 
@@ -106,7 +106,7 @@ class OpLdAAddress(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        little_endian_address = [instruction_bytes.popleft(), instruction_bytes.popleft()]
+        little_endian_address = [instruction_bytes.pop(), instruction_bytes.pop()]
         self.processor.main_registers['a'] = self.memory[0xffff & big_endian_value(little_endian_address)]
         return 13, False
 
@@ -122,7 +122,7 @@ class OpLdAddress16Reg(BaseOp):
         self.source_reg = source_reg
 
     def execute(self, instruction_bytes):
-        dest_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        dest_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         self.memory[0xffff & dest_address] = self.processor.main_registers[self.source_reg[1]]
         self.memory[0xffff & dest_address + 1] = self.processor.main_registers[self.source_reg[0]]
         return 20, False
@@ -138,7 +138,7 @@ class OpLdAddressHl(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        dest_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        dest_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         self.memory[0xffff & dest_address] = self.processor.main_registers['l']
         self.memory[0xffff & dest_address + 1] = self.processor.main_registers['h']
         return 16, False
@@ -155,7 +155,7 @@ class OpLd16RegAddress(BaseOp):
         self.destination_reg = destination_reg
 
     def execute(self, instruction_bytes):
-        src_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        src_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         low_byte = self.memory[0xffff & src_address]
         high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.main_registers[self.destination_reg[0]] = high_byte
@@ -173,7 +173,7 @@ class OpLdHlAddress(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        src_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        src_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         low_byte = self.memory[0xffff & src_address]
         high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.main_registers['h'] = high_byte
@@ -190,7 +190,7 @@ class OpLdSpImmediate(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        little_endian_address = [instruction_bytes.popleft(), instruction_bytes.popleft()]
+        little_endian_address = [instruction_bytes.pop(), instruction_bytes.pop()]
         self.processor.special_registers['sp'] = big_endian_value(little_endian_address)
         return 10, False
 
@@ -219,7 +219,7 @@ class OpLdHlIndirectImmediate(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        operand = instruction_bytes.popleft()
+        operand = instruction_bytes.pop()
         self.memory[0xffff & self.processor.get_16bit_reg('hl')] = operand
         return 10, False
 
@@ -234,7 +234,7 @@ class OpLdExtSp(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        dest_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        dest_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         high_byte, low_byte = high_low_pair(self.processor.special_registers['sp'])
         self.memory[0xffff & dest_address] = low_byte
         self.memory[0xffff & (dest_address + 1)] = high_byte
@@ -251,7 +251,7 @@ class OpLdSpExt(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        src_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        src_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         low_byte = self.memory[0xffff & src_address]
         high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.special_registers['sp'] = big_endian_value([low_byte, high_byte])
@@ -268,7 +268,7 @@ class OpLdIndexedImmediate(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        little_endian_address = [instruction_bytes.popleft(), instruction_bytes.popleft()]
+        little_endian_address = [instruction_bytes.pop(), instruction_bytes.pop()]
         self.processor.index_registers[self.indexed_reg] = big_endian_value(little_endian_address)
         return 14, False
 
@@ -284,7 +284,7 @@ class OpLdExtIndexed(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        dest_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        dest_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         high_byte, low_byte = high_low_pair(self.processor.index_registers[self.indexed_reg])
         self.memory[0xffff & dest_address] = low_byte
         self.memory[0xffff & (dest_address + 1)] = high_byte
@@ -302,7 +302,7 @@ class OpLdIndexedExt(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        src_address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        src_address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         low_byte = self.memory[0xffff & src_address]
         high_byte = self.memory[0xffff & (src_address + 1)]
         self.processor.index_registers[self.indexed_reg] = big_endian_value([low_byte, high_byte])
@@ -320,8 +320,8 @@ class OpLdIndexedIndirectImmediate(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        operand = instruction_bytes.popleft()
-        immediate_value = instruction_bytes.popleft()
+        operand = instruction_bytes.pop()
+        immediate_value = instruction_bytes.pop()
 
         offset = to_signed(operand)
         self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)] = immediate_value
@@ -340,7 +340,7 @@ class OpLd8RegIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        operand = instruction_bytes.popleft()
+        operand = instruction_bytes.pop()
         offset = to_signed(operand)
         self.processor.main_registers[self.destination_reg] = self.memory[
             0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
@@ -359,7 +359,7 @@ class OpLdIndexedIndirect8Reg(BaseOp):
         self.source_reg = source_reg
 
     def execute(self, instruction_bytes):
-        operand = instruction_bytes.popleft()
+        operand = instruction_bytes.pop()
         offset = to_signed(operand)
         self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)] = \
             self.processor.main_registers[self.source_reg]

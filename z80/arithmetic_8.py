@@ -67,7 +67,7 @@ class OpAddAImmediate(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        value = instruction_bytes.popleft()
+        value = instruction_bytes.pop()
         _add_a(self.processor, value, False)
         return 7, False
 
@@ -82,7 +82,7 @@ class OpAdcAImmediate(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        value = instruction_bytes.popleft()
+        value = instruction_bytes.pop()
         _add_a(self.processor, value, self.processor.condition('c'))
         return 7, False
 
@@ -155,7 +155,7 @@ class OpSubAImmediate(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        value = instruction_bytes.popleft()
+        value = instruction_bytes.pop()
         _sub_a(self.processor, value, False)
         return 7, False
 
@@ -170,7 +170,7 @@ class OpSbcAImmediate(BaseOp):
         self.memory = memory
 
     def execute(self, instruction_bytes):
-        value = instruction_bytes.popleft()
+        value = instruction_bytes.pop()
         _sub_a(self.processor, value, self.processor.condition('c'))
         return 7, False
 
@@ -186,7 +186,7 @@ class OpAddAIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, False)
         return 19, False
@@ -203,7 +203,7 @@ class OpAdcAIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, self.processor.condition('c'))
         return 19, False
@@ -220,7 +220,7 @@ class OpSubAIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, False)
         return 19, False
@@ -237,7 +237,7 @@ class OpSbcAIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, self.processor.condition('c'))
         return 19, False
@@ -280,7 +280,7 @@ class OpAndAImmediate(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        _and_a_value(self.processor, instruction_bytes.popleft())
+        _and_a_value(self.processor, instruction_bytes.pop())
         return 7, False
 
     def __str__(self):
@@ -295,7 +295,7 @@ class OpAndIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         _and_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
         return 19, False
 
@@ -337,7 +337,7 @@ class OpXorAImmediate(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        _xor_a_value(self.processor, instruction_bytes.popleft())
+        _xor_a_value(self.processor, instruction_bytes.pop())
         return 7, False
 
     def __str__(self):
@@ -352,7 +352,7 @@ class OpXorIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         _xor_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
         return 19, False
 
@@ -394,7 +394,7 @@ class OpOrAImmediate(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        _or_a_value(self.processor, instruction_bytes.popleft())
+        _or_a_value(self.processor, instruction_bytes.pop())
         return 7, False
 
     def __str__(self):
@@ -409,7 +409,7 @@ class OpOrIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         _or_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
         return 19, False
 
@@ -452,7 +452,7 @@ class OpCpImmediate(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        _cp_value(self.processor, instruction_bytes.popleft(), False)
+        _cp_value(self.processor, instruction_bytes.pop(), False)
         return 7, False
 
     def __str__(self):
@@ -467,7 +467,7 @@ class OpCpIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         _cp_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)], False)
         return 19, False
 

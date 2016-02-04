@@ -17,7 +17,7 @@ class OpInA(BaseOp):
         self.io = io
 
     def execute(self, instruction_bytes):
-        port = instruction_bytes.popleft()
+        port = instruction_bytes.pop()
         value = self.io.read(port, self.processor.main_registers['a'])
         self.processor.main_registers['a'] = value
         return 11, False
@@ -142,7 +142,7 @@ class OpOutA(BaseOp):
         self.io = io
 
     def execute(self, instruction_bytes):
-        port = instruction_bytes.popleft()
+        port = instruction_bytes.pop()
         self.io.write(port, self.processor.main_registers['a'], self.processor.main_registers['a'])
         return 11, False
 

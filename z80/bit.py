@@ -41,7 +41,7 @@ class OpBitIndexedIndirect(BaseOp):
         self.bit_pos = bit_pos
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         _bit(self.processor, self.memory[0xffff & address], self.bit_pos)
         return 20, False
@@ -96,7 +96,7 @@ class OpResIndexedIndirect(BaseOp):
         self.bit_pos = bit_pos
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         self.memory[0xffff & address] = _res(self.memory[0xffff & address], self.bit_pos)
         return 23, False
@@ -149,7 +149,7 @@ class OpSetIndexedIndirect(BaseOp):
         self.bit_pos = bit_pos
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         self.memory[0xffff & address] = _set(self.memory[0xffff & address], self.bit_pos)
         return 23, False

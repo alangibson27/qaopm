@@ -134,7 +134,7 @@ class OpSlaIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _sla_value(self.processor, value)
@@ -153,7 +153,7 @@ class OpSraIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _sra_value(self.processor, value)
@@ -172,7 +172,7 @@ class OpSrlIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _srl_value(self.processor, value)

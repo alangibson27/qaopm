@@ -1,7 +1,5 @@
 from arithmetic_16 import *
 from baseop import *
-from collections import deque
-from bit import *
 from call import *
 from exchange_operations import *
 from inc_operations import *
@@ -9,7 +7,6 @@ from interrupt_operations import *
 from jump import *
 from ld_operations import *
 from rotate import *
-from shift import *
 from stack import *
 from z80.arithmetic_8 import *
 from z80.block_operations import *
@@ -363,8 +360,9 @@ class Processor:
 
         pc = self.special_registers['pc']
         bytes_under_ramtop = 6 if pc < 0xfffb else 0x10000 - pc
-        instruction_bytes = deque(self.memory[pc:pc + bytes_under_ramtop])
+        instruction_bytes = self.memory[pc:pc + bytes_under_ramtop]
         instruction_bytes.extend(self.memory[0:6 - bytes_under_ramtop])
+        instruction_bytes.reverse()
 
         operation, interrupt_triggered = self.get_operation(instruction_bytes)
 
@@ -406,22 +404,22 @@ class Processor:
         if self.halting:
             op_code = 0x00
         else:
-            op_code = instruction_bytes.popleft()
+            op_code = instruction_bytes.pop()
 
         return self.operations_by_opcode[op_code], False
 
     # def get_address_at_pc(self):
     #     return [self.get_next_byte(), self.get_next_byte()]
 
-    def fetch_bytes(self):
-        pc = self.special_registers['pc']
-        bytes = self.memory[pc:pc+6 if pc < 0xfffb else 0x10000]
-        bytes.extend(self.memory[0:6 - len(bytes)])
-        return bytes
+    # def fetch_bytes(self):
+    #    pc = self.special_registers['pc']
+    #    bytes = self.memory[pc:pc+6 if pc < 0xfffb else 0x10000]
+    #    bytes.extend(self.memory[0:6 - len(bytes)])
+    #    return bytes
 
     # def get_next_byte(self):
     #     if self.interrupt_data_exists:
-    #         item = self.interrupt_data_queue.popleft()
+    #         item = self.interrupt_data_queue.pop()
     #         if len(self.interrupt_data_queue) == 0:
     #             self.interrupt_data_exists = False
     #         return item

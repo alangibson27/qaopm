@@ -8,7 +8,7 @@ class OpCall(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        call_to(self.processor, 3, big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()]))
+        call_to(self.processor, 3, big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()]))
         return 17, True
 
     def __str__(self):
@@ -51,7 +51,7 @@ class OpCallNz(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if not self.processor.condition('z'):
             call_to(self.processor, 3, address)
             return 5, True
@@ -68,7 +68,7 @@ class OpCallZ(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if self.processor.condition('z'):
             call_to(self.processor, 3, address)
             return 5, True
@@ -85,7 +85,7 @@ class OpCallNc(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if not self.processor.condition('c'):
             call_to(self.processor, 3, address)
             return 5, True
@@ -102,7 +102,7 @@ class OpCallC(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if self.processor.condition('c'):
             call_to(self.processor, 3, address)
             return 5, True
@@ -119,7 +119,7 @@ class OpCallPo(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if not self.processor.condition('p'):
             call_to(self.processor, 3, address)
             return 5, True
@@ -136,7 +136,7 @@ class OpCallPe(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if self.processor.condition('p'):
             call_to(self.processor, 3, address)
             return 5, True
@@ -153,7 +153,7 @@ class OpCallP(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if not self.processor.condition('s'):
             call_to(self.processor, 3, address)
             return 5, True
@@ -170,7 +170,7 @@ class OpCallM(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         if self.processor.condition('s'):
             call_to(self.processor, 3, address)
             return 5, True

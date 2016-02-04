@@ -119,7 +119,7 @@ class OpDdFdGroup(BaseOp):
         }
 
     def execute(self, instruction_bytes):
-        op = self.ops[instruction_bytes.popleft()]
+        op = self.ops[instruction_bytes.pop()]
         return op.execute(instruction_bytes)
 
     def __str__(self):

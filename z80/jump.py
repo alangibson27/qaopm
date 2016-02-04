@@ -8,7 +8,7 @@ class OpJp(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+        address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
         jp_to(self.processor, address)
         return 10, True
 
@@ -140,7 +140,7 @@ class OpJpM(BaseOp):
 
 
 def _cond_jp(processor, instruction_bytes, flag, jump_value):
-    address = big_endian_value([instruction_bytes.popleft(), instruction_bytes.popleft()])
+    address = big_endian_value([instruction_bytes.pop(), instruction_bytes.pop()])
     if processor.condition(flag) == jump_value:
         processor.special_registers['pc'] = address
         return 10, True
@@ -154,7 +154,7 @@ class OpJr(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        _jr_offset(self.processor.special_registers, to_signed(instruction_bytes.popleft()))
+        _jr_offset(self.processor.special_registers, to_signed(instruction_bytes.pop()))
         return 12, True
 
     def __str__(self):
@@ -215,7 +215,7 @@ class OpDjnz(BaseOp):
         self.processor = processor
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         self.processor.main_registers['b'] = (self.processor.main_registers['b'] - 1) & 0xff
         if self.processor.main_registers['b'] != 0:
             _jr_offset(self.processor.special_registers, offset)
@@ -232,7 +232,7 @@ def jp_to(processor, address):
 
 
 def _cond_jr(processor, instruction_bytes, flag, jump_value):
-    offset = to_signed(instruction_bytes.popleft())
+    offset = to_signed(instruction_bytes.pop())
     if processor.condition(flag) == jump_value:
         _jr_offset(processor.special_registers, offset)
         return 12, True

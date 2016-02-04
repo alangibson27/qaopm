@@ -259,7 +259,7 @@ class OpRlcIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rlc_value(self.processor, value)
@@ -279,7 +279,7 @@ class OpRrcIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rrc_value(self.processor, value)
@@ -299,7 +299,7 @@ class OpRlIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rl_value(self.processor, value)
@@ -319,7 +319,7 @@ class OpRrIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rr_value(self.processor, value)

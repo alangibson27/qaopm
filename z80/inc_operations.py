@@ -130,7 +130,7 @@ class OpIncIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         result = _inc_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
@@ -148,7 +148,7 @@ class OpDecIndexedIndirect(BaseOp):
         self.indexed_reg = indexed_reg
 
     def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.popleft())
+        offset = to_signed(instruction_bytes.pop())
         address = self.processor.index_registers[self.indexed_reg] + offset
         result = _dec_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result

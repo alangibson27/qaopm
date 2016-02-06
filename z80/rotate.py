@@ -1,5 +1,6 @@
 from baseop import BaseOp
 from funcs import has_parity, to_hex_digits, to_signed
+from memory.memory import fetch_signed_byte
 
 
 class OpRlca(BaseOp):
@@ -7,10 +8,10 @@ class OpRlca(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = _rlc_value(self.processor, self.processor.main_registers['a'])
         self.processor.main_registers['a'] = result
-        return 4, False
+        return 4, False, pc
 
     def __str__(self):
         return 'rlca'
@@ -21,11 +22,11 @@ class OpRla(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         value = self.processor.main_registers['a']
         rotated = _rl_value(self.processor, value)
         self.processor.main_registers['a'] = rotated
-        return 4, False
+        return 4, False, pc
 
     def __str__(self):
         return 'rla'
@@ -36,11 +37,11 @@ class OpRrca(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         value = self.processor.main_registers['a']
         rotated = _rrc_value(self.processor, value)
         self.processor.main_registers['a'] = rotated
-        return 4, False
+        return 4, False, pc
 
     def __str__(self):
         return 'rrca'
@@ -51,7 +52,7 @@ class OpRra(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         low_bit = self.processor.main_registers['a'] & 0b1
         rotated = self.processor.main_registers['a'] >> 1
         if self.processor.condition('c'):
@@ -61,7 +62,7 @@ class OpRra(BaseOp):
         self.processor.set_condition('c', low_bit == 1)
         self.processor.set_condition('h', False)
         self.processor.set_condition('n', False)
-        return 4, False
+        return 4, False, pc
 
     def __str__(self):
         return 'rra'
@@ -73,11 +74,11 @@ class OpRlcReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = _rlc_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 8, False
+        return 8, False, pc
 
     def __str__(self):
         return 'rlc {}'.format(self.reg)
@@ -89,11 +90,11 @@ class OpRrcReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = _rrc_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 8, False
+        return 8, False, pc
 
     def __str__(self):
         return 'rrc {}'.format(self.reg)
@@ -105,12 +106,12 @@ class OpRrcHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _rrc_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 15, False
+        return 15, False, pc
 
     def __str__(self):
         return 'rrc (hl)'
@@ -122,11 +123,11 @@ class OpRlReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = _rl_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 8, False
+        return 8, False, pc
 
     def __str__(self):
         return 'rl {}'.format(self.reg)
@@ -138,11 +139,11 @@ class OpRrReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = _rr_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 8, False
+        return 8, False, pc
 
     def __str__(self):
         return BaseOp.__str__(self)
@@ -154,12 +155,12 @@ class OpRlcHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _rlc_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 15, False
+        return 15, False, pc
 
     def __str__(self):
         return 'rlc (hl)'
@@ -171,12 +172,12 @@ class OpRlHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _rl_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 15, False
+        return 15, False, pc
 
     def __str__(self):
         return 'rl (hl)'
@@ -188,12 +189,12 @@ class OpRrHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _rr_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 15, False
+        return 15, False, pc
 
     def __str__(self):
         return 'rl (hl)'
@@ -205,7 +206,7 @@ class OpRld(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         mem_value = self.memory[0xffff & address]
         mem_digits = to_hex_digits(mem_value)
@@ -219,7 +220,7 @@ class OpRld(BaseOp):
         _set_sign_zero_parity_flags(self.processor, self.processor.main_registers['a'])
         self.processor.set_condition('h', False)
         self.processor.set_condition('n', False)
-        return 18, False
+        return 18, False, pc
 
     def __str__(self):
         return 'rld'
@@ -231,7 +232,7 @@ class OpRrd(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         mem_value = self.memory[0xffff & address]
         mem_digits = to_hex_digits(mem_value)
@@ -245,7 +246,7 @@ class OpRrd(BaseOp):
         _set_sign_zero_parity_flags(self.processor, self.processor.main_registers['a'])
         self.processor.set_condition('h', False)
         self.processor.set_condition('n', False)
-        return 18, False
+        return 18, False, pc
 
     def __str__(self):
         return 'rrd'
@@ -258,14 +259,13 @@ class OpRlcIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.pop())
+    def execute_with_offset(self, processor, memory, pc, offset):
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rlc_value(self.processor, value)
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 23, False
+        return 23, False, pc
 
     def __str__(self):
         return 'rlc ({} + d)'.format(self.indexed_reg)
@@ -278,14 +278,13 @@ class OpRrcIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.pop())
+    def execute_with_offset(self, processor, memory, pc, offset):
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rrc_value(self.processor, value)
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 23, False
+        return 23, False, pc
 
     def __str__(self):
         return 'rrc ({} + d)'.format(self.indexed_reg)
@@ -298,14 +297,13 @@ class OpRlIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.pop())
+    def execute_with_offset(self, processor, memory, pc, offset):
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rl_value(self.processor, value)
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 23, False
+        return 23, False, pc
 
     def __str__(self):
         return 'rl ({} + d)'.format(self.indexed_reg)
@@ -318,14 +316,13 @@ class OpRrIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.pop())
+    def execute_with_offset(self, processor, memory, pc, offset):
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _rr_value(self.processor, value)
         self.memory[0xffff & address] = result
         _set_sign_zero_parity_flags(self.processor, result)
-        return 23, False
+        return 23, False, pc
 
     def __str__(self):
         return 'rr ({} + d)'.format(self.indexed_reg)

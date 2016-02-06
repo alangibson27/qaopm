@@ -1,3 +1,4 @@
+from memory.memory import fetch_byte
 from z80.bit import *
 from z80.shift import *
 from z80.rotate import *
@@ -282,9 +283,10 @@ class OpCbGroup(BaseOp):
             0xff: OpSetReg(processor, 'a', 7)
         }
 
-    def execute(self, instruction_bytes):
-        op = self.ops[instruction_bytes.pop()]
-        return op.execute(instruction_bytes)
+    def execute(self, processor, memory, pc):
+        code, pc = fetch_byte(memory, pc)
+        op = self.ops[code]
+        return op.execute(processor, memory, pc)
 
     def __str__(self):
         return 'CB GROUP'

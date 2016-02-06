@@ -1,3 +1,4 @@
+from memory.memory import fetch_byte
 from z80.bit import *
 from z80.rotate import *
 from z80.shift import *
@@ -46,11 +47,11 @@ class OpIndexedCbGroup(BaseOp):
             0xfe: OpSetIndexedIndirect(processor, memory, register, 7),
         }
 
-    def execute(self, instruction_bytes):
-        index_byte = instruction_bytes.pop()
-        op = self.ops[instruction_bytes.pop()]
-        instruction_bytes.append(index_byte)
-        return op.execute(instruction_bytes)
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
+        code, pc = fetch_byte(memory, pc)
+        op = self.ops[code]
+        return op.execute_with_offset(processor, memory, pc, offset)
 
     def __str__(self):
         return 'INDEXED CB GROUP'

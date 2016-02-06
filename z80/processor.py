@@ -358,34 +358,29 @@ class Processor:
     def execute(self):
         enable_iff_after_op = self.enable_iff
 
-        pc = self.special_registers['pc']
-        bytes_under_ramtop = 6 if pc < 0xfffb else 0x10000 - pc
-        instruction_bytes = self.memory[pc:pc + bytes_under_ramtop]
-        instruction_bytes.extend(self.memory[0:6 - bytes_under_ramtop])
-        instruction_bytes.reverse()
+        before_pc = self.special_registers['pc']
+        operation, interrupt_triggered, after_pc = self.get_operation(before_pc)
 
-        operation, interrupt_triggered = self.get_operation(instruction_bytes)
-
-        t_states, jumped = operation.execute(instruction_bytes)
+        t_states, jumped, after_pc = operation.execute(self, self.memory, after_pc)
         if enable_iff_after_op:
             self.set_iff()
             self.enable_iff = False
         self.last_operation = operation
-        bytes_left = 6 - len(instruction_bytes)
+
         if not jumped:
-            self.special_registers['pc'] += bytes_left
+            self.special_registers['pc'] = after_pc
 
         # increment refresh register
         if not interrupt_triggered:
             current_r = self.special_registers['r']
             high_bit = current_r & 0b10000000
             low_bits = current_r & 0b01111111
-            low_bits += bytes_left
+            low_bits += ((after_pc - before_pc) & 0xffff)
             self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
 
         return t_states
 
-    def get_operation(self, instruction_bytes):
+    def get_operation(self, pc):
         if self.iff[0] and self.interrupt_requests_exist:
             interrupt_mode = self.interrupt_mode
             self.halting = False
@@ -394,19 +389,19 @@ class Processor:
                 self.interrupt_requests_exist = False
             next_request.acknowledge()
             if interrupt_mode == 1:
-                return self.im1_response_op, True
+                return self.im1_response_op, True, pc
             elif interrupt_mode == 2:
                 table_index = big_endian_value([self.special_registers['r'] & 0xfe, self.special_registers['i']])
                 jump_low_byte = self.memory[0xffff & table_index]
                 jump_high_byte = self.memory[0xffff & (table_index + 1)]
-                return OpCallDirect(self, big_endian_value([jump_low_byte, jump_high_byte]), True), True
+                return OpCallDirect(self, big_endian_value([jump_low_byte, jump_high_byte]), True), True, pc
 
         if self.halting:
             op_code = 0x00
         else:
-            op_code = instruction_bytes.pop()
+            op_code = self.memory[pc]
 
-        return self.operations_by_opcode[op_code], False
+        return self.operations_by_opcode[op_code], False, (pc + 1) & 0xffff
 
     # def get_address_at_pc(self):
     #     return [self.get_next_byte(), self.get_next_byte()]

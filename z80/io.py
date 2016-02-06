@@ -1,3 +1,4 @@
+from memory.memory import fetch_byte
 from z80.baseop import BaseOp
 from z80.funcs import has_parity
 
@@ -16,11 +17,11 @@ class OpInA(BaseOp):
         self.processor = processor
         self.io = io
 
-    def execute(self, instruction_bytes):
-        port = instruction_bytes.pop()
+    def execute(self, processor, memory, pc):
+        port, pc = fetch_byte(memory, pc)
         value = self.io.read(port, self.processor.main_registers['a'])
         self.processor.main_registers['a'] = value
-        return 11, False
+        return 11, False, pc
 
     def __str__(self):
         return 'in a, (n)'
@@ -33,7 +34,7 @@ class OpIn8RegC(BaseOp):
         self.io = io
         self.dest_reg = dest_reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         value = self.io.read(self.processor.main_registers['c'], self.processor.main_registers['b'])
         self.processor.main_registers[self.dest_reg] = value
 
@@ -42,7 +43,7 @@ class OpIn8RegC(BaseOp):
         self.processor.set_condition('h', False)
         self.processor.set_condition('p', has_parity(value))
         self.processor.set_condition('n', False)
-        return 12, False
+        return 12, False, pc
 
     def __str__(self):
         return 'in {}, (c)'.format(self.dest_reg)
@@ -55,11 +56,11 @@ class OpIni(BaseOp):
         self.memory = memory
         self.io = io
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _read_and_decrement_b(self.processor, self.memory, self.io, 1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-        return 16, False
+        return 16, False, pc
 
     def __str__(self):
         return 'ini'
@@ -73,15 +74,15 @@ class OpInir(BaseOp):
         self.io = io
         self.last_t_states = None
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _read_and_decrement_b(self.processor, self.memory, self.io, 1)
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            return 16, False
+            return 16, False, pc
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc']) & 0xffff
-            return 21, True
+            return 21, True, pc
 
     def __str__(self):
         return 'inir'
@@ -94,11 +95,11 @@ class OpInd(BaseOp):
         self.memory = memory
         self.io = io
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _read_and_decrement_b(self.processor, self.memory, self.io, -1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-        return 16, False
+        return 16, False, pc
 
     def __str__(self):
         return 'ind'
@@ -112,15 +113,15 @@ class OpIndr(BaseOp):
         self.io = io
         self.last_t_states = None
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _read_and_decrement_b(self.processor, self.memory, self.io, -1)
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            return 16, False
+            return 16, False, pc
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc']) & 0xffff
-            return 21, True
+            return 21, True, pc
 
     def __str__(self):
         return 'indr'
@@ -141,10 +142,10 @@ class OpOutA(BaseOp):
         self.processor = processor
         self.io = io
 
-    def execute(self, instruction_bytes):
-        port = instruction_bytes.pop()
+    def execute(self, processor, memory, pc):
+        port, pc = fetch_byte(memory, pc)
         self.io.write(port, self.processor.main_registers['a'], self.processor.main_registers['a'])
-        return 11, False
+        return 11, False, pc
 
     def __str__(self):
         return 'out (n), a'
@@ -157,10 +158,10 @@ class OpOutC8Reg(BaseOp):
         self.io = io
         self.dest_reg = dest_reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         self.io.write(self.processor.main_registers['c'], self.processor.main_registers['b'],
                       self.processor.main_registers[self.dest_reg])
-        return 12, False
+        return 12, False, pc
 
     def __str__(self):
         return 'out (c), {}'.format(self.dest_reg)
@@ -172,9 +173,9 @@ class OpOutCZero(BaseOp):
         self.processor = processor
         self.io = io
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         self.io.write(self.processor.main_registers['c'], self.processor.main_registers['b'], 0)
-        return 12, False
+        return 12, False, pc
 
     def __str__(self):
         return 'out (c), 0'
@@ -187,11 +188,11 @@ class OpOuti(BaseOp):
         self.memory = memory
         self.io = io
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _write_and_decrement_b(self.processor, self.memory, self.io, 1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-        return 16, False
+        return 16, False, pc
 
     def __str__(self):
         return 'outi'
@@ -205,15 +206,15 @@ class OpOtir(BaseOp):
         self.io = io
         self.last_t_states = None
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _write_and_decrement_b(self.processor, self.memory, self.io, 1)
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            return 16, False
+            return 16, False, pc
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc']) & 0xffff
-            return 21, True
+            return 21, True, pc
 
     def __str__(self):
         return 'otir'
@@ -226,11 +227,11 @@ class OpOutd(BaseOp):
         self.memory = memory
         self.io = io
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _write_and_decrement_b(self.processor, self.memory, self.io, -1)
         self.processor.set_condition('z', self.processor.main_registers['b'] == 0)
         self.processor.set_condition('n', True)
-        return 16, False
+        return 16, False, pc
 
     def __str__(self):
         return 'outd'
@@ -244,15 +245,15 @@ class OpOtdr(BaseOp):
         self.io = io
         self.last_t_states = None
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         _write_and_decrement_b(self.processor, self.memory, self.io, -1)
         self.processor.set_condition('z', True)
         self.processor.set_condition('n', True)
         if self.processor.main_registers['b'] == 0:
-            return 16, False
+            return 16, False, pc
         else:
             self.processor.special_registers['pc'] = (self.processor.special_registers['pc']) & 0xffff
-            return 21, True
+            return 21, True, pc
 
     def __str__(self):
         return 'otdr'

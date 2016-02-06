@@ -8,15 +8,14 @@ class OpAddHl16Reg(BaseOp):
         self.processor = processor
         self.source_reg = source_reg
 
-    def execute(self, instruction_bytes):
-        processor = self.processor
+    def execute(self, processor, memory, pc):
         result, half_carry, full_carry = bitwise_add_16bit(processor.get_16bit_reg('hl'),
                                                            processor.get_16bit_reg(self.source_reg))
         processor.set_16bit_reg('hl', result)
         processor.set_condition('h', half_carry)
         processor.set_condition('n', False)
         processor.set_condition('c', full_carry)
-        return 11, False
+        return 11, False, pc
 
     def __str__(self):
         return 'add hl, {}'.format(self.source_reg)
@@ -28,7 +27,7 @@ class OpAdcHl16Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         signed_hl = to_signed_16bit(self.processor.get_16bit_reg('hl'))
         to_add = (self.processor.get_16bit_reg(self.reg) + (1 if self.processor.condition('c') else 0)) & 0xffff
         result, half_carry, full_carry = bitwise_add_16bit(self.processor.get_16bit_reg('hl'), to_add)
@@ -42,7 +41,7 @@ class OpAdcHl16Reg(BaseOp):
         processor.set_condition('p', (signed_hl < 0) != (signed_result < 0))
         processor.set_condition('n', False)
         processor.set_condition('c', full_carry)
-        return 15, False
+        return 15, False, pc
 
     def __str__(self):
         return 'adc hl, {}'.format(self.reg)
@@ -54,7 +53,7 @@ class OpSbcHl16Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         signed_hl = to_signed_16bit(self.processor.get_16bit_reg('hl'))
         to_sub = (self.processor.get_16bit_reg(self.reg) + (1 if self.processor.condition('c') else 0)) & 0xffff
         result, half_borrow, full_borrow = bitwise_sub_16bit(self.processor.get_16bit_reg('hl'), to_sub)
@@ -68,7 +67,7 @@ class OpSbcHl16Reg(BaseOp):
         processor.set_condition('p', (signed_hl < 0) != (signed_result < 0))
         processor.set_condition('n', True)
         processor.set_condition('c', full_borrow)
-        return 15, False
+        return 15, False, pc
 
     def __str__(self):
         return 'sbc hl, {}'.format(self.reg)
@@ -81,7 +80,7 @@ class OpAddIndexedReg(BaseOp):
         self.indexed_reg = indexed_reg
         self.source_reg = source_reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         processor = self.processor
         result, half_carry, full_carry = bitwise_add_16bit(processor.index_registers[self.indexed_reg],
                                                            processor.get_16bit_reg(self.source_reg))
@@ -90,7 +89,7 @@ class OpAddIndexedReg(BaseOp):
         processor.set_condition('h', half_carry)
         processor.set_condition('n', False)
         processor.set_condition('c', full_carry)
-        return 15, False
+        return 15, False, pc
 
     def __str__(self):
         return 'add {}, {}'.format(self.indexed_reg, self.source_reg)

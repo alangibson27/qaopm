@@ -1,5 +1,6 @@
 from baseop import BaseOp
 from funcs import bitwise_add, bitwise_sub, to_signed
+from memory.memory import fetch_signed_byte
 
 
 class OpInc8Reg(BaseOp):
@@ -8,9 +9,9 @@ class OpInc8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         self.processor.main_registers[self.reg] = _inc_value(self.processor, self.processor.main_registers[self.reg])
-        return 4, False
+        return 4, False, pc
 
     def __str__(self):
         return 'inc {}'.format(self.reg)
@@ -22,9 +23,9 @@ class OpDec8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         self.processor.main_registers[self.reg] = _dec_value(self.processor, self.processor.main_registers[self.reg])
-        return 4, False
+        return 4, False, pc
 
     def __str__(self):
         return 'dec {}'.format(self.reg)
@@ -36,10 +37,10 @@ class OpInc16Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = (self.processor.get_16bit_reg(self.reg) + 1) & 0xffff
         self.processor.set_16bit_reg(self.reg, result)
-        return 6, False
+        return 6, False, pc
 
     def __str__(self):
         return 'inc {}'.format(self.reg)
@@ -51,10 +52,10 @@ class OpDec16Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = (self.processor.get_16bit_reg(self.reg) - 1) & 0xffff
         self.processor.set_16bit_reg(self.reg, result)
-        return 6, False
+        return 6, False, pc
 
     def __str__(self):
         return 'dec {}'.format(self.reg)
@@ -66,11 +67,11 @@ class OpIncHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _inc_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-        return 11, False
+        return 11, False, pc
 
     def __str__(self):
         return 'inc (hl)'
@@ -82,11 +83,11 @@ class OpDecHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _dec_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-        return 11, False
+        return 11, False, pc
 
     def __str__(self):
         return 'dec (hl)'
@@ -98,10 +99,10 @@ class OpIncIndexed(BaseOp):
         self.processor = processor
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = (self.processor.index_registers[self.indexed_reg] + 1) & 0xffff
         self.processor.index_registers[self.indexed_reg] = result
-        return 10, False
+        return 10, False, pc
 
     def __str__(self):
         return 'inc {}'.format(self.indexed_reg)
@@ -113,10 +114,10 @@ class OpDecIndexed(BaseOp):
         self.processor = processor
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
+    def execute(self, processor, memory, pc):
         result = (self.processor.index_registers[self.indexed_reg] - 1) & 0xffff
         self.processor.index_registers[self.indexed_reg] = result
-        return 10, False
+        return 10, False, pc
 
     def __str__(self):
         return 'dec {}'.format(self.indexed_reg)
@@ -129,12 +130,12 @@ class OpIncIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.pop())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         address = self.processor.index_registers[self.indexed_reg] + offset
         result = _inc_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-        return 23, False
+        return 23, False, pc
 
     def __str__(self):
         return 'inc ({} + d)'.format(self.indexed_reg)
@@ -147,12 +148,12 @@ class OpDecIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self, instruction_bytes):
-        offset = to_signed(instruction_bytes.pop())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         address = self.processor.index_registers[self.indexed_reg] + offset
         result = _dec_value(self.processor, self.memory[0xffff & address])
         self.memory[0xffff & address] = result
-        return 23, False
+        return 23, False, pc
 
     def __str__(self):
         return 'inc ({} + d)'.format(self.indexed_reg)

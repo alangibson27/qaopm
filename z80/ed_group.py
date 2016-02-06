@@ -103,9 +103,10 @@ class OpEdGroup(BaseOp):
             0xbb: OpOtdr(processor, memory, io)
         }
 
-    def execute(self, instruction_bytes):
-        op = self.ops[instruction_bytes.pop()]
-        return op.execute(instruction_bytes)
+    def execute(self, processor, memory, pc):
+        code, pc = fetch_byte(memory, pc)
+        op = self.ops[code]
+        return op.execute(processor, memory, pc)
 
     def __str__(self):
         return 'ED GROUP'

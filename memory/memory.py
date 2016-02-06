@@ -1,3 +1,6 @@
+from z80.funcs import to_signed, big_endian_value
+
+
 class Memory:
     RAMTOP = 0xffff
 
@@ -37,3 +40,15 @@ def save_memory(memory, binary_file_name, start, length):
     with open(binary_file_name, 'wb') as binary_file:
         for i in range(0, length):
             binary_file.write(chr(memory[(start + length) & 0xffff]))
+
+
+def fetch_byte(memory, pc):
+    return memory[pc], (pc + 1) & 0xffff
+
+
+def fetch_signed_byte(memory, pc):
+    return to_signed(memory[pc]), (pc + 1) & 0xffff
+
+
+def fetch_word(memory, pc):
+    return big_endian_value([memory[pc], memory[(pc + 1) & 0xffff]]), (pc + 2) & 0xffff

@@ -42,7 +42,7 @@ def run_loop(processor, screen, display_adapter):
     t_states_per_refresh = seconds_per_refresh / time_per_t_state
 
     i = 0
-    while 1:
+    while i < 50:
         i += 1
         update_display(screen, display_adapter) + seconds_per_refresh
         t_states = 0

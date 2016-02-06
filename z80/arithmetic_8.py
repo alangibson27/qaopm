@@ -1,3 +1,4 @@
+from memory.memory import fetch_byte, fetch_signed_byte
 from z80.funcs import has_parity, to_signed, bitwise_add, bitwise_sub
 from z80.baseop import BaseOp
 
@@ -8,9 +9,9 @@ class OpAddA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _add_a(self.processor, self.processor.main_registers[self.reg], False)
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'add a, {}'.format(self.reg)
@@ -22,9 +23,9 @@ class OpAdcA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _add_a(self.processor, self.processor.main_registers[self.reg], self.processor.condition('c'))
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'adc a, {}'.format(self.reg)
@@ -36,10 +37,10 @@ class OpAddAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, False)
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'add a, (hl)'
@@ -51,10 +52,10 @@ class OpAdcAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _add_a(self.processor, value, self.processor.condition('c'))
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'adc a, (hl)'
@@ -66,10 +67,10 @@ class OpAddAImmediate(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
-        value = self.processor.get_next_byte()
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
         _add_a(self.processor, value, False)
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'add a, n'
@@ -81,10 +82,10 @@ class OpAdcAImmediate(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
-        value = self.processor.get_next_byte()
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
         _add_a(self.processor, value, self.processor.condition('c'))
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'adc a, n'
@@ -96,9 +97,9 @@ class OpSubA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _sub_a(self.processor, self.processor.main_registers[self.reg], False)
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'sub a, {}'.format(self.reg)
@@ -110,9 +111,9 @@ class OpSbcA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _sub_a(self.processor, self.processor.main_registers[self.reg], self.processor.condition('c'))
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'sbc a, {}'.format(self.reg)
@@ -124,10 +125,10 @@ class OpSubAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, False)
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'sub a, (hl)'
@@ -139,10 +140,10 @@ class OpSbcAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _sub_a(self.processor, value, self.processor.condition('c'))
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'sbc a, (hl)'
@@ -154,10 +155,10 @@ class OpSubAImmediate(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
-        value = self.processor.get_next_byte()
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
         _sub_a(self.processor, value, False)
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'sub a, n'
@@ -169,10 +170,10 @@ class OpSbcAImmediate(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
-        value = self.processor.get_next_byte()
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
         _sub_a(self.processor, value, self.processor.condition('c'))
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'sbc a, n'
@@ -185,11 +186,11 @@ class OpAddAIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, False)
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'add a, ({} + d)'.format(self.indexed_reg)
@@ -202,11 +203,11 @@ class OpAdcAIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _add_a(self.processor, value, self.processor.condition('c'))
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'adc a, ({} + d)'.format(self.indexed_reg)
@@ -219,11 +220,11 @@ class OpSubAIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, False)
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'sub a, ({} + d)'.format(self.indexed_reg)
@@ -236,11 +237,11 @@ class OpSbcAIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         value = self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)]
         _sub_a(self.processor, value, self.processor.condition('c'))
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'sbc a, ({} + d)'.format(self.indexed_reg)
@@ -252,9 +253,9 @@ class OpAndA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _and_a_value(self.processor, self.processor.main_registers[self.reg])
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'and {}'.format(self.reg)
@@ -266,9 +267,9 @@ class OpAndAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _and_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'and (hl)'
@@ -279,9 +280,10 @@ class OpAndAImmediate(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        _and_a_value(self.processor, self.processor.get_next_byte())
-        return 7
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
+        _and_a_value(self.processor, value)
+        return 7, False, pc
 
     def __str__(self):
         return 'and a, n'
@@ -294,10 +296,10 @@ class OpAndIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         _and_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'and ({} + d)'.format(self.indexed_reg)
@@ -309,9 +311,9 @@ class OpXorA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _xor_a_value(self.processor, self.processor.main_registers[self.reg])
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'xor {}'.format(self.reg)
@@ -323,9 +325,9 @@ class OpXorAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _xor_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'xor (hl)'
@@ -336,9 +338,10 @@ class OpXorAImmediate(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        _xor_a_value(self.processor, self.processor.get_next_byte())
-        return 7
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
+        _xor_a_value(self.processor, value)
+        return 7, False, pc
 
     def __str__(self):
         return 'xor a, n'
@@ -351,10 +354,10 @@ class OpXorIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         _xor_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'xor ({} + d)'.format(self.indexed_reg)
@@ -366,9 +369,9 @@ class OpOrA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _or_a_value(self.processor, self.processor.main_registers[self.reg])
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'or {}'.format(self.reg)
@@ -380,9 +383,9 @@ class OpOrAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _or_a_value(self.processor, self.memory[0xffff & self.processor.get_16bit_reg('hl')])
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'or (hl)'
@@ -393,9 +396,10 @@ class OpOrAImmediate(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        _or_a_value(self.processor, self.processor.get_next_byte())
-        return 7
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
+        _or_a_value(self.processor, value)
+        return 7, False, pc
 
     def __str__(self):
         return 'or a, n'
@@ -408,10 +412,10 @@ class OpOrIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         _or_a_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)])
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'or ({} + d)'.format(self.indexed_reg)
@@ -423,9 +427,9 @@ class OpCpA8Reg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         _cp_value(self.processor, self.processor.main_registers[self.reg], False)
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'cp {}'.format(self.reg)
@@ -437,10 +441,10 @@ class OpCpAHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         value = self.memory[0xffff & self.processor.get_16bit_reg('hl')]
         _cp_value(self.processor, value, False)
-        return 7
+        return 7, False, pc
 
     def __str__(self):
         return 'cp (hl)'
@@ -451,9 +455,10 @@ class OpCpImmediate(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
-        _cp_value(self.processor, self.processor.get_next_byte(), False)
-        return 7
+    def execute(self, processor, memory, pc):
+        value, pc = fetch_byte(memory, pc)
+        _cp_value(self.processor, value, False)
+        return 7, False, pc
 
     def __str__(self):
         return 'cp n'
@@ -466,10 +471,10 @@ class OpCpIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = to_signed(self.processor.get_next_byte())
+    def execute(self, processor, memory, pc):
+        offset, pc = fetch_signed_byte(memory, pc)
         _cp_value(self.processor, self.memory[0xffff & (self.processor.index_registers[self.indexed_reg] + offset)], False)
-        return 19
+        return 19, False, pc
 
     def __str__(self):
         return 'cp ({} + d)'.format(self.indexed_reg)
@@ -480,7 +485,7 @@ class OpNeg(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         processor = self.processor
         result, half_carry, _ = bitwise_sub(0, processor.main_registers['a'])
 
@@ -492,7 +497,7 @@ class OpNeg(BaseOp):
         set_condition('n', True)
         set_condition('c', processor.main_registers['a'] != 0x00)
         processor.main_registers['a'] = result
-        return 8
+        return 8, False, pc
 
     def __str__(self):
         return 'neg'
@@ -503,12 +508,12 @@ class OpCpl(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         processor = self.processor
         processor.main_registers['a'] = 0xff - processor.main_registers['a']
         processor.set_condition('h', True)
         processor.set_condition('n', True)
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'cpl'
@@ -519,12 +524,12 @@ class OpScf(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         processor = self.processor
         processor.set_condition('h', False)
         processor.set_condition('n', False)
         processor.set_condition('c', True)
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'scf'
@@ -535,12 +540,12 @@ class OpCcf(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         processor = self.processor
         processor.set_condition('h', processor.condition('c'))
         processor.set_condition('c', not processor.condition('c'))
         processor.set_condition('n', False)
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'ccf'
@@ -551,7 +556,7 @@ class OpDaa(BaseOp):
         BaseOp.__init__(self)
         self.processor = processor
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         digits = [int(x,16) for x in hex(self.processor.main_registers['a'])[2:].zfill(2)]
         fc = self.processor.condition('c')
         hc = self.processor.condition('h')
@@ -560,7 +565,7 @@ class OpDaa(BaseOp):
             self._daa_after_sub(digits, fc, hc)
         else:
             self._daa_after_add(digits, fc, hc)
-        return 4
+        return 4, False, pc
 
     def __str__(self):
         return 'daa'

@@ -5,7 +5,7 @@ from nose.tools import assert_equals, assert_in
 from memory.memory import Memory
 from z80.funcs import high_low_pair
 from z80.io import IO
-from z80.processor import Processor
+from z80.processor import Processor, InterruptRequest
 
 
 def random_byte():

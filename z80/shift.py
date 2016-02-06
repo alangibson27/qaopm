@@ -1,5 +1,6 @@
 from baseop import BaseOp
-from funcs import has_parity
+from funcs import has_parity, to_signed
+from memory.memory import fetch_signed_byte
 
 
 class OpSlaReg(BaseOp):
@@ -8,10 +9,10 @@ class OpSlaReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         result = _sla_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-        return 8
+        return 8, False, pc
 
     def __str__(self):
         return 'sla {}'.format(self.reg)
@@ -23,11 +24,11 @@ class OpSlaHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _sla_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-        return 15
+        return 15, False, pc
 
     def __str__(self):
         return 'sla (hl)'
@@ -39,10 +40,10 @@ class OpSllReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         result = _sll_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-        return 8
+        return 8, False, pc
 
     def __str__(self):
         return 'sll {}'.format(self.reg)
@@ -54,11 +55,11 @@ class OpSllHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _sll_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-        return 15
+        return 15, False, pc
 
     def __str__(self):
         return 'sll (hl)'
@@ -70,10 +71,10 @@ class OpSraReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         result = _sra_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-        return 8
+        return 8, False, pc
 
     def __str__(self):
         return 'sra {}'.format(self.reg)
@@ -85,11 +86,11 @@ class OpSraHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _sra_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-        return 15
+        return 15, False, pc
 
     def __str__(self):
         return 'sra (hl)'
@@ -101,10 +102,10 @@ class OpSrlReg(BaseOp):
         self.processor = processor
         self.reg = reg
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         result = _srl_value(self.processor, self.processor.main_registers[self.reg])
         self.processor.main_registers[self.reg] = result
-        return 8
+        return 8, False, pc
 
     def __str__(self):
         return 'srl {}'.format(self.reg)
@@ -116,11 +117,11 @@ class OpSrlHlIndirect(BaseOp):
         self.processor = processor
         self.memory = memory
 
-    def execute(self):
+    def execute(self, processor, memory, pc):
         address = self.processor.get_16bit_reg('hl')
         result = _srl_value(self.processor, self.memory[0xffff & address])
         self.memory[address] = result
-        return 15
+        return 15, False, pc
 
     def __str__(self):
         return 'srl (hl)'
@@ -133,13 +134,12 @@ class OpSlaIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = self.processor.get_signed_offset_byte()
+    def execute_with_offset(self, processor, memory, pc, offset):
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _sla_value(self.processor, value)
         self.memory[address] = result
-        return 23
+        return 23, False, pc
 
     def __str__(self):
         return 'sla ({} + d)'.format(self.indexed_reg)
@@ -152,13 +152,12 @@ class OpSraIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = self.processor.get_signed_offset_byte()
+    def execute_with_offset(self, processor, memory, pc, offset):
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _sra_value(self.processor, value)
         self.memory[address] = result
-        return 23
+        return 23, False, pc
 
     def __str__(self):
         return 'sra ({} + d)'.format(self.indexed_reg)
@@ -171,13 +170,12 @@ class OpSrlIndexedIndirect(BaseOp):
         self.memory = memory
         self.indexed_reg = indexed_reg
 
-    def execute(self):
-        offset = self.processor.get_signed_offset_byte()
+    def execute_with_offset(self, processor, memory, pc, offset):
         address = self.processor.index_registers[self.indexed_reg] + offset
         value = self.memory[0xffff & address]
         result = _srl_value(self.processor, value)
         self.memory[address] = result
-        return 23
+        return 23, False, pc
 
     def __str__(self):
         return 'srl ({} + d)'.format(self.indexed_reg)

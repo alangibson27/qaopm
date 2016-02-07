@@ -357,8 +357,9 @@ class Processor:
 
     def execute(self):
         enable_iff_after_op = self.enable_iff
+        special_registers = self.special_registers
 
-        before_pc = self.special_registers['pc']
+        before_pc = special_registers['pc']
         operation, interrupt_triggered, after_pc = self.get_operation(before_pc)
 
         t_states, jumped, after_pc = operation.execute(self, self.memory, after_pc)
@@ -368,15 +369,15 @@ class Processor:
         self.last_operation = operation
 
         if not jumped:
-            self.special_registers['pc'] = after_pc
+            special_registers['pc'] = after_pc
 
         # increment refresh register
         if not interrupt_triggered:
-            current_r = self.special_registers['r']
+            current_r = special_registers['r']
             high_bit = current_r & 0b10000000
             low_bits = current_r & 0b01111111
             low_bits += ((after_pc - before_pc) & 0xffff)
-            self.special_registers['r'] = high_bit | (low_bits & 0b01111111)
+            special_registers['r'] = high_bit | (low_bits & 0b01111111)
 
         return t_states
 

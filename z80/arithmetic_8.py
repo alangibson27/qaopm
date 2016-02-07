@@ -486,7 +486,6 @@ class OpNeg(BaseOp):
         self.processor = processor
 
     def execute(self, processor, memory, pc):
-        processor = self.processor
         result, half_carry, _ = bitwise_sub(0, processor.main_registers['a'])
 
         set_condition = processor.set_condition
@@ -509,7 +508,6 @@ class OpCpl(BaseOp):
         self.processor = processor
 
     def execute(self, processor, memory, pc):
-        processor = self.processor
         processor.main_registers['a'] = 0xff - processor.main_registers['a']
         processor.set_condition('h', True)
         processor.set_condition('n', True)
@@ -525,7 +523,6 @@ class OpScf(BaseOp):
         self.processor = processor
 
     def execute(self, processor, memory, pc):
-        processor = self.processor
         processor.set_condition('h', False)
         processor.set_condition('n', False)
         processor.set_condition('c', True)
@@ -541,7 +538,6 @@ class OpCcf(BaseOp):
         self.processor = processor
 
     def execute(self, processor, memory, pc):
-        processor = self.processor
         processor.set_condition('h', processor.condition('c'))
         processor.set_condition('c', not processor.condition('c'))
         processor.set_condition('n', False)
@@ -562,16 +558,16 @@ class OpDaa(BaseOp):
         hc = self.processor.condition('h')
 
         if self.processor.condition('n'):
-            self._daa_after_sub(digits, fc, hc)
+            self._daa_after_sub(processor, digits, fc, hc)
         else:
-            self._daa_after_add(digits, fc, hc)
+            self._daa_after_add(processor, digits, fc, hc)
         return 4, False, pc
 
     def __str__(self):
         return 'daa'
 
-    def _daa_after_add(self, digits, fc, hc):
-        processor = self.processor
+    @staticmethod
+    def _daa_after_add(processor, digits, fc, hc):
         if not fc and not hc:
             if digits[0] <= 0x9 and digits[1] <= 0x9:
                 pass
@@ -608,8 +604,8 @@ class OpDaa(BaseOp):
         processor.set_condition('z', result == 0)
         processor.set_condition('p', has_parity(result))
 
-    def _daa_after_sub(self, digits, fc, hc):
-        processor = self.processor
+    @staticmethod
+    def _daa_after_sub(processor, digits, fc, hc):
         if not fc and not hc:
             if digits[0] <= 0x9 and digits[1] <= 0x9:
                 pass

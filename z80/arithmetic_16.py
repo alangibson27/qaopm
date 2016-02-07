@@ -33,7 +33,6 @@ class OpAdcHl16Reg(BaseOp):
         result, half_carry, full_carry = bitwise_add_16bit(self.processor.get_16bit_reg('hl'), to_add)
         signed_result = to_signed_16bit(result)
 
-        processor = self.processor
         processor.set_16bit_reg('hl', result)
         processor.set_condition('s', result & 0x8000 > 0)
         processor.set_condition('z', result == 0)
@@ -81,7 +80,6 @@ class OpAddIndexedReg(BaseOp):
         self.source_reg = source_reg
 
     def execute(self, processor, memory, pc):
-        processor = self.processor
         result, half_carry, full_carry = bitwise_add_16bit(processor.index_registers[self.indexed_reg],
                                                            processor.get_16bit_reg(self.source_reg))
 
